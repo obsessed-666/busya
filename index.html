@@ -2,141 +2,214 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title></title>
-
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Marck+Script&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Буся</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{font-family:'Cormorant Garamond',serif;background:#0b0f1a;color:#eaeaf0;overflow-x:hidden}
+html,body{height:100%;background:#0b0b12;color:#fff;font-family:'Montserrat',sans-serif;overflow-x:hidden}
+.hidden{display:none}
+section{min-height:100vh;width:100vw;position:relative}
 
-/* ---------- SCREEN SHAKE ---------- */
-@keyframes screenShake{
-  0%{transform:translate(0,0)}
-  20%{transform:translate(-6px,4px)}
-  40%{transform:translate(6px,-4px)}
-  60%{transform:translate(-4px,3px)}
-  80%{transform:translate(4px,-3px)}
-  100%{transform:translate(0,0)}
+/* --- INTRO (кот) --- */
+#intro{
+ display:flex;align-items:center;justify-content:center;
+ background:radial-gradient(circle at 50% 40%, #1a1a2e, #0b0b12 70%);
+ overflow:hidden;
 }
-.shake{animation:screenShake .45s ease}
+#intro::after{
+ content:"";
+ position:absolute;inset:0;
+ background:radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+ background-size:40px 40px;
+ animation:stars 20s linear infinite;
+ opacity:.4;
+}
+@keyframes stars{from{transform:translateY(0)}to{transform:translateY(200px)}}
+#cat{
+ width:80vw;max-width:420px;z-index:2;cursor:pointer;
+ filter:drop-shadow(0 20px 40px rgba(0,0,0,.6));
+ transition:transform .6s ease;
+}
+#cat:hover{transform:scale(1.04)}
 
-/* ---------- MYSTERIOUS INTRO ---------- */
-#intro{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle at 30% 30%, #1b2238, #0b0f1a 70%);animation:mist 12s ease-in-out infinite alternate;z-index:10;transition:opacity 1.4s ease, transform 1.4s ease}
-@keyframes mist{0%{background-position:30% 30%}100%{background-position:70% 70%}}
-#intro.hide{opacity:0;transform:scale(1.05);pointer-events:none}
-#catImage{width:82vw;max-width:420px;border-radius:24px;box-shadow:0 20px 80px rgba(0,0,0,.7);cursor:pointer;transition:transform .8s ease}
-#catImage:hover{transform:scale(1.04)}
+/* --- STORY --- */
+#story{
+ padding:40px 22px 120px;
+ background:#0b0b12;
+ line-height:1.65;
+ font-size:15px;
+}
+.story-text{max-width:680px;margin:0 auto}
+.spoiler{
+ margin-top:24px;
+ background:#141422;
+ border-radius:14px;
+ padding:18px;
+ cursor:pointer;
+ position:relative;
+ overflow:hidden;
+}
+.spoiler::after{
+ content:"Нажми, чтобы открыть";
+ position:absolute;inset:0;
+ display:flex;align-items:center;justify-content:center;
+ background:#141422;
+ transition:.5s;
+}
+.spoiler.open::after{opacity:0;pointer-events:none}
+.beer-word{color:#ffd166;text-decoration:underline;cursor:pointer}
 
-/* ---------- STORY ---------- */
-#story{opacity:0;transition:opacity 1.8s ease;padding:22px;max-width:720px;margin:auto;line-height:1.75;font-size:15px}
-#story.show{opacity:1}
-p{margin-bottom:18px}
-.spoiler{filter:blur(6px);opacity:.35;cursor:pointer;transition:all .8s ease}
-.spoiler.revealed{filter:blur(0);opacity:1}
-.beerWord{color:#ffd166;cursor:pointer;text-decoration:underline}
+/* --- BEER ANIMATION --- */
+#beerScene{
+ position:fixed;inset:0;pointer-events:none;z-index:50;
+}
+#beer{
+ position:absolute;top:-200px;left:50%;transform:translateX(-50%);
+ width:120px;opacity:0;
+}
+.splash{position:absolute;width:14px;height:14px;border-radius:50%;background:#f5c16c;opacity:0}
+.puddle{
+ position:absolute;bottom:12%;left:50%;transform:translateX(-50%);
+ width:20px;height:10px;border-radius:50%;background:#f5c16c;opacity:0;filter:blur(2px)
+}
 
-/* ---------- BEER ---------- */
-#beerScene{position:fixed;inset:0;pointer-events:none;z-index:20}
-#beer{position:absolute;width:160px;left:50%;top:-200px;transform:translateX(-50%) rotate(0deg)}
-@keyframes fall{0%{top:-200px;transform:translateX(-50%) rotate(0)}70%{transform:translateX(-50%) rotate(240deg)}100%{top:72vh;transform:translateX(-50%) rotate(320deg)}}
+/* --- LOVE MODE --- */
+.love-bg{
+ background:url('hearts-bg.jpg') center/cover no-repeat fixed;
+ animation:fadeLove 2s forwards;
+}
+@keyframes fadeLove{from{opacity:0}to{opacity:1}}
 
-/* ---------- LOVE BG ---------- */
-body.love{background:linear-gradient(120deg,#2b1055,#7597de,#ff6ec7);background-size:400% 400%;animation:bgMove 18s ease infinite}
-@keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+/* --- MEMES --- */
+.meme{
+ position:fixed;width:70px;z-index:60;animation:float 6s ease-in-out infinite;
+ cursor:pointer;
+}
+@keyframes float{
+ 0%{transform:translateY(0) rotate(0deg)}
+ 50%{transform:translateY(-20px) rotate(8deg)}
+ 100%{transform:translateY(0) rotate(0deg)}
+}
 
-/* ---------- MEMES FLOAT / ROTATE ---------- */
-.meme{position:fixed;width:90px;z-index:30;cursor:pointer;opacity:0;animation:fadeIn .6s ease forwards, floaty 7s ease-in-out infinite, spin 12s linear infinite}
-@keyframes fadeIn{to{opacity:1}}
-@keyframes floaty{0%{transform:translateY(0)}50%{transform:translateY(-22px)}100%{transform:translateY(0)}}
-@keyframes spin{from{rotate:0deg}to{rotate:360deg}}
+/* --- LOVE TEXT --- */
+#loveText{
+ position:fixed;inset:0;background:rgba(0,0,0,.85);
+ display:flex;align-items:center;justify-content:center;
+ padding:30px;z-index:80;text-align:center;
+ font-family:'Caveat',cursive;font-size:28px;line-height:1.5
+}
+#loveText span{cursor:pointer;color:#ff4d6d;font-size:34px}
 
-/* ---------- TEXT BEFORE VIDEO ---------- */
-#loveTextOverlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;z-index:40;opacity:0;pointer-events:none;transition:opacity 1s ease}
-#loveTextOverlay.show{opacity:1;pointer-events:auto}
-#loveText{font-family:'Marck Script',cursive;font-size:26px;line-height:1.6;color:#fff;max-width:800px}
-#heartBtn{cursor:pointer;font-size:34px;color:#ff4d6d}
+/* --- VIDEO --- */
+#videoWrap{
+ position:fixed;inset:0;background:#000;z-index:90;display:flex;align-items:center;justify-content:center
+}
+video{width:100%;height:100%;object-fit:cover}
 
-/* ---------- VIDEO ---------- */
-#videoOverlay{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:50;opacity:0;pointer-events:none;transition:opacity .8s ease}
-#videoOverlay.show{opacity:1;pointer-events:auto}
-#videoOverlay video{width:92vw;max-width:720px;border-radius:18px}
-
+/* --- SHAKE --- */
+.shake{animation:shake .4s}
+@keyframes shake{
+ 0%,100%{transform:translateX(0)}
+ 20%{transform:translateX(-6px)}
+ 40%{transform:translateX(6px)}
+ 60%{transform:translateX(-4px)}
+ 80%{transform:translateX(4px)}
+}
 </style>
 </head>
 <body>
 
-<div id="intro">
-  <img id="catImage" src="cat.jpg" alt="Кот">
-</div>
+<section id="intro">
+ <img id="cat" src="cat.jpg" />
+</section>
 
-<div id="story">
-  <p>Однажды я сидел как ни в чём не бывало дома...</p>
-  <p class="spoiler" id="finalLine">— Ой, извини, у меня <span class="beerWord" id="beerTrigger">пиво</span> упало.</p>
-</div>
+<section id="story" class="hidden">
+ <div class="story-text">
+  <p>
+Однажды я сидел как ни в чём не бывало дома, слушал грустную музыку, смотрел в окно, думал о своём тленном будущем, как вдруг… звонок в дверь...
+  </p>
+
+  <div class="spoiler" id="spoiler">
+   — Ой, извини, у меня <span class="beer-word" id="beerWord">пиво</span> упало.
+  </div>
+ </div>
+</section>
 
 <div id="beerScene">
-  <img id="beer" src="beer.png" />
+ <img id="beer" src="beer.png" />
+ <div class="puddle" id="puddle"></div>
 </div>
 
-<div id="loveTextOverlay">
-  <div id="loveText">
-    буся, котик... <span id="heartBtn">💘</span>
-  </div>
+<div id="loveText" class="hidden">
+ Буся, котик, я познакомился с тобой лишь месяц назад... <span id="heart">💘</span>
 </div>
 
-<div id="videoOverlay">
-  <video id="secretVideo" src="video.mp4" controls></video>
+<div id="videoWrap" class="hidden">
+ <video src="video.mp4" controls autoplay></video>
 </div>
 
 <audio id="darkMusic" src="dark.mp3"></audio>
 <audio id="loveMusic" src="love.mp3"></audio>
 
 <script>
-const intro=document.getElementById('intro');
+const cat=document.getElementById('cat');
 const story=document.getElementById('story');
-const cat=document.getElementById('catImage');
-const spoiler=document.getElementById('finalLine');
-const beerTrigger=document.getElementById('beerTrigger');
+const spoiler=document.getElementById('spoiler');
+const beerWord=document.getElementById('beerWord');
 const beer=document.getElementById('beer');
+const puddle=document.getElementById('puddle');
 const darkMusic=document.getElementById('darkMusic');
 const loveMusic=document.getElementById('loveMusic');
-const loveTextOverlay=document.getElementById('loveTextOverlay');
-const heartBtn=document.getElementById('heartBtn');
-const videoOverlay=document.getElementById('videoOverlay');
+const loveText=document.getElementById('loveText');
+const videoWrap=document.getElementById('videoWrap');
 
-cat.onclick=()=>{intro.classList.add('hide');story.classList.add('show');darkMusic.play()}
-spoiler.onclick=()=>spoiler.classList.add('revealed')
+cat.onclick=()=>{
+ document.getElementById('intro').classList.add('hidden');
+ story.classList.remove('hidden');
+ darkMusic.play();
+}
 
-beerTrigger.onclick=()=>{
-  beer.style.animation='fall 1.6s ease forwards';
+spoiler.onclick=()=>spoiler.classList.toggle('open');
 
-  setTimeout(()=>{
-    // ВИБРАЦИЯ / ТРЯСКА
-    document.body.classList.add('shake');
-    setTimeout(()=>document.body.classList.remove('shake'),450);
+beerWord.onclick=()=>{
+ document.body.classList.add('shake');
+ beer.style.opacity=1;
+ beer.animate([
+  {top:'-200px',transform:'translateX(-50%) rotate(0deg)'},
+  {top:'60%',transform:'translateX(-50%) rotate(80deg)'}
+ ],{duration:900,easing:'ease-in'});
 
-    document.body.classList.add('love');
-    darkMusic.pause();
-    loveMusic.play();
-    spawnMemes();
-  },1200);
+ setTimeout(()=>{
+  puddle.style.opacity=1;
+  puddle.animate([{width:'20px'},{width:'200px'}],{duration:800,fill:'forwards'});
+ },850);
+
+ setTimeout(()=>{
+  document.body.classList.remove('shake');
+  darkMusic.pause();
+  loveMusic.play();
+  document.body.classList.add('love-bg');
+  spawnMemes();
+ },1200);
 }
 
 function spawnMemes(){
-  for(let i=0;i<22;i++){
-    const m=document.createElement('img');
-    m.src='meme.png';
-    m.className='meme';
-    m.style.top=Math.random()*92+'vh';
-    m.style.left=Math.random()*92+'vw';
-    m.onclick=()=>loveTextOverlay.classList.add('show');
-    document.body.appendChild(m);
-  }
+ for(let i=0;i<12;i++){
+  const m=document.createElement('img');
+  m.src='meme.png';
+  m.className='meme';
+  m.style.top=Math.random()*90+'%';
+  m.style.left=Math.random()*90+'%';
+  m.onclick=()=>loveText.classList.remove('hidden');
+  document.body.appendChild(m);
+ }
 }
 
-heartBtn.onclick=()=>{loveTextOverlay.classList.remove('show');videoOverlay.classList.add('show')}
+document.getElementById('heart').onclick=()=>{
+ loveText.classList.add('hidden');
+ videoWrap.classList.remove('hidden');
+}
 </script>
 
 </body>
