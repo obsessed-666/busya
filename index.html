@@ -210,7 +210,73 @@ document.getElementById('heart').onclick=()=>{
  loveText.classList.add('hidden');
  videoWrap.classList.remove('hidden');
 }
+<script>
+window.onload = () => {
+
+const cat=document.getElementById('cat');
+const story=document.getElementById('story');
+const spoiler=document.getElementById('spoiler');
+const beerWord=document.getElementById('beerWord');
+const beer=document.getElementById('beer');
+const puddle=document.getElementById('puddle');
+const darkMusic=document.getElementById('darkMusic');
+const loveMusic=document.getElementById('loveMusic');
+const loveText=document.getElementById('loveText');
+const videoWrap=document.getElementById('videoWrap');
+
+// ЖЁСТКО прячем финальные экраны при старте
+loveText.style.display = "none";
+videoWrap.style.display = "none";
+
+cat.onclick=()=>{
+ document.getElementById('intro').style.display='none';
+ story.classList.remove('hidden');
+ darkMusic.play();
+}
+
+spoiler.onclick=()=>spoiler.classList.toggle('open');
+
+beerWord.onclick=()=>{
+ document.body.classList.add('shake');
+ beer.style.opacity=1;
+
+ beer.animate([
+  {top:'-200px',transform:'translateX(-50%) rotate(0deg)'},
+  {top:'60%',transform:'translateX(-50%) rotate(80deg)'}
+ ],{duration:900,easing:'ease-in'});
+
+ setTimeout(()=>{
+  puddle.style.opacity=1;
+  puddle.animate([{width:'20px'},{width:'200px'}],{duration:800,fill:'forwards'});
+ },850);
+
+ setTimeout(()=>{
+  document.body.classList.remove('shake');
+  darkMusic.pause();
+  loveMusic.play();
+  document.body.classList.add('love-bg');
+  spawnMemes();
+ },1200);
+}
+
+function spawnMemes(){
+ for(let i=0;i<12;i++){
+  const m=document.createElement('img');
+  m.src='meme.png';
+  m.className='meme';
+  m.style.top=Math.random()*90+'%';
+  m.style.left=Math.random()*90+'%';
+  m.onclick=()=>loveText.style.display='flex';
+  document.body.appendChild(m);
+ }
+}
+
+document.getElementById('heart').onclick=()=>{
+ loveText.style.display='none';
+ videoWrap.style.display='flex';
+}
+
+};
 </script>
 
-</body>
-</html>
+
