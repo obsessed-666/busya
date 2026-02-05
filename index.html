@@ -2,481 +2,560 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
-<title>Подарок для Буси</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Подарок для Буся</title>
+<link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-/* ================== RESET & BASE ================== */
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#03050a;color:#fff;font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto;overflow:hidden;-webkit-font-smoothing:antialiased}
-img{display:block;max-width:100%;user-select:none;-webkit-user-drag:none}
+  /* ============ Reset & base ============ */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#050511;color:#fff;font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto;overflow:hidden;-webkit-font-smoothing:antialiased}
+  img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 
-/* breathing micro-zoom so scene feels cinematic */
-#wrap{position:relative;min-height:100vh;transform-origin:center center;animation:breathe 20s ease-in-out infinite}
-@keyframes breathe{0%{transform:scale(1)}50%{transform:scale(1.009)}100%{transform:scale(1)}}
+  /* page container (micro-breathing zoom for cinematic feel) */
+  #page{position:relative;min-height:100vh;transform-origin:center center;animation:breathe 22s ease-in-out infinite}
+  @keyframes breathe{0%{transform:scale(1)}50%{transform:scale(1.007)}100%{transform:scale(1)}}
 
-/* ================== BACKGROUNDS ================== */
-/* dark base */
-.bg-dark{position:fixed;inset:0;z-index:-6;background:linear-gradient(180deg,#07121b,#02030a)}
-/* layered fog (CSS layers) */
-.fog{position:fixed;inset:0;z-index:-5;pointer-events:none;mix-blend-mode:overlay;opacity:.75}
-.fog.a{background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.02), transparent 12%);animation:fogA 34s linear infinite}
-.fog.b{background:linear-gradient(180deg, rgba(8,10,14,0.06), rgba(4,4,6,0.18));animation:fogB 40s linear infinite}
-@keyframes fogA{0%{transform:translateY(0)}100%{transform:translateY(420px)}}
-@keyframes fogB{0%{transform:translateY(0)}100%{transform:translateY(300px)}}
+  /* ============ backgrounds ============ */
+  .bg-dark{position:fixed;inset:0;z-index:-6;background:radial-gradient(circle at 35% 30%, #0f1724 0%, #02030a 70%)}
+  .bg-love{position:fixed;inset:0;z-index:-6;display:none;background:linear-gradient(120deg,#2b1055,#7597de,#ff6ec7);background-size:400% 400%;animation:loveShift 20s ease infinite}
+  .bg-love::after{content:"";position:absolute;inset:0;background-image:url('hearts-bg.jpg');background-size:cover;background-position:center;opacity:.22}
+  @keyframes loveShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
-/* love/background after fall */
-.bg-love{position:fixed;inset:0;z-index:-6;pointer-events:none;display:none;background:linear-gradient(120deg,#2b1055,#7597de,#ff6ec7);background-size:400% 400%;animation:loveShift 18s ease infinite}
-.bg-love::after{content:"";position:absolute;inset:0;background-image:url('hearts-bg.jpg');background-size:cover;background-position:center;opacity:.24;pointer-events:none}
-@keyframes loveShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  /* layered fog for depth */
+  .fog{position:fixed;inset:0;z-index:-5;pointer-events:none;mix-blend-mode:overlay}
+  .fog.f1{background:radial-gradient(circle at 25% 25%, rgba(255,255,255,0.02), transparent 12%);animation:f1 36s linear infinite;opacity:.9}
+  .fog.f2{background:linear-gradient(180deg, rgba(8,10,14,0.06), rgba(4,4,6,0.18));animation:f2 46s linear infinite;opacity:.85}
+  @keyframes f1{0%{transform:translateY(0)}100%{transform:translateY(420px)}}
+  @keyframes f2{0%{transform:translateY(0)}100%{transform:translateY(300px)}}
 
-/* cinematic vignette + subtle glow */
-.cinema{pointer-events:none;position:fixed;inset:0;z-index:6}
-.cinema::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.0) 36%, rgba(0,0,0,0.65) 100%);mix-blend-mode:overlay}
-.cinema::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at center, rgba(255,255,255,0.12), transparent 60%);filter:blur(72px);opacity:.34}
+  /* cinematic vignette & glow */
+  .cinema{pointer-events:none;position:fixed;inset:0;z-index:6}
+  .cinema::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at center, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.0) 36%, rgba(0,0,0,0.66) 100%);mix-blend-mode:overlay}
+  .cinema::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at center, rgba(255,255,255,0.12), transparent 60%);filter:blur(72px);opacity:.34}
 
-/* ================== INTRO (canvas + cat) ================== */
-#intro{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#introCanvas{position:absolute;inset:0;z-index:-8;pointer-events:none}
-#cat{z-index:8;width:82vw;max-width:480px;border-radius:18px;box-shadow:0 40px 110px rgba(0,0,0,.78);cursor:pointer;transition:transform .36s cubic-bezier(.2,.9,.3,1)}
-#cat:active{transform:scale(.996)}
-.hint{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.85);font-size:13px;z-index:9;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,0.14)}
+  /* ============ intro (cat) ============ */
+  #intro{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  #introCanvas{position:absolute;inset:0;z-index:-8;pointer-events:none}
+  #cat{z-index:8;width:82vw;max-width:520px;border-radius:18px;box-shadow:0 40px 120px rgba(0,0,0,.75);cursor:pointer;transition:transform .12s linear}
+  .hint{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.85);font-size:13px;z-index:9;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,0.14)}
 
-/* small mouse parallax */
-#intro[data-parallax="on"] #cat{transition:transform .09s linear}
+  /* ============ story block ============ */
+  #storyWrap{width:100%;max-width:900px;margin:0 auto;padding:36px 20px;display:none;z-index:8}
+  #story{color:#eaeaf0;line-height:1.68;font-size:16px;padding-bottom:120px}
+  .story-par{margin-bottom:16px}
 
-/* ================== STORY ================== */
-#storyWrap{width:100%;max-width:880px;margin:0 auto;padding:36px 20px;display:none;z-index:8}
-#story{color:#eaeaf0;line-height:1.66;font-size:16px;padding-bottom:120px}
-.story-par{margin-bottom:16px}
+  /* spoiler: veil visual (pointer-events:none) but container clickable; beer-word clickable */
+  .spoiler{position:relative;margin-top:18px;padding:14px 16px;border-radius:12px;background:linear-gradient(180deg,#0f1016,#0c0c12);cursor:pointer;overflow:visible}
+  .spoiler .line{position:relative;z-index:5;color:#fff;font-size:16px}
+  .beer-word{color:#ffd166;text-decoration:underline;cursor:pointer;font-weight:700;position:relative;z-index:6;pointer-events:auto}
 
-/* ================== SPOILER - visual veil ================== */
-/* The veil is purely visual (pointer-events:none), beer-word is clickable (pointer-events:auto; z-index higher) */
-/* spoiler container still gets click events to open if user clicks anywhere but beer-word click will be prioritized */
-.spoiler{position:relative;margin-top:18px;padding:14px 16px;border-radius:12px;background:linear-gradient(180deg,#0f1016,#0b0b11);cursor:pointer;overflow:visible}
-.spoiler .line{position:relative;z-index:5;color:#fff;font-size:16px}
-.beer-word{color:#ffd166;text-decoration:underline;cursor:pointer;font-weight:700;position:relative;z-index:6;pointer-events:auto}
+  .veil{position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:12px;background:
+    linear-gradient(120deg, rgba(20,22,28,0.78), rgba(6,8,12,0.9));
+    backdrop-filter: blur(9px) saturate(.95);
+    mix-blend-mode:overlay;
+    transition: transform .55s cubic-bezier(.2,.9,.3,1), opacity .55s}
+  .veil::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 4px);opacity:.06}
+  .spoiler.open .veil{transform:translateY(-120%);opacity:0}
 
-/* visual veil (mysterious) */
-.spoiler .veil{position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:12px;background:
-  linear-gradient(120deg, rgba(20,22,28,0.75), rgba(4,6,10,0.85));
-backdrop-filter: blur(8px) saturate(.9);
-mix-blend-mode:overlay;
-transition: transform .6s cubic-bezier(.2,.9,.3,1), opacity .6s}
-.spoiler.open .veil{transform:translateY(-120%);opacity:0}
+  /* ============ beer physics area ============ */
+  #beerLayer{position:fixed;inset:0;z-index:72;pointer-events:none}
+  #beerSprite{position:absolute;left:50%;top:-600px;width:180px;transform:translateX(-50%) rotate(0deg);will-change:transform,top;filter:drop-shadow(0 50px 120px rgba(0,0,0,.6));display:none}
+  .splash { position:absolute;border-radius:50%;background:radial-gradient(circle,#ffd86a,#c98a2b);opacity:0;pointer-events:none;will-change:transform,opacity }
+  .puddle { position:absolute;left:50%;transform:translateX(-50%);bottom:12vh;width:18px;height:8px;border-radius:999px;background:radial-gradient(circle,#ffd86a,#ffb14a);filter:blur(3px);opacity:0;box-shadow:0 10px 28px rgba(0,0,0,.5);will-change:width,height,opacity }
+  .ripple { position:absolute;left:50%;transform:translateX(-50%);bottom:12vh;border-radius:50%;background:radial-gradient(circle,#ffd86a44,transparent 60%);opacity:0;will-change:width,height,opacity }
 
-/* add subtle animated overlay noise/stripes for mystery */
-.spoiler .veil::before{content:"";position:absolute;inset:0;background:
-  repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 4px);
-opacity:.06;mix-blend-mode:overlay}
-.spoiler .veil::after{content:"";position:absolute;inset:0;background:
-  radial-gradient(circle at 20% 20%, rgba(255,255,255,0.02), transparent 6%),
-  radial-gradient(circle at 80% 80%, rgba(255,255,255,0.015), transparent 6%);
-opacity:.04;mix-blend-mode:overlay}
+  /* ============ memes (after) ============ */
+  .meme{position:fixed;z-index:90;cursor:pointer;transform-origin:center;transition:opacity .45s ease, transform .45s ease;animation:floaty 7s ease-in-out infinite}
+  @keyframes floaty{0%{transform:translateY(0)}50%{transform:translateY(-22px)}100%{transform:translateY(0)}}
 
-/* ================== BEER SCENE (rich) ================== */
-#beerLayer{position:fixed;inset:0;z-index:70;pointer-events:none}
-#beerImg{position:absolute;left:50%;top:-520px;transform:translateX(-50%);width:180px;display:none;filter:drop-shadow(0 50px 120px rgba(0,0,0,.6))}
-.puddle{position:absolute;left:50%;transform:translateX(-50%);bottom:12vh;width:18px;height:8px;border-radius:999px;background:radial-gradient(circle,#ffd86a,#ffb14a);filter:blur(3px);opacity:0;box-shadow:0 8px 24px rgba(0,0,0,.45)}
-.ripple{position:absolute;left:50%;transform:translateX(-50%);bottom:12vh;border-radius:50%;background:radial-gradient(circle,#ffd86a44, transparent 60%);width:10px;height:10px;opacity:0;pointer-events:none;z-index:69}
-/* foam elements will be created dynamically */
+  /* ============ confession overlay ============ */
+  #loveOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;z-index:110;padding:28px;text-align:center;font-family:'Marck Script',cursive;font-size:22px;line-height:1.6}
+  #loveOverlay .confession{max-width:840px;padding:18px}
+  #loveOverlay .confession p{opacity:0;transform:translateY(12px);transition:transform .45s ease,opacity .45s ease;margin-bottom:10px;font-size:20px}
+  #loveOverlay .heart{display:inline-block;margin-top:14px;font-size:44px;color:#ff4671;cursor:pointer}
+  #loveOverlay .heart-label{display:block;margin-top:6px;font-size:14px;color:#ffd6e0}
 
-/* small rumble animation */
-.pageRumble{animation:rumble .5s linear}
-@keyframes rumble{0%{transform:translate(0,0)}20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-5px)}60%{transform:translate(-4px,3px)}80%{transform:translate(3px,-3px)}100%{transform:translate(0,0)}}
+  /* ============ video overlay ============ */
+  #videoOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.96);display:none;align-items:center;justify-content:center;z-index:130;padding:18px}
+  #videoOverlay video{width:94vw;max-width:900px;border-radius:12px;box-shadow:0 40px 90px rgba(0,0,0,.7)}
+  #videoOverlay .placeholder{color:#fff;opacity:.95;font-size:18px;text-align:center;max-width:80vw}
 
-/* ================== MEMES ================== */
-.meme{position:fixed;z-index:90;cursor:pointer;transform-origin:center;transition:opacity .45s ease, transform .45s ease;animation:floaty 7s ease-in-out infinite}
-@keyframes floaty{0%{transform:translateY(0)}50%{transform:translateY(-22px)}100%{transform:translateY(0)}}
+  /* ============ page shake ============ */
+  .page-shake { animation:pageShake 0.54s linear }
+  @keyframes pageShake{
+    0%{transform:translate(0,0)}20%{transform:translate(-6px,4px)}40%{transform:translate(6px,-6px)}60%{transform:translate(-4px,3px)}80%{transform:translate(4px,-3px)}100%{transform:translate(0,0)}
+  }
 
-/* floating hearts (post love) */
-.heart-particle{position:fixed;z-index:86;pointer-events:none;opacity:0.95;transform-origin:center}
-
-/* ================== LOVE / CONFESSION ================== */
-#loveOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;z-index:110;padding:28px;text-align:center;font-family:'Marck Script',cursive;font-size:22px;line-height:1.6}
-#loveOverlay .heart-btn{display:inline-block;margin-left:10px;font-size:40px;color:#ff4671;cursor:pointer;transition:transform .25s}
-#loveOverlay .heart-btn:hover{transform:scale(1.06)}
-
-/* ================== VIDEO OVERLAY ================== */
-#videoOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.96);display:none;align-items:center;justify-content:center;z-index:130;padding:18px}
-#videoOverlay video{width:94vw;max-width:900px;border-radius:12px;box-shadow:0 40px 80px rgba(0,0,0,.7)}
-#videoOverlay .placeholder{color:#fff;opacity:.95;font-size:18px;text-align:center;max-width:80vw}
-
-/* responsive tweaks */
-@media (min-width:900px){#cat{max-width:560px}.meme{width:160px}#loveOverlay{font-size:28px}}
-@media (max-width:420px){.meme{width:100px}#loveOverlay{font-size:18px}#videoOverlay video{width:96vw}.line{font-size:15px}}
+  /* responsive tweaks */
+  @media (min-width:900px){#cat{max-width:560px}.meme{width:160px}#loveOverlay .confession p{font-size:22px}}
+  @media (max-width:420px){.meme{width:100px}#loveOverlay .confession p{font-size:18px}#videoOverlay video{width:96vw}}
 </style>
 </head>
 <body>
-<div id="wrap">
-  <!-- backgrounds and overlays -->
-  <canvas id="introCanvas" aria-hidden="true" style="position:fixed;inset:0;z-index:-8;pointer-events:none"></canvas>
-  <div class="bg-dark" id="bgDark"></div>
-  <div class="fog a"></div>
-  <div class="fog b"></div>
-  <div class="bg-love" id="bgLove"></div>
-  <div class="cinema"></div>
+  <div id="page">
+    <!-- backgrounds & cinematic overlay -->
+    <canvas id="introCanvas" aria-hidden="true" style="position:fixed;inset:0;z-index:-9;pointer-events:none"></canvas>
+    <div class="bg-dark" id="bgDark"></div>
+    <div class="fog f1"></div>
+    <div class="fog f2"></div>
+    <div class="bg-love" id="bgLove"></div>
+    <div class="cinema"></div>
 
-  <!-- INTRO -->
-  <section id="intro" data-parallax="on">
-    <img id="cat" src="cat.jpg" alt="кот Буся — нажми" />
-    <div class="hint">нажми на котика 🐾</div>
-  </section>
+    <!-- INTRO -->
+    <section id="intro" aria-hidden="false" data-parallax="on">
+      <img id="cat" src="cat.jpg" alt="кот Буся — нажми" />
+      <div class="hint">нажми на котика 🐾</div>
+    </section>
 
-  <!-- STORY -->
-  <section id="storyWrap" style="display:none" aria-hidden="true">
-    <div id="story">
-      <p class="story-par">Однажды я сидел как ни в чём не бывало дома, слушал грустную музыку, смотрел в окно, думал о своём тленном будущем, как вдруг… звонок в дверь. Я опешил, ведь было 3 часа ночи, и я никого не ждал. В тот день ощущения поистине были странные.</p>
+    <!-- STORY -->
+    <section id="storyWrap" aria-hidden="true" style="display:none">
+      <div id="story">
+        <!-- **ВОТ ТВОЙ ПОЛНЫЙ РАССКАЗ — НЕ ТРОГАЛ** -->
+        <p class="story-par">Однажды я сидел как ни в чём не бывало дома, слушал грустную музыку, смотрел в окно, думал о своём тленном будущем, как вдруг… звонок в дверь. Я опешил, ведь было 3 часа ночи, и я никого не ждал. В тот день ощущения поистине были странные. На дворе стояла лёгкая дымка, а на небе отчётливо виднелась яркая полная луна, прямо как с картинки — мрачная и загадочная. Погода за окном лишь добавляла таинственности и неопределённости данному событию.</p>
 
-      <p class="story-par">На дворе стояла лёгкая дымка, а на небе отчётливо виднелась яркая полная луна, прямо как с картинки — мрачная и загадочная. Погода за окном лишь добавляла таинственности и неопределённости данному событию.</p>
+        <p class="story-par">«У соседа, наверное, что-то стряслось», — почесав репу, подумал я. Но чувство тревоги затмило мой рассудок, и я медленно, тихим шагом подошёл к входной двери. Стояла полнейшая тишина. Я пытался прислушаться к звукам по ту сторону двери, но их не было. Я стоял так где-то минуту, но по ощущениям она длилась целую вечность. В голове была лишь растерянность и смятение.</p>
 
-      <p class="story-par">«У соседа, наверное, что-то стряслось», — почесав репу, подумал я. Но чувство тревоги затмило мой рассудок, и я медленно, тихим шагом подошёл к входной двери.</p>
+        <p class="story-par">Как вдруг я услышал странный металлический скрип, будто кто-то медленно, но уверенно водил ногтем по стальному листу. Я сильно напрягся, всё тело с головы до ног пробрало мурашками, я почувствовал резкий скачок адреналина — разум явно чувствовал, что что-то тут не так. Я набрался смелости и, сцепив зубы, выдавил из себя: „Wer ist da?“ Но, как я и ожидал, ответа не поступило. Лишь этот до дрожи противный металлический звук, который проникал в каждую клеточку мозга… Ощущалось, будто это происходит прямо у меня в голове, будто кто-то с издёвкой водит по нему скрипучей железякой.</p>
 
-      <p class="story-par">Стояла полнейшая тишина. Я пытался прислушаться к звукам по ту сторону двери, но их не было. Я стоял так где-то минуту, но по ощущениям она длилась целую вечность. В голове была лишь растерянность и смятение.</p>
+        <p class="story-par">И вдруг — тишина. Снова. Я понимал, что кто бы то ни был за дверью, вероятно, тоже услышал, как я стою и молча слушаю, внимая этот психоделический ужас. Где-то спустя секунд 20 раздался громкий железный звук — звук падения прямо перед моей грёбанной дверью. Я набрался смелости и прислонил ухо к двери, чтобы попытаться идентифицировать, что же упало... и что, чёрт возьми, тут вообще происходит.</p>
 
-      <p class="story-par">Как вдруг я услышал странный металлический скрип, будто кто-то медленно, но уверенно водил ногтем по стальному листу. Я сильно напрягся, всё тело с головы до ног пробрало мурашками, я почувствовал резкий скачок адреналина — разум явно чувствовал, что что-то тут не так.</p>
+        <p class="story-par">Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
 
-      <p class="story-par">Я набрался смелости и, сцепив зубы, выдавил из себя: „Wer ist da?“ Но, как я и ожидал, ответа не поступило. Лишь этот до дрожи противный металлический звук, который проникал в каждую клеточку мозга… Ощущалось, будто это происходит прямо у меня в голове, будто кто-то с издёвкой водит по нему скрипучей железякой.</p>
-
-      <p class="story-par">И вдруг — тишина. Снова.</p>
-
-      <p class="story-par">Я понимал, что кто бы то ни был за дверью, вероятно, тоже услышал, как я стою и молча слушаю, внимая этот психоделический ужас.</p>
-
-      <p class="story-par">Где-то спустя секунд 20 раздался громкий железный звук — звук падения прямо перед моей грёбанной дверью.</p>
-
-      <p class="story-par">Я набрался смелости и прислонил ухо к двери, чтобы попытаться идентифицировать, что же упало... и что, чёрт возьми, тут вообще происходит.</p>
-
-      <p class="story-par">Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
-
-      <!-- SPOILER (veil visual) -->
-      <div id="finalSpoiler" class="spoiler" role="button" aria-pressed="false" tabindex="0">
-        <div class="veil" aria-hidden="true"></div>
-        <div class="line">— Ой, извини, у меня <span class="beer-word" id="beerWord">пиво</span> упало.</div>
+        <!-- SPOILER: veil visual - pointer-events none so beer-word is clickable -->
+        <div id="finalSpoiler" class="spoiler" role="button" aria-pressed="false" tabindex="0">
+          <div class="veil" aria-hidden="true"></div>
+          <div class="line">— Ой, извини, у меня <span class="beer-word" id="beerWord">пиво</span> упало.</div>
+        </div>
       </div>
+    </section>
 
+    <!-- BEER PHYSICS LAYER -->
+    <div id="beerLayer" aria-hidden="true">
+      <img id="beerSprite" src="beer.png" alt="банка пива (Desperados)" />
+      <div id="puddle" class="puddle"></div>
+      <div id="ripple" class="ripple"></div>
     </div>
-  </section>
 
-  <!-- BEER visuals -->
-  <div id="beerLayer">
-    <img id="beerImg" src="beer.png" alt="бaнка Desperados" />
-    <div class="puddle" id="puddle"></div>
-    <div class="ripple" id="ripple"></div>
-  </div>
+    <!-- CONFESSION / LOVE OVERLAY (TEXT НЕ ТРОГАЛИ) -->
+    <div id="loveOverlay" role="dialog" aria-hidden="true">
+      <div class="confession">
+        <!-- Вставлено точно — не изменял -->
+        <p>буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было. и не будет. ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было. полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя. очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни</p>
+        <div>
+          <span class="heart" id="heartBtn">💘</span>
+          <div class="heart-label">сердечко тык</div>
+        </div>
+      </div>
+    </div>
 
-  <!-- CONFESSION / LOVE OVERLAY -->
-  <div id="loveOverlay" role="dialog" aria-hidden="true">
-    буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было. и не будет. ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было. полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя. очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни
-    <div style="margin-top:18px"><span class="heart-btn" id="heartBtn">💘</span></div>
-  </div>
+    <!-- VIDEO OVERLAY -->
+    <div id="videoOverlay" aria-hidden="true">
+      <video id="secretVideo" src="video.mp4" controls playsinline webkit-playsinline></video>
+      <div class="placeholder" id="videoPlaceholder" style="display:none">Здесь появится видео — положи <b>video.mp4</b> в корень репозитория.</div>
+    </div>
 
-  <!-- VIDEO overlay -->
-  <div id="videoOverlay" aria-hidden="true">
-    <video id="secretVideo" src="video.mp4" controls playsinline webkit-playsinline></video>
-    <div class="placeholder" id="videoPlaceholder" style="display:none">Здесь появится видео — положи <b>video.mp4</b> в корень репозитория.</div>
-  </div>
+    <!-- audio -->
+    <audio id="darkMusic" src="dark.mp3" preload="auto"></audio>
+    <audio id="loveMusic" src="love.mp3" preload="auto"></audio>
 
-  <!-- audio -->
-  <audio id="darkMusic" src="dark.mp3" preload="auto"></audio>
-  <audio id="loveMusic" src="love.mp3" preload="auto"></audio>
-</div>
+  </div> <!-- /page -->
 
 <script>
-/* ===========================
-   MAIN INTERACTIVE SCRIPT
-   =========================== */
+/* =========================
+   Interactivity & Effects
+   =========================
+   - preserves user's exact texts (story + confession)
+   - physics-based beer fall (lightweight) + splashes/puddle
+   - page shake (vibration) on impact
+   - audio fade-in everywhere
+   - confession appears by lines
+   - veil visual doesn't block beer click
+   - optimized touches for iPhone 14 Plus
+*/
 
-window.addEventListener('load', () => {
-  // elements
-  const wrap = document.getElementById('wrap');
-  const intro = document.getElementById('intro');
-  const cat = document.getElementById('cat');
-  const storyWrap = document.getElementById('storyWrap');
-  const finalSpoiler = document.getElementById('finalSpoiler');
-  const beerWord = document.getElementById('beerWord');
-  const beerImg = document.getElementById('beerImg');
-  const beerLayer = document.getElementById('beerLayer');
-  const puddle = document.getElementById('puddle');
-  const ripple = document.getElementById('ripple');
-  const bgDark = document.getElementById('bgDark');
-  const bgLove = document.getElementById('bgLove');
-  const darkMusic = document.getElementById('darkMusic');
-  const loveMusic = document.getElementById('loveMusic');
-  const loveOverlay = document.getElementById('loveOverlay');
-  const heartBtn = document.getElementById('heartBtn');
-  const videoOverlay = document.getElementById('videoOverlay');
-  const secretVideo = document.getElementById('secretVideo');
-  const videoPlaceholder = document.getElementById('videoPlaceholder');
+/* Utility: safe query */
+const $ = (s)=>document.querySelector(s);
 
-  // initial states
-  storyWrap.style.display = 'none';
+/* Elements */
+const page = $('#page');
+const intro = $('#intro');
+const cat = $('#cat');
+const storyWrap = $('#storyWrap');
+const finalSpoiler = $('#finalSpoiler');
+const beerWord = $('#beerWord');
+const beerSprite = $('#beerSprite');
+const beerLayer = $('#beerLayer');
+const puddle = $('#puddle');
+const ripple = $('#ripple');
+const bgDark = $('#bgDark');
+const bgLove = $('#bgLove');
+const darkMusic = $('#darkMusic');
+const loveMusic = $('#loveMusic');
+const loveOverlay = $('#loveOverlay');
+const heartBtn = $('#heartBtn');
+const videoOverlay = $('#videoOverlay');
+const secretVideo = $('#secretVideo');
+const videoPlaceholder = $('#videoPlaceholder');
+
+/* Defaults & safety */
+storyWrap.style.display = 'none';
+loveOverlay.style.display = 'none';
+videoOverlay.style.display = 'none';
+beerSprite.style.display = 'none';
+puddle.style.opacity = 0;
+ripple.style.opacity = 0;
+bgDark.style.display = 'block';
+bgLove.style.display = 'none';
+
+/* Audio helpers: fade in/out */
+function fadeTo(audio, target, ms=800){
+  if(!audio) return;
+  const start = audio.volume || 0;
+  const steps = 20;
+  const dt = ms/steps;
+  let i=0;
+  const t = setInterval(()=> {
+    i++;
+    audio.volume = Math.max(0, Math.min(1, start + (target-start)*(i/steps)));
+    if(i>=steps) clearInterval(t);
+  }, dt);
+}
+function playWithFade(audio, target=0.2, ms=800){
+  try{
+    audio.volume = 0;
+    audio.currentTime = 0;
+    const p = audio.play();
+    if(p && p.catch) p.catch(()=>{}); // ignore autoplay block
+    fadeTo(audio, target, ms);
+  }catch(e){}
+}
+
+/* Canvas ambience (particles + soft strokes) */
+(function canvasAmbience(){
+  const canvas = $('#introCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W = canvas.width = window.innerWidth;
+  let H = canvas.height = window.innerHeight;
+  const parts = [];
+  const N = Math.max(20, Math.round((W*H)/120000));
+  for(let i=0;i<N;i++){
+    parts.push({ x:Math.random()*W, y:Math.random()*H, r:0.6+Math.random()*2.8, vx:(Math.random()*0.6-0.3), vy:(Math.random()*0.4-0.12), a:0.04+Math.random()*0.12 });
+  }
+  window.addEventListener('resize', ()=>{ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; });
+  let t=0;
+  function draw(){
+    t+=0.01;
+    ctx.clearRect(0,0,W,H);
+    // soft strokes
+    ctx.save(); ctx.globalAlpha = 0.03; ctx.translate(0, Math.sin(t*0.8)*40);
+    for(let i=0;i<10;i++){
+      ctx.beginPath();
+      ctx.moveTo(-200, H*(i/9));
+      ctx.bezierCurveTo(W*0.25, H*(i/9)+Math.sin(t*0.6+i)*40, W*0.75, H*(i/9)-Math.sin(t*0.4+i)*40, W+200, H*(i/9));
+      ctx.lineWidth = 20 - i; ctx.strokeStyle = '#07121a'; ctx.stroke();
+    }
+    ctx.restore();
+    // particles
+    for(const p of parts){
+      p.x += p.vx; p.y += p.vy + Math.sin((t + p.x*0.002))*0.12;
+      if(p.x < -60) p.x = W+60;
+      if(p.x > W+60) p.x = -60;
+      if(p.y < -60) p.y = H+60;
+      if(p.y > H+60) p.y = -60;
+      ctx.beginPath(); ctx.fillStyle = `rgba(255,255,255,${p.a})`; ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* Parallax for cat (touch-friendly) */
+(function catParallax(){
+  window.addEventListener('mousemove', e=>{
+    const nx = (e.clientX - window.innerWidth/2)/(window.innerWidth/6);
+    const ny = (e.clientY - window.innerHeight/2)/(window.innerHeight/8);
+    cat.style.transform = `translate(${nx}px, ${ny}px)`;
+  }, {passive:true});
+  window.addEventListener('touchmove', e=>{
+    const t = e.touches[0]; if(!t) return;
+    const nx = (t.clientX - window.innerWidth/2)/(window.innerWidth/6);
+    const ny = (t.clientY - window.innerHeight/2)/(window.innerHeight/8);
+    cat.style.transform = `translate(${nx}px, ${ny}px)`;
+  }, {passive:true});
+  window.addEventListener('mouseleave', ()=>cat.style.transform='');
+})();
+
+/* Open story on cat click/tap (play dark music with fade) */
+function openStory(){
+  try{ intro.style.display = 'none'; }catch(e){}
+  storyWrap.style.display = 'block';
+  storyWrap.setAttribute('aria-hidden','false');
+  playWithFade(darkMusic, 0.18, 900);
+}
+cat.addEventListener('click', openStory);
+cat.addEventListener('touchend', (ev)=>{ ev.preventDefault(); openStory(); }, {passive:false});
+
+/* Spoiler: clicking container opens veil (unless beer-word clicked which triggers beer) */
+finalSpoiler.addEventListener('click', function(ev){
+  // if clicked beer-word or its children, let beer handler run
+  if(ev.target && ev.target.closest && ev.target.closest('.beer-word')) return;
+  if(this.classList.contains('open')) return;
+  this.classList.add('open');
+  this.setAttribute('aria-pressed','true');
+});
+finalSpoiler.addEventListener('keydown', ev=>{ if(ev.key==='Enter' || ev.key===' ') { ev.preventDefault(); finalSpoiler.click(); } });
+
+/* ========== PHYSICS: Beer fall (lightweight) ========== */
+/* We'll simulate with simple physics: y, vy, angle, av. On collision, bounce + spawn splashes + puddle. */
+function simulateBeerFall(){
+  beerSprite.style.display = 'block';
+  beerLayer.style.pointerEvents = 'none';
+
+  // initial physics state
+  const state = {
+    x: window.innerWidth/2,
+    y: -200,
+    vx: (Math.random()*200 - 100) * 0.002, // small lateral drift
+    vy: 0,
+    angle: Math.random()*30 - 15,
+    av: (Math.random()*6 - 3),
+    mass: 1.2
+  };
+  const gravity = 2500; // px/s^2 (tuned)
+  const damping = 0.996; // air resistance
+  const groundY = window.innerHeight * 0.66;
+  let last = performance.now();
+  let landed = false;
+  let bounceCount = 0;
+
+  // show: position via top + transform
+  function update(now){
+    const dt = Math.min((now - last)/1000, 0.05);
+    last = now;
+    state.vy += gravity * dt;
+    state.x += state.vx * dt * 1000;
+    state.y += state.vy * dt;
+    state.vx *= damping;
+    state.angle += state.av * dt * 60;
+    // apply rotation slow down
+    state.av *= 0.998;
+
+    // update DOM
+    beerSprite.style.left = `${state.x}px`;
+    beerSprite.style.top = `${state.y}px`;
+    beerSprite.style.transform = `translateX(-50%) rotate(${state.angle}deg)`;
+
+    // ground collision
+    if(state.y >= groundY && !landed){
+      // land: bounce
+      landed = true;
+      bounceCount++;
+      // damp velocities
+      state.y = groundY;
+      state.vy = -state.vy * 0.28; // energy loss
+      state.vx *= 0.6;
+      state.av *= 0.4;
+      // spawn splashes & puddle
+      impactEffects();
+      // page shake and vibration
+      page.classList.add('page-shake');
+      if(navigator.vibrate) try{ navigator.vibrate([60,30,60]); }catch(e){}
+      setTimeout(()=> page.classList.remove('page-shake'), 680);
+    }
+
+    // if bounced, check further bounces (small)
+    if(landed && Math.abs(state.vy) > 80 && bounceCount < 5){
+      // continue animation until velocities low
+      landed = false; // allow next collision
+    } else if(landed && Math.abs(state.vy) <= 80){
+      // final rest: settle rotation
+      state.vy = 0; state.av = 0; state.vx = 0;
+      beerSprite.style.top = `${groundY}px`;
+      beerSprite.style.transform = `translateX(-50%) rotate(${state.angle}deg)`;
+      // finalize: fade out physics loop
+      // After short delay, trigger mood switch
+      setTimeout(()=> afterLanding(), 700);
+      return; // stop updating further physics
+    }
+
+    requestAnimationFrame(update);
+  }
+
+  // start animation loop
+  last = performance.now();
+  requestAnimationFrame(update);
+}
+
+/* Impact visual effects: splashes, puddle expansion, foam */
+function impactEffects(){
+  // create many splashes at different offsets
+  const splCount = 18;
+  const groundY = window.innerHeight * 0.66;
+  const centerX = window.innerWidth/2;
+  for(let i=0;i<splCount;i++){
+    const s = document.createElement('div');
+    s.className = 'splash';
+    const size = 8 + Math.random()*30;
+    s.style.width = size+'px';
+    s.style.height = size+'px';
+    const xOffset = (Math.random()*420 - 210);
+    s.style.left = `calc(50% + ${xOffset}px)`;
+    s.style.bottom = '18vh';
+    document.body.appendChild(s);
+    // animate
+    const tx = (Math.random()*300 - 150);
+    const ty = -100 - Math.random()*80;
+    s.animate([
+      { transform: 'translate(0,0) scale(0.4)', opacity:1 },
+      { transform: `translate(${tx}px, ${ty}px) scale(${1+Math.random()})`, opacity:0 }
+    ], { duration: 900 + Math.random()*600, easing: 'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
+    setTimeout(()=> s.remove(), 1400 + Math.random()*700);
+  }
+
+  // puddle expansion
+  puddle.style.display = 'block';
+  puddle.style.opacity = 1;
+  const maxW = Math.min(window.innerWidth * 0.72, 780);
+  puddle.animate([{ width: '18px', opacity:1 }, { width: maxW + 'px', opacity:1 }], { duration: 1200, easing: 'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
+
+  // ripple
+  ripple.style.display = 'block';
+  ripple.style.opacity = 0.8;
+  ripple.animate([{ width:'18px', height:'18px', opacity:.8 }, { width: maxW+'px', height: Math.min(140, maxW/6)+'px', opacity:.12 }], { duration:1100, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
+
+  // foam particles
+  for(let i=0;i<12;i++){
+    const foam = document.createElement('div');
+    foam.style.position = 'absolute'; foam.style.borderRadius='50%';
+    foam.style.left = `calc(50% + ${Math.random()* (maxW) - maxW/2}px)`;
+    foam.style.bottom = 'calc(12vh + 4px)';
+    const s = 3 + Math.random()*6; foam.style.width = foam.style.height = s + 'px';
+    foam.style.background = '#fff6e6'; foam.style.zIndex = 71;
+    document.body.appendChild(foam);
+    foam.animate([{ transform:'translateY(0)', opacity:1 }, { transform:'translateY(-36px)', opacity:0 }], { duration: 1000 + Math.random()*900, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
+    setTimeout(()=> foam.remove(), 1600 + Math.random()*1000);
+  }
+}
+
+/* After landing: switch mood, spawn memes (hide old content) */
+function afterLanding(){
+  // hide current content (story + beer visuals)
+  try{ storyWrap.style.display = 'none'; }catch(e){}
+  try{ document.getElementById('beerLayer').style.display = 'none'; }catch(e){}
+  bgDark.style.display = 'none';
+  bgLove.style.display = 'block';
+  // audio: fade dark out, play love music with fade
+  try{ fadeTo(darkMusic, 0, 600); setTimeout(()=> darkMusic.pause(),650); }catch(e){}
+  try{ loveMusic.currentTime = 0; loveMusic.play().catch(()=>{}); fadeTo(loveMusic, 0.22, 900);}catch(e){}
+  spawnMemes();
+}
+
+/* Spawn memes (large) */
+function spawnMemes(){
+  const count = 10;
+  for(let i=0;i<count;i++){
+    const el = document.createElement('img');
+    el.src = 'meme.png';
+    el.className = 'meme';
+    const w = 140 + Math.random()*220; el.style.width = w + 'px';
+    el.style.left = (6 + Math.random()*84) + 'vw';
+    el.style.top = (6 + Math.random()*80) + 'vh';
+    el.style.opacity = 0;
+    document.body.appendChild(el);
+    setTimeout(()=> el.style.opacity = 1, 120 + Math.random()*600);
+    el.addEventListener('click', ()=> {
+      document.querySelectorAll('.meme').forEach(m=>m.remove());
+      showConfessionOverlay();
+    });
+    el.addEventListener('touchend', (ev)=>{ ev.preventDefault(); el.click(); }, {passive:false});
+  }
+}
+
+/* Show confession overlay and animate text lines (per-line) */
+function showConfessionOverlay(){
+  loveOverlay.style.display = 'flex';
+  loveOverlay.setAttribute('aria-hidden','false');
+  // animate its paragraph into lines (split by sentences)
+  const p = loveOverlay.querySelector('.confession p');
+  const text = p.textContent.trim();
+  // Split into lines by sentence endings (preserve text)
+  const segments = text.split(/(?<=\.)\s+/); // split after punctuation + space
+  p.innerHTML = ''; // clear
+  segments.forEach((seg, idx)=>{
+    const line = document.createElement('p');
+    line.textContent = seg.trim();
+    p.appendChild(line);
+    // stagger reveal
+    setTimeout(()=> { line.style.opacity = 1; line.style.transform = 'translateY(0)'; }, 300 + idx*420);
+  });
+}
+
+/* Heart click -> show video overlay (with fallback) */
+heartBtn.addEventListener('click', ()=>{
   loveOverlay.style.display = 'none';
-  videoOverlay.style.display = 'none';
-  beerImg.style.display = 'none';
-  puddle.style.opacity = 0;
-  ripple.style.opacity = 0;
-  bgDark.style.display = 'block';
-  bgLove.style.display = 'none';
-
-  // set lower volumes
-  try{ darkMusic.volume = 0.2; loveMusic.volume = 0.2; }catch(e){}
-
-  /* -------- Canvas ambience (intro + story) -------- */
-  (function canvasInit(){
-    const canvas = document.getElementById('introCanvas');
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let W = canvas.width = window.innerWidth;
-    let H = canvas.height = window.innerHeight;
-    const particles = [];
-    const N = Math.max(22, Math.round((W*H)/100000));
-    for(let i=0;i<N;i++){
-      particles.push({ x: Math.random()*W, y: Math.random()*H, r: 0.6 + Math.random()*3, vx: (Math.random()*0.6-0.3), vy: (Math.random()*0.35-0.12), a: 0.04 + Math.random()*0.12 });
+  videoOverlay.style.display = 'flex';
+  videoOverlay.setAttribute('aria-hidden','false');
+  secretVideo.style.display = 'block';
+  secretVideo.play().catch(()=>{});
+  setTimeout(()=> {
+    if(typeof secretVideo.readyState !== 'undefined' && secretVideo.readyState < 1){
+      if(videoPlaceholder) videoPlaceholder.style.display = 'block';
+      secretVideo.style.display = 'none';
     }
-    window.addEventListener('resize', ()=>{ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
-    let t = 0;
-    function loop(){
-      t += 0.01;
-      ctx.clearRect(0,0,W,H);
-      // moving pattern strokes
-      ctx.save(); ctx.globalAlpha = 0.03; ctx.translate(0, Math.sin(t*0.8)*40);
-      for(let i=0;i<10;i++){
-        ctx.beginPath();
-        ctx.moveTo(-200, H*(i/9));
-        ctx.bezierCurveTo(W*0.25, H*(i/9)+Math.sin(t*0.6+i)*40, W*0.75, H*(i/9)-Math.sin(t*0.4+i)*40, W+200, H*(i/9));
-        ctx.lineWidth = 20 - i;
-        ctx.strokeStyle = '#05101b';
-        ctx.stroke();
-      }
-      ctx.restore();
-      // particles
-      for(let p of particles){
-        p.x += p.vx;
-        p.y += p.vy + Math.sin((t + p.x*0.002))*0.12;
-        if(p.x < -60) p.x = W+60;
-        if(p.x > W+60) p.x = -60;
-        if(p.y < -60) p.y = H+60;
-        if(p.y > H+60) p.y = -60;
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(255,255,255,${p.a})`;
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx.fill();
-      }
-      requestAnimationFrame(loop);
-    }
-    loop();
-  })();
+  }, 900);
+  secretVideo.addEventListener('loadeddata', ()=>{ if(videoPlaceholder) videoPlaceholder.style.display='none'; secretVideo.style.display='block'; secretVideo.play().catch(()=>{}); });
+  secretVideo.addEventListener('error', ()=>{ if(videoPlaceholder) videoPlaceholder.style.display='block'; secretVideo.style.display='none'; });
+});
 
-  /* subtle parallax for cat (pointer) */
-  (function parallax(){
-    window.addEventListener('mousemove', e=>{
-      const nx = (e.clientX - window.innerWidth/2)/(window.innerWidth/6);
-      const ny = (e.clientY - window.innerHeight/2)/(window.innerHeight/8);
-      cat.style.transform = `translate(${nx}px, ${ny}px)`;
-    }, {passive:true});
-    window.addEventListener('mouseleave', ()=> cat.style.transform = '');
-    window.addEventListener('touchmove', e=>{
-      const t = e.touches[0]; if(!t) return;
-      const nx = (t.clientX - window.innerWidth/2)/(window.innerWidth/6);
-      const ny = (t.clientY - window.innerHeight/2)/(window.innerHeight/8);
-      cat.style.transform = `translate(${nx}px, ${ny}px)`;
-    }, {passive:true});
-  })();
-
-  /* helper fade audio */
-  function fadeAudio(audio, to, ms=600){
-    if(!audio) return;
-    const from = audio.volume;
-    const steps = 20;
-    const dt = ms/steps;
-    let i=0;
-    const timer = setInterval(()=> {
-      i++;
-      audio.volume = Math.max(0, Math.min(1, from + (to-from)*(i/steps)));
-      if(i>=steps) clearInterval(timer);
-    }, dt);
+/* Clicking video overlay background closes */
+videoOverlay.addEventListener('click', (ev)=> {
+  if(ev.target === videoOverlay || ev.target === videoPlaceholder){
+    videoOverlay.style.display = 'none';
+    try{ secretVideo.pause(); }catch(e){}
   }
+});
 
-  /* ---------- Open story (cat click) ---------- */
-  function openStory(){
-    try{ intro.style.display = 'none'; }catch(e){}
-    storyWrap.style.display = 'block';
-    storyWrap.setAttribute('aria-hidden','false');
-    try{ darkMusic.currentTime = 0; darkMusic.play().catch(()=>{}); fadeAudio(darkMusic,0.2,500); }catch(e){}
-  }
-  cat.addEventListener('click', openStory);
-  cat.addEventListener('touchend', (ev)=>{ ev.preventDefault(); openStory(); }, {passive:false});
+/* Play darkMusic safely (volume start 0) if user interacted; otherwise will wait for user gesture later */
+darkMusic.volume = 0;
+loveMusic.volume = 0;
 
-  /* ---------- Spoiler: open on click (but if click is on beer-word, do not intercept) ---------- */
-  finalSpoiler.addEventListener('click', (ev)=>{
-    // if clicked the beer word or child thereof — let the beer handler run
-    if(ev.target && ev.target.closest && ev.target.closest('.beer-word')) return;
-    if(finalSpoiler.classList.contains('open')) return;
-    finalSpoiler.classList.add('open');
-    finalSpoiler.setAttribute('aria-pressed','true');
-  });
-  finalSpoiler.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter' || ev.key===' ') { ev.preventDefault(); finalSpoiler.click(); } });
+/* Beer word click: start physics simulation with audio fade-in for impact */
+beerWord.addEventListener('click', (ev)=>{
+  ev.stopPropagation(); // prevent opening veil
+  // ensure we don't double-run
+  if(beerSprite.style.display === 'block' && beerSprite.dataset.dropping === '1') return;
+  beerSprite.dataset.dropping = '1';
+  // prepare audio: ensure dark music fade if not already playing
+  try{ if(darkMusic.paused){ playWithFade(darkMusic, 0.12, 600); } }catch(e){}
+  // start physics simulation (position beerSprite near top center)
+  // set initial pos to center top
+  beerSprite.style.left = `${window.innerWidth/2}px`;
+  beerSprite.style.top = `-220px`;
+  beerSprite.style.transform = `translateX(-50%) rotate(${Math.random()*20-10}deg)`;
+  beerSprite.style.display = 'block';
+  // run physics
+  simulateBeerFall();
+});
 
-  /* ---------- Beer fall animation (enhanced) ---------- */
-  beerWord.addEventListener('click', (ev)=>{
-    ev.stopPropagation(); // ensure spoiler click doesn't also run
-    // reveal beer image and animate with a juicy arc
-    beerImg.style.display = 'block';
-    beerImg.style.opacity = 1;
-    const horizontal = (Math.random()*220 - 110); // px
-    const start = -520;
-    const mid = window.innerHeight * 0.46;
-    const end = window.innerHeight * 0.66;
-    const frames = [
-      { top: start + 'px', transform: 'translateX(-50%) rotate(0deg) scale(1)' },
-      { top: (mid - 30) + 'px', transform: `translateX(calc(-50% + ${horizontal/2}px)) rotate(120deg) scale(1.06)` },
-      { top: end + 'px', transform: `translateX(calc(-50% + ${horizontal}px)) rotate(220deg) scale(1.1)` }
-    ];
-    beerImg.animate(frames, { duration: 2000, easing: 'cubic-bezier(.22,.86,.3,1)', fill:'forwards' });
+/* small helper: ensure audio plays only after first user gesture if necessary */
+let firstGesture = false;
+function onFirstGesture(){
+  if(firstGesture) return;
+  firstGesture = true;
+  // try to play darkMusic muted then pause — this helps mobile to enable audio later
+  try{ darkMusic.play().catch(()=>{}); darkMusic.pause(); }catch(e){}
+  try{ loveMusic.play().catch(()=>{}); loveMusic.pause(); }catch(e){}
+}
+window.addEventListener('click', onFirstGesture, {once:true});
+window.addEventListener('touchstart', onFirstGesture, {once:true,passive:true});
 
-    // small trailing bubbles (visual)
-    for(let i=0;i<8;i++){
-      const b = document.createElement('div');
-      b.style.position='absolute'; b.style.left=`calc(50% + ${horizontal*(i/8)}px)`; b.style.top=(start + i*40)+'px';
-      const sz = 6 + Math.random()*8; b.style.width = sz+'px'; b.style.height = sz+'px'; b.style.borderRadius='50%';
-      b.style.background = 'radial-gradient(circle,#fff8ea,#ffdcb2)'; b.style.zIndex = 68; b.style.opacity = .95;
-      document.body.appendChild(b);
-      b.animate([{ transform:'translateY(0) scale(1)', opacity:1 }, { transform:`translateY(${end}px) scale(.3)`, opacity:0 }], { duration: 2000 + Math.random()*400, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
-      setTimeout(()=> b.remove(), 2400 + Math.random()*400);
-    }
+/* Accessibility: open spoiler with keyboard */
+finalSpoiler.addEventListener('keydown', (ev)=>{
+  if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); finalSpoiler.click(); }
+});
 
-    // near impact: splashes, ripple, foam, rumble
-    setTimeout(()=>{
-      // splashes
-      for(let i=0;i<18;i++){
-        const s = document.createElement('div');
-        s.className = 'splash';
-        const size = 8 + Math.random()*26;
-        s.style.width = size+'px'; s.style.height = size+'px';
-        const x = Math.random()*360 - 180;
-        s.style.left = `calc(50% + ${x}px)`;
-        s.style.bottom = '18vh';
-        document.body.appendChild(s);
-        s.animate([{ transform:'translate(0,0) scale(.4)', opacity:1 }, { transform:`translate(${(Math.random()*220-110)}px,-140px) scale(${1+Math.random()*1.2})`, opacity:0 }], { duration: 900 + Math.random()*500, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
-        setTimeout(()=> s.remove(), 1400 + Math.random()*500);
-      }
-      // puddle expand + ripple
-      puddle.style.display = 'block'; puddle.style.opacity = 1;
-      const maxW = Math.min(window.innerWidth * 0.72, 760);
-      puddle.animate([{ width:'18px', opacity:1 }, { width: maxW + 'px', opacity:1 }], { duration: 1200, easing: 'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
-
-      ripple.style.display = 'block'; ripple.style.opacity = .8;
-      ripple.animate([{ width:'18px', height:'18px', opacity:.8, transform:'translateX(-50%) scale(.9)' }, { width: maxW+'px', height: Math.min(140, maxW/6)+'px', opacity:.12, transform:'translateX(-50%) scale(1.0)' }], { duration: 1100, easing: 'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
-
-      // foam bits
-      for(let i=0;i<12;i++){
-        const foam = document.createElement('div'); foam.className = 'foam';
-        foam.style.width = foam.style.height = (3 + Math.random()*8) + 'px';
-        foam.style.left = `calc(50% + ${Math.random()*maxW - maxW/2}px)`;
-        foam.style.bottom = 'calc(12vh + 6px)'; foam.style.opacity = 1; foam.style.zIndex = 71;
-        document.body.appendChild(foam);
-        foam.animate([{ transform:'translateY(0) scale(1)', opacity:1 }, { transform:'translateY(-40px) scale(.6)', opacity:0 }], { duration: 1200 + Math.random()*900, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
-        setTimeout(()=> foam.remove(), 1800 + Math.random()*900);
-      }
-
-      // small rumble
-      wrap.classList.add('pageRumble');
-      setTimeout(()=> wrap.classList.remove('pageRumble'), 760);
-    }, 1600);
-
-    // final: switch mood -> spawn memes
-    setTimeout(()=>{
-      try{ storyWrap.style.display = 'none'; }catch(e){}
-      try{ beerLayer.style.display = 'none'; }catch(e){}
-      bgDark.style.display = 'none'; bgLove.style.display = 'block';
-      try{ fadeAudio(darkMusic,0,400); setTimeout(()=> darkMusic.pause(),420);}catch(e){}
-      try{ loveMusic.currentTime = 0; loveMusic.play().catch(()=>{}); fadeAudio(loveMusic,0.22,600);}catch(e){}
-      spawnMemes();
-    }, 2500);
-  });
-
-  /* ---------- spawn memes (big, floating) ---------- */
-  function spawnMemes(){
-    const count = 10;
-    for(let i=0;i<count;i++){
-      const m = document.createElement('img');
-      m.src = 'meme.png';
-      m.className = 'meme';
-      const w = 120 + Math.random()*220; m.style.width = w + 'px';
-      m.style.left = (6 + Math.random()*84) + 'vw';
-      m.style.top = (6 + Math.random()*80) + 'vh';
-      m.style.opacity = 0; m.style.zIndex = 95;
-      document.body.appendChild(m);
-      setTimeout(()=> m.style.opacity = 1, 120 + Math.random()*600);
-      m.addEventListener('click', ()=> {
-        document.querySelectorAll('.meme').forEach(x=> x.remove());
-        showLove();
-      });
-      m.addEventListener('touchend', (e)=>{ e.preventDefault(); m.click(); }, {passive:false});
-    }
-    // floating heart particles after a moment for atmosphere
-    setTimeout(()=> spawnHearts(16), 1200);
-  }
-
-  function spawnHearts(n){
-    for(let i=0;i<n;i++){
-      const h = document.createElement('div');
-      h.className = 'heart-particle';
-      h.textContent = '❤';
-      const left = Math.random()*85 + 7; const top = Math.random()*80 + 5;
-      h.style.left = left + 'vw'; h.style.top = top + 'vh'; h.style.fontSize = (10 + Math.random()*28) + 'px';
-      document.body.appendChild(h);
-      h.animate([{ transform:'translateY(0) rotate(0deg)', opacity:0.95 }, { transform:'translateY(-120px) rotate(28deg)', opacity:0.05 }], { duration: 6000 + Math.random()*4000, easing:'linear', fill:'forwards' });
-      setTimeout(()=> h.remove(), 7000 + Math.random()*4000);
-    }
-  }
-
-  /* ---------- confession / love overlay ---------- */
-  function showLove(){
-    loveOverlay.style.display = 'flex';
-    loveOverlay.setAttribute('aria-hidden','false');
-  }
-
-  /* ---------- heart -> video overlay (fallback) ---------- */
-  heartBtn.addEventListener('click', ()=>{
-    loveOverlay.style.display = 'none';
-    videoOverlay.style.display = 'flex';
-    videoOverlay.setAttribute('aria-hidden','false');
-    secretVideo.style.display = 'block';
-    secretVideo.play().catch(()=>{});
-    setTimeout(()=> {
-      if(typeof secretVideo.readyState !== 'undefined' && secretVideo.readyState < 1){
-        if(videoPlaceholder) videoPlaceholder.style.display = 'block';
-        secretVideo.style.display = 'none';
-      }
-    }, 900);
-    secretVideo.addEventListener('loadeddata', ()=>{ if(videoPlaceholder) videoPlaceholder.style.display='none'; secretVideo.style.display='block'; secretVideo.play().catch(()=>{}); });
-    secretVideo.addEventListener('error', ()=>{ if(videoPlaceholder) videoPlaceholder.style.display='block'; secretVideo.style.display='none'; });
-  });
-
-  /* close video overlay on background tap */
-  videoOverlay.addEventListener('click', (ev)=> {
-    if(ev.target === videoOverlay || ev.target === videoPlaceholder){
-      videoOverlay.style.display = 'none'; try{ secretVideo.pause(); }catch(e){}
-    }
-  });
-
-  /* small helper: fade audio */
-  function fadeAudio(audio, to, ms=600){
-    if(!audio) return;
-    const from = audio.volume || 0;
-    const steps = 18;
-    const dt = Math.max(10, Math.round(ms/steps));
-    let i=0;
-    const t = setInterval(()=> {
-      i++; audio.volume = Math.max(0, Math.min(1, from + (to-from)*(i/steps)));
-      if(i>=steps) clearInterval(t);
-    }, dt);
-  }
-
-}); // end load
+/* End of script */
 </script>
 </body>
 </html>
