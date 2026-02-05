@@ -29,4 +29,188 @@ z-index:5;
 background:radial-gradient(circle at center,transparent 40%,rgba(0,0,0,.65));
 }
 .cinema:after{
-backgr
+background:radial-gradient(circle at center,rgba(255,255,255,.12),transparent 60%);
+filter:blur(80px);
+opacity:.4;
+}
+
+/* ===== BACKGROUNDS ===== */
+.bg{
+position:fixed;
+inset:0;
+z-index:-2;
+animation:move 40s ease-in-out infinite alternate;
+}
+.dark{
+background:
+radial-gradient(circle at 20% 30%,#1a2238,transparent 40%),
+radial-gradient(circle at 80% 70%,#0f2027,transparent 40%),
+#0b0f1a;
+}
+.love{
+display:none;
+background:
+radial-gradient(circle at 30% 30%,#ff6a88,transparent 40%),
+radial-gradient(circle at 70% 70%,#ff99ac,transparent 40%),
+#1a0f1f;
+}
+@keyframes move{
+0%{transform:scale(1) translate(0,0)}
+100%{transform:scale(1.1) translate(-20px,-20px)}
+}
+
+/* ===== CAT SCREEN ===== */
+#catScreen{
+position:absolute;
+inset:0;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:2;
+}
+#cat{
+width:80%;
+max-width:420px;
+border-radius:20px;
+box-shadow:0 0 80px rgba(255,255,255,.2);
+cursor:pointer;
+animation:float 4s ease-in-out infinite;
+}
+@keyframes float{
+0%,100%{transform:translateY(0)}
+50%{transform:translateY(-15px)}
+}
+
+/* ===== STORY ===== */
+#story{
+display:none;
+padding:40px 24px;
+max-width:800px;
+margin:auto;
+font-size:18px;
+line-height:1.8;
+}
+
+.spoiler{
+margin-top:30px;
+font-size:26px;
+text-align:center;
+filter:blur(10px);
+transition:.6s;
+cursor:pointer;
+}
+.spoiler.open{
+filter:blur(0);
+}
+
+.beer{
+color:#ffd166;
+cursor:pointer;
+text-decoration:underline;
+}
+
+/* ===== BEER ===== */
+#beerWrap{
+position:fixed;
+bottom:20%;
+left:50%;
+transform:translateX(-50%);
+display:none;
+z-index:4;
+}
+#beer{
+width:120px;
+animation:fall 2.4s forwards ease-in;
+}
+@keyframes fall{
+0%{transform:translateY(-400px) rotate(0)}
+70%{transform:translateY(0) rotate(80deg)}
+100%{transform:translateY(0) rotate(95deg)}
+}
+
+/* splash */
+.splash{
+position:fixed;
+width:14px;
+height:14px;
+background:#ffb703;
+border-radius:50%;
+animation:splash .8s forwards;
+}
+@keyframes splash{
+to{transform:translate(var(--x),var(--y));opacity:0}
+}
+
+/* ===== MEMES ===== */
+#memeField{
+display:none;
+position:fixed;
+inset:0;
+}
+.meme{
+position:absolute;
+width:120px;
+cursor:pointer;
+animation:float 6s infinite;
+}
+
+/* ===== LOVE TEXT ===== */
+#loveText{
+display:none;
+position:absolute;
+inset:0;
+justify-content:center;
+align-items:center;
+text-align:center;
+padding:30px;
+font-family:'Marck Script',cursive;
+font-size:30px;
+}
+#heart{
+cursor:pointer;
+font-size:36px;
+}
+
+/* ===== VIDEO ===== */
+#videoWrap{
+display:none;
+position:fixed;
+inset:0;
+background:black;
+justify-content:center;
+align-items:center;
+z-index:10;
+}
+video{width:100%;height:100%;object-fit:cover}
+
+</style>
+</head>
+<body class="cinema">
+
+<div class="bg dark" id="bgDark"></div>
+<div class="bg love" id="bgLove"></div>
+
+<div id="catScreen">
+<img id="cat" src="cat.jpg">
+</div>
+
+<div id="story">
+Однажды я сидел как ни в чём не бывало дома...<br><br>
+(вставь ТУТ ПОЛНЫЙ текст рассказа до фразы)<br><br>
+
+<div class="spoiler" id="spoiler">
+— Ой, извини, у меня <span class="beer">пиво</span> упало.
+</div>
+</div>
+
+<div id="beerWrap"><img id="beer" src="beer.png"></div>
+
+<div id="memeField"></div>
+
+<div id="loveText">
+буся, котик, я познакомился с тобой лишь месяц назад...<br><br>
+<span id="heart">💘</span>
+</div>
+
+<div id="videoWrap">
+<video src="video.mp
