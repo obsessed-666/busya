@@ -1,216 +1,368 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Для Буси</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
+<title>Буся</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Marck+Script&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-html,body{
-margin:0;
-padding:0;
-height:100%;
-overflow:hidden;
-font-family:'Cormorant Garamond',serif;
-color:white;
-}
+/* reset & base */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#070712;color:#fff;font-family:'Cormorant Garamond',serif;overflow:hidden}
+img{max-width:100%;display:block;-webkit-user-select:none;user-select:none}
 
-/* ===== CINEMA ===== */
-.cinema:before,.cinema:after{
-content:"";
-position:fixed;
-inset:0;
-pointer-events:none;
-z-index:5;
-}
-.cinema:before{
-background:radial-gradient(circle at center,transparent 40%,rgba(0,0,0,.65));
-}
-.cinema:after{
-background:radial-gradient(circle at center,rgba(255,255,255,.12),transparent 60%);
-filter:blur(80px);
-opacity:.4;
-}
+/* page breathing */
+#pageWrap{position:relative;min-height:100vh;transform-origin:center center;animation:breathe 20s ease-in-out infinite}
+@keyframes breathe{0%{transform:scale(1)}50%{transform:scale(1.01)}100%{transform:scale(1)}}
 
-/* ===== BACKGROUNDS ===== */
-.bg{
-position:fixed;
-inset:0;
-z-index:-2;
-animation:move 40s ease-in-out infinite alternate;
-}
-.dark{
-background:
-radial-gradient(circle at 20% 30%,#1a2238,transparent 40%),
-radial-gradient(circle at 80% 70%,#0f2027,transparent 40%),
-#0b0f1a;
-}
-.love{
-display:none;
-background:
-radial-gradient(circle at 30% 30%,#ff6a88,transparent 40%),
-radial-gradient(circle at 70% 70%,#ff99ac,transparent 40%),
-#1a0f1f;
-}
-@keyframes move{
-0%{transform:scale(1) translate(0,0)}
-100%{transform:scale(1.1) translate(-20px,-20px)}
-}
+/* animated backgrounds */
+.dark-animated-bg{position:fixed;inset:0;z-index:-6;pointer-events:none;background:radial-gradient(circle at 35% 30%, #0f1724 0%, #05050a 60%)}
+.story-fog{position:fixed;inset:0;z-index:-5;pointer-events:none;background:linear-gradient(180deg, rgba(12,16,26,0.06), rgba(6,6,10,0.18));mix-blend-mode:overlay;opacity:.7;animation:fogFloat 28s linear infinite}
+@keyframes fogFloat{from{transform:translateY(0)}to{transform:translateY(320px)}}
+.love-animated-bg{position:fixed;inset:0;z-index:-6;pointer-events:none;display:none;overflow:hidden;background:linear-gradient(120deg,#2b1055,#7597de,#ff6ec7);background-size:400% 400%;animation:romanticShift 18s ease infinite}
+@keyframes romanticShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.love-animated-bg::before{content:"";position:absolute;inset:0;background-image:url('hearts-bg.jpg');background-size:cover;background-position:center;opacity:.28;animation:heartsFloat 46s linear infinite}
+@keyframes heartsFloat{from{transform:translateY(0)}to{transform:translateY(-500px)}}
 
-/* ===== CAT SCREEN ===== */
-#catScreen{
-position:absolute;
-inset:0;
-display:flex;
-justify-content:center;
-align-items:center;
-z-index:2;
-}
-#cat{
-width:80%;
-max-width:420px;
-border-radius:20px;
-box-shadow:0 0 80px rgba(255,255,255,.2);
-cursor:pointer;
-animation:float 4s ease-in-out infinite;
-}
-@keyframes float{
-0%,100%{transform:translateY(0)}
-50%{transform:translateY(-15px)}
-}
+/* cinematic overlay */
+.cinema-overlay{pointer-events:none;position:fixed;inset:0;z-index:6}
+.cinema-overlay::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at center, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.0) 38%, rgba(0,0,0,0.6) 100%);mix-blend-mode:overlay}
+.cinema-overlay::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at center, rgba(255,255,255,0.12), transparent 60%);filter:blur(80px);opacity:.32}
 
-/* ===== STORY ===== */
-#story{
-display:none;
-padding:40px 24px;
-max-width:800px;
-margin:auto;
-font-size:18px;
-line-height:1.8;
-}
+/* intro canvas & cat */
+#intro{position:relative;width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#introCanvas{position:absolute;inset:0;z-index:-7;pointer-events:none}
+#cat{z-index:8;width:82vw;max-width:420px;border-radius:18px;box-shadow:0 40px 90px rgba(0,0,0,0.7);transform-origin:center;transition:transform .36s cubic-bezier(.2,.9,.3,1);cursor:pointer}
+#cat:active{transform:scale(.996)}
+.hint{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.78);font-size:14px;z-index:9;backdrop-filter: blur(3px);padding:6px 10px;border-radius:999px}
 
-.spoiler{
-margin-top:30px;
-font-size:26px;
-text-align:center;
-filter:blur(10px);
-transition:.6s;
-cursor:pointer;
-}
-.spoiler.open{
-filter:blur(0);
-}
+/* story */
+#storyWrap{width:100%;max-width:820px;margin:0 auto;padding:28px 20px;display:none;z-index:8}
+#story{color:#e8e8ee;line-height:1.68;font-size:16px;padding-bottom:110px}
+.story-par{margin-bottom:16px}
 
-.beer{
-color:#ffd166;
-cursor:pointer;
-text-decoration:underline;
-}
+/* spoiler (blur cover, no label) */
+.spoiler{position:relative;margin-top:16px;padding:14px 16px;border-radius:12px;background:linear-gradient(180deg,#0f1016,#0c0c12);cursor:pointer;overflow:hidden}
+.spoiler-cover{position:absolute;inset:0;background:rgba(10,12,18,0.86);backdrop-filter:blur(6px);z-index:4;transition:transform .55s ease,opacity .55s ease}
+.spoiler-cover::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:50%;background:linear-gradient(90deg,#fff,#ddd);opacity:.16;box-shadow:0 -12px 0 rgba(255,255,255,0.04),0 12px 0 rgba(255,255,255,0.04);animation:hintPulse 1.8s infinite}
+@keyframes hintPulse{0%{opacity:.08;transform:translate(-50%,-50%) scale(.9)}50%{opacity:.2;transform:translate(-50%,-52%) scale(1.04)}100%{opacity:.08;transform:translate(-50%,-50%) scale(.9)}
+.spoiler.open .spoiler-cover{transform:translateY(-110%);opacity:0;pointer-events:none}
+.spoiler .line{position:relative;z-index:2;color:#fff;font-size:16px}
+.beer-word{color:#ffd166;text-decoration:underline;cursor:pointer;font-weight:700}
 
-/* ===== BEER ===== */
-#beerWrap{
-position:fixed;
-bottom:20%;
-left:50%;
-transform:translateX(-50%);
-display:none;
-z-index:4;
-}
-#beer{
-width:120px;
-animation:fall 2.4s forwards ease-in;
-}
-@keyframes fall{
-0%{transform:translateY(-400px) rotate(0)}
-70%{transform:translateY(0) rotate(80deg)}
-100%{transform:translateY(0) rotate(95deg)}
-}
+/* beer scene */
+#beerScene{position:fixed;inset:0;z-index:50;pointer-events:none}
+#beer{position:absolute;left:50%;top:-380px;transform:translateX(-50%) rotate(0deg);width:160px;display:none;filter:drop-shadow(0 30px 80px rgba(0,0,0,.6))}
+.splash{position:absolute;border-radius:50%;background:radial-gradient(circle,#ffd86a,#c98a2b);opacity:0;pointer-events:none}
+#puddle{position:absolute;left:50%;transform:translateX(-50%);bottom:12vh;width:18px;height:8px;border-radius:999px;background:radial-gradient(circle,#ffd86a,#ffb14a);filter:blur(3px);opacity:0}
 
-/* splash */
-.splash{
-position:fixed;
-width:14px;
-height:14px;
-background:#ffb703;
-border-radius:50%;
-animation:splash .8s forwards;
-}
-@keyframes splash{
-to{transform:translate(var(--x),var(--y));opacity:0}
-}
+/* page shake */
+.page-shake{animation:shakeAnim .45s linear}
+@keyframes shakeAnim{0%{transform:translate(0,0)}20%{transform:translate(-6px,4px)}40%{transform:translate(6px,-6px)}60%{transform:translate(-4px,3px)}80%{transform:translate(4px,-3px)}100%{transform:translate(0,0)}}
 
-/* ===== MEMES ===== */
-#memeField{
-display:none;
-position:fixed;
-inset:0;
-}
-.meme{
-position:absolute;
-width:120px;
-cursor:pointer;
-animation:float 6s infinite;
-}
+/* memes */
+.meme{position:fixed;z-index:80;cursor:pointer;transform-origin:center;animation:floaty 6s ease-in-out infinite,spinSlow 18s linear infinite;transition:opacity .45s ease, transform .45s ease}
+@keyframes floaty{0%{transform:translateY(0)}50%{transform:translateY(-22px)}100%{transform:translateY(0)}}
+@keyframes spinSlow{0%{rotate:0deg}100%{rotate:360deg}}
 
-/* ===== LOVE TEXT ===== */
-#loveText{
-display:none;
-position:absolute;
-inset:0;
-justify-content:center;
-align-items:center;
-text-align:center;
-padding:30px;
-font-family:'Marck Script',cursive;
-font-size:30px;
-}
-#heart{
-cursor:pointer;
-font-size:36px;
-}
+/* love overlay */
+#loveOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;z-index:100;padding:28px;text-align:center;font-family:'Marck Script',cursive;font-size:22px;line-height:1.6}
+#loveOverlay .heart{display:inline-block;margin-left:8px;font-size:38px;color:#ff4671;cursor:pointer;transition:transform .25s ease}
+#loveOverlay .heart:hover{transform:scale(1.06)}
+#loveOverlay .heart:active{transform:scale(.95)}
 
-/* ===== VIDEO ===== */
-#videoWrap{
-display:none;
-position:fixed;
-inset:0;
-background:black;
-justify-content:center;
-align-items:center;
-z-index:10;
-}
-video{width:100%;height:100%;object-fit:cover}
+/* video overlay */
+#videoOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.96);display:none;align-items:center;justify-content:center;z-index:110;padding:18px}
+#videoOverlay video{width:94vw;max-width:820px;height:auto;border-radius:12px;box-shadow:0 40px 90px rgba(0,0,0,.7)}
+#videoOverlay .placeholder{color:#fff;opacity:.95;font-size:18px;text-align:center;max-width:80vw}
 
+/* responsive */
+@media (min-width:900px){#cat{max-width:520px}.meme{width:140px}#loveOverlay{font-size:26px}}
+@media (max-width:420px){.meme{width:92px}#loveOverlay{font-size:18px}#videoOverlay video{width:96vw}.spoiler .line{font-size:15px}}
 </style>
 </head>
-<body class="cinema">
+<body>
+  <div id="pageWrap">
+    <!-- backgrounds & overlay -->
+    <canvas id="introCanvas" aria-hidden="true" style="position:fixed;inset:0;z-index:-7;pointer-events:none"></canvas>
+    <div id="bgDark" class="dark-animated-bg" aria-hidden="true"></div>
+    <div class="story-fog" aria-hidden="true"></div>
+    <div id="bgLove" class="love-animated-bg" aria-hidden="true"></div>
+    <div class="cinema-overlay" aria-hidden="true"></div>
 
-<div class="bg dark" id="bgDark"></div>
-<div class="bg love" id="bgLove"></div>
+    <!-- intro with cat -->
+    <section id="intro" aria-hidden="false">
+      <img id="cat" src="cat.jpg" alt="кот Буся — нажми" />
+      <div class="hint">нажми на котика 🐾</div>
+    </section>
 
-<div id="catScreen">
-<img id="cat" src="cat.jpg">
-</div>
+    <!-- story -->
+    <section id="storyWrap" aria-hidden="true" style="display:none">
+      <div id="story">
+        <p class="story-par">Однажды я сидел как ни в чём не бывало дома, слушал грустную музыку, смотрел в окно, думал о своём тленном будущем, как вдруг… звонок в дверь. Я опешил, ведь было 3 часа ночи, и я никого не ждал. В тот день ощущения поистине были странные.</p>
 
-<div id="story">
-Однажды я сидел как ни в чём не бывало дома...<br><br>
-(вставь ТУТ ПОЛНЫЙ текст рассказа до фразы)<br><br>
+        <p class="story-par">На дворе стояла лёгкая дымка, а на небе отчётливо виднелась яркая полная луна, прямо как с картинки — мрачная и загадочная. Погода за окном лишь добавляла таинственности и неопределённости данному событию.</p>
 
-<div class="spoiler" id="spoiler">
-— Ой, извини, у меня <span class="beer">пиво</span> упало.
-</div>
-</div>
+        <p class="story-par">«У соседа, наверное, что-то стряслось», — почесав репу, подумал я. Но чувство тревоги затмило мой рассудок, и я медленно, тихим шагом подошёл к входной двери.</p>
 
-<div id="beerWrap"><img id="beer" src="beer.png"></div>
+        <p class="story-par">Стояла полнейшая тишина. Я пытался прислушаться к звукам по ту сторону двери, но их не было. Я стоял так где-то минуту, но по ощущениям она длилась целую вечность. В голове была лишь растерянность и смятение.</p>
 
-<div id="memeField"></div>
+        <p class="story-par">Как вдруг я услышал странный металлический скрип, будто кто-то медленно, но уверенно водил ногтем по стальному листу. Я сильно напрягся, всё тело с головы до ног пробрало мурашками, я почувствовал резкий скачок адреналина — разум явно чувствовал, что что-то тут не так.</p>
 
-<div id="loveText">
-буся, котик, я познакомился с тобой лишь месяц назад...<br><br>
-<span id="heart">💘</span>
-</div>
+        <p class="story-par">Я набрался смелости и, сцепив зубы, выдавил из себя: „Wer ist da?“ Но, как я и ожидал, ответа не поступило. Лишь этот до дрожи противный металлический звук, который проникал в каждую клеточку мозга… Ощущалось, будто это происходит прямо у меня в голове, будто кто-то с издёвкой водит по нему скрипучей железякой.</p>
 
-<div id="videoWrap">
-<video src="video.mp
+        <p class="story-par">И вдруг — тишина. Снова.</p>
+
+        <p class="story-par">Я понимал, что кто бы то ни был за дверью, вероятно, тоже услышал, как я стою и молча слушаю, внимая этот психоделический ужас.</p>
+
+        <p class="story-par">Где-то спустя секунд 20 раздался громкий железный звук — звук падения прямо перед моей грёбанной дверью.</p>
+
+        <p class="story-par">Я набрался смелости и прислонил ухо к двери, чтобы попытаться идентифицировать, что же упало... и что, чёрт возьми, тут вообще происходит.</p>
+
+        <!-- spoiler -->
+        <div id="finalSpoiler" class="spoiler" role="button" aria-pressed="false" tabindex="0">
+          <div class="spoiler-cover" aria-hidden="true"></div>
+          <div class="line">— Ой, извини, у меня <span class="beer-word" id="beerWord">пиво</span> упало.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- beer visuals -->
+    <div id="beerScene" aria-hidden="true">
+      <img id="beer" src="beer.png" alt="банка" />
+      <div id="puddle"></div>
+    </div>
+
+    <!-- love overlay (confession) -->
+    <div id="loveOverlay" role="dialog" aria-hidden="true">
+      буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было. и не будет. ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было. полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя. очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни
+      <div style="margin-top:18px"><span class="heart" id="heartBtn">💘</span></div>
+    </div>
+
+    <!-- video overlay -->
+    <div id="videoOverlay" aria-hidden="true">
+      <video id="secretVideo" src="video.mp4" controls playsinline webkit-playsinline></video>
+      <div class="placeholder" id="videoPlaceholder" style="display:none">Здесь появится видео — положи файл <b>video.mp4</b> в корень репозитория.</div>
+    </div>
+
+    <!-- audio -->
+    <audio id="darkMusic" src="dark.mp3" preload="auto"></audio>
+    <audio id="loveMusic" src="love.mp3" preload="auto"></audio>
+
+  </div> <!-- /pageWrap -->
+
+<script>
+window.addEventListener('load', () => {
+  const pageWrap = document.getElementById('pageWrap');
+  const canvas = document.getElementById('introCanvas');
+  const bgDark = document.getElementById('bgDark');
+  const bgLove = document.getElementById('bgLove');
+  const intro = document.getElementById('intro');
+  const cat = document.getElementById('cat');
+  const storyWrap = document.getElementById('storyWrap');
+  const finalSpoiler = document.getElementById('finalSpoiler');
+  const beerWord = document.getElementById('beerWord');
+  const beer = document.getElementById('beer');
+  const puddle = document.getElementById('puddle');
+  const darkMusic = document.getElementById('darkMusic');
+  const loveMusic = document.getElementById('loveMusic');
+  const loveOverlay = document.getElementById('loveOverlay');
+  const heartBtn = document.getElementById('heartBtn');
+  const videoOverlay = document.getElementById('videoOverlay');
+  const secretVideo = document.getElementById('secretVideo');
+  const videoPlaceholder = document.getElementById('videoPlaceholder');
+
+  // defaults
+  storyWrap.style.display = 'none';
+  loveOverlay.style.display = 'none';
+  videoOverlay.style.display = 'none';
+  beer.style.display = 'none';
+  puddle.style.opacity = 0;
+  bgDark.style.display = 'block';
+  bgLove.style.display = 'none';
+
+  // lower volumes
+  try { darkMusic.volume = 0.22; loveMusic.volume = 0.22; } catch(e){}
+
+  /* canvas particles for intro */
+  (function setupCanvas(){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W = canvas.width = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+    const particles = [];
+    const COUNT = Math.round((W*H)/90000) + 18;
+    for(let i=0;i<COUNT;i++){
+      particles.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        r: 0.6 + Math.random()*2.2,
+        vx: (Math.random()*0.6-0.3),
+        vy: (Math.random()*0.5-0.15),
+        alpha: 0.06 + Math.random()*0.12
+      });
+    }
+    function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize);
+    let t = 0;
+    function render(){
+      t += 0.01;
+      ctx.clearRect(0,0,W,H);
+      const g = ctx.createRadialGradient(W*0.5, H*0.4, 0, W*0.5, H*0.4, Math.max(W,H));
+      g.addColorStop(0, 'rgba(35,40,55,0.08)');
+      g.addColorStop(1, 'rgba(2,2,6,0.8)');
+      ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+      ctx.save();
+      ctx.globalAlpha = 0.03;
+      ctx.translate(0, Math.sin(t*0.9)*40);
+      for(let i=0;i<10;i++){
+        ctx.beginPath();
+        ctx.moveTo(-200, H*(i/9));
+        ctx.bezierCurveTo(W*0.25, H*(i/9)+Math.sin(t*0.6+i)*40, W*0.75, H*(i/9)-Math.sin(t*0.4+i)*40, W+200, H*(i/9));
+        ctx.lineWidth = 20 - i;
+        ctx.strokeStyle = '#0b1220';
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      for(let p of particles){
+        p.x += p.vx;
+        p.y += p.vy + Math.sin((t + p.x*0.002))*0.15;
+        if(p.x < -50) p.x = W+50;
+        if(p.x > W+50) p.x = -50;
+        if(p.y < -50) p.y = H+50;
+        if(p.y > H+50) p.y = -50;
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(render);
+    }
+    render();
+  })();
+
+  // helper splash DOM
+  function createSplash(xPct){
+    const s = document.createElement('div');
+    s.className = 'splash';
+    const size = 8 + Math.random()*24;
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = xPct + '%';
+    s.style.bottom = '18vh';
+    s.style.transform = 'translateX(-50%)';
+    document.getElementById('beerScene').appendChild(s);
+    s.animate([
+      { transform: `translate(-50%,0) scale(0.4)`, opacity:1 },
+      { transform: `translate(${(Math.random()*180-90)}px,-120px) scale(${1+Math.random()*1.0})`, opacity:0 }
+    ], { duration: 900 + Math.random()*400, easing: 'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
+    setTimeout(()=>{ try{ s.remove(); }catch(e){} }, 1500);
+  }
+
+  // open story on cat click
+  function openStory(){
+    try{ intro.style.display = 'none'; }catch(e){}
+    storyWrap.style.display = 'block';
+    storyWrap.setAttribute('aria-hidden', 'false');
+    try{ darkMusic.currentTime = 0; darkMusic.play().catch(()=>{}); }catch(e){}
+  }
+  cat.addEventListener('click', openStory);
+  cat.addEventListener('touchend', (ev)=>{ ev.preventDefault(); openStory(); }, {passive:false});
+
+  // spoiler open single-use
+  finalSpoiler.addEventListener('click', function(){
+    if(this.classList.contains('open')) return;
+    this.classList.add('open');
+    this.setAttribute('aria-pressed','true');
+  });
+
+  // beer fall (slower cinematic)
+  beerWord.addEventListener('click', () => {
+    beer.style.display = 'block'; beer.style.opacity = 1;
+    const hOffset = (Math.random()*160 - 80);
+    const startTop = -380;
+    const midTop = window.innerHeight * 0.48;
+    const endTop = window.innerHeight * 0.66;
+    const kf = [
+      { top: startTop + 'px', transform: 'translateX(-50%) rotate(0deg) scale(1)' },
+      { top: (midTop - 10) + 'px', transform: `translateX(calc(-50% + ${hOffset/2}px)) rotate(100deg) scale(1.06)` },
+      { top: endTop + 'px', transform: `translateX(calc(-50% + ${hOffset}px)) rotate(170deg) scale(1.08)` }
+    ];
+    beer.animate(kf, { duration: 1800, easing: 'cubic-bezier(.22,.86,.3,1)', fill:'forwards' });
+
+    setTimeout(()=> {
+      for(let i=0;i<14;i++) createSplash(50 + (Math.random()*42 - 21));
+      puddle.style.opacity = 1; puddle.style.display = 'block';
+      const maxW = Math.min(window.innerWidth * 0.7, 640);
+      puddle.animate([{ width: '18px', opacity:1 }, { width: maxW + 'px', opacity:1 }], { duration: 1100, easing: 'cubic-bezier(.2,.8,.2,1)', fill:'forwards' });
+      pageWrap.classList.add('page-shake');
+      setTimeout(()=> pageWrap.classList.remove('page-shake'), 620);
+    }, 1400);
+
+    setTimeout(()=> {
+      try{ storyWrap.style.display = 'none'; }catch(e){}
+      try{ document.getElementById('beerScene').style.display = 'none'; }catch(e){}
+      bgDark.style.display = 'none';
+      bgLove.style.display = 'block';
+      try{ darkMusic.pause(); }catch(e){}
+      try{ loveMusic.currentTime = 0; loveMusic.play().catch(()=>{}); }catch(e){}
+      spawnMemesAndHide();
+    }, 2100);
+  });
+
+  // spawn memes & hide everything
+  function spawnMemesAndHide(){
+    const count = 10;
+    for(let i=0;i<count;i++){
+      const img = document.createElement('img');
+      img.src = 'meme.png';
+      img.className = 'meme';
+      const size = 120 + Math.random()*160; img.style.width = size + 'px';
+      img.style.left = (6 + Math.random()*88) + 'vw';
+      img.style.top = (6 + Math.random()*80) + 'vh';
+      img.style.opacity = 0; img.style.transform = 'translateY(0) rotate(' + (Math.random()*40-20) + 'deg)';
+      img.style.transition = 'opacity .6s ease ' + (Math.random()*0.9) + 's, transform .6s ease';
+      document.body.appendChild(img);
+      setTimeout(()=>{ img.style.opacity = 1; }, 120 + Math.random()*650);
+      img.addEventListener('click', ()=> {
+        document.querySelectorAll('.meme').forEach(m => m.remove());
+        showLoveOverlay();
+      });
+      img.addEventListener('touchend', (e)=>{ e.preventDefault(); img.click(); }, {passive:false});
+    }
+  }
+
+  // show confession
+  function showLoveOverlay(){
+    loveOverlay.style.display = 'flex';
+    loveOverlay.setAttribute('aria-hidden','false');
+  }
+
+  // heart -> video overlay
+  heartBtn.addEventListener('click', ()=>{
+    loveOverlay.style.display = 'none';
+    videoOverlay.style.display = 'flex';
+    videoOverlay.setAttribute('aria-hidden','false');
+    secretVideo.style.display = 'block';
+    secretVideo.play().catch(()=>{});
+    setTimeout(()=> {
+      if(typeof secretVideo.readyState !== 'undefined' && secretVideo.readyState < 1){
+        if(videoPlaceholder) videoPlaceholder.style.display = 'block';
+        secretVideo.style.display = 'none';
+      }
+    }, 900);
+    secretVideo.addEventListener('loadeddata', ()=>{ if(videoPlaceholder) videoPlaceholder.style.display = 'none'; secretVideo.style.display = 'block'; secretVideo.play().catch(()=>{}); });
+    secretVideo.addEventListener('error', ()=>{ if(videoPlaceholder) videoPlaceholder.style.display = 'block'; secretVideo.style.display = 'none'; });
+  });
+
+  // keyboard accessibility for spoiler
+  finalSpoiler.addEventListener('keydown', (ev)=>{ if(ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); finalSpoiler.click(); } });
+
+}); // end load
+</script>
+</body>
+</html>
