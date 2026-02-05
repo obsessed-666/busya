@@ -1,91 +1,32 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
-<title>Буся</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Для Буси</title>
 
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Marck+Script&display=swap" rel="stylesheet">
 
 <style>
-/* ---------- reset & base ---------- */
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#070712;color:#fff;font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-img{max-width:100%;display:block}
+html,body{
+margin:0;
+padding:0;
+height:100%;
+overflow:hidden;
+font-family:'Cormorant Garamond',serif;
+color:white;
+}
 
-/* page container with subtle breathing zoom */
-#pageWrap{position:relative;min-height:100vh;transform-origin:center center;animation:breathe 20s ease-in-out infinite}
-@keyframes breathe{0%{transform:scale(1)}50%{transform:scale(1.01)}100%{transform:scale(1)}}
-
-/* sections */
-section{min-height:100vh;width:100vw;display:flex;align-items:center;justify-content:center;padding:20px}
-
-/* ---------- animated backgrounds ---------- */
-/* dark animated base (canvas will overlay) */
-.dark-animated-bg{position:fixed;inset:0;z-index:-6;pointer-events:none;background:radial-gradient(circle at 35% 30%, #0f1724 0%, #05050a 60%);}
-
-/* moving fog layer (for story) */
-.story-fog{position:fixed;inset:0;z-index:-5;pointer-events:none;background:linear-gradient(180deg, rgba(12,16,26,0.06), rgba(6,6,10,0.18));mix-blend-mode:overlay;opacity:.7;animation:fogFloat 28s linear infinite}
-@keyframes fogFloat{from{transform:translateY(0)}to{transform:translateY(320px)}}
-
-/* love animated background (shown after fall) */
-.love-animated-bg{position:fixed;inset:0;z-index:-6;pointer-events:none;display:none;overflow:hidden;background:linear-gradient(120deg,#2b1055,#7597de,#ff6ec7);background-size:400% 400%;animation:romanticShift 18s ease infinite}
-@keyframes romanticShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-.love-animated-bg::before{content:"";position:absolute;inset:0;background-image:url('hearts-bg.jpg');background-size:cover;background-position:center;opacity:.28;animation:heartsFloat 46s linear infinite}
-@keyframes heartsFloat{from{transform:translateY(0)}to{transform:translateY(-500px)}}
-
-/* cinematic overlay: vignette + glow */
-.cinema-overlay{pointer-events:none;position:fixed;inset:0;z-index:6}
-.cinema-overlay::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at center, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.0) 38%, rgba(0,0,0,0.6) 100%);mix-blend-mode:overlay}
-.cinema-overlay::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at center, rgba(255,255,255,0.12), transparent 60%);filter:blur(80px);opacity:.32}
-
-/* ---------- intro (canvas + cat) ---------- */
-#intro{position:relative;width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#introCanvas{position:absolute;inset:0;z-index:-4}
-#cat{z-index:8;width:82vw;max-width:420px;border-radius:18px;box-shadow:0 40px 90px rgba(0,0,0,0.7);transform-origin:center;transition:transform .36s cubic-bezier(.2,.9,.3,1);cursor:pointer}
-#cat:active{transform:scale(.996)}
-.hint{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.78);font-size:14px;z-index:9;backdrop-filter: blur(3px);padding:6px 10px;border-radius:999px}
-
-/* ---------- story ---------- */
-#storyWrap{width:100%;max-width:820px;margin:0 auto;padding:28px 20px;display:none;z-index:8}
-#story{color:#e8e8ee;line-height:1.68;font-size:15px;padding-bottom:110px}
-.story-par{margin-bottom:18px}
-
-/* spoiler: blurred cover (NO text label) */
-.spoiler{position:relative;margin-top:16px;padding:14px 16px;border-radius:12px;background:linear-gradient(180deg,#0f1016,#0c0c12);cursor:pointer;overflow:hidden}
-.spoiler-cover{position:absolute;inset:0;background:rgba(10,12,18,0.80);backdrop-filter:blur(6px);z-index:4;transition:transform .55s ease,opacity .55s ease}
-.spoiler-cover::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:50%;background:linear-gradient(90deg,#fff,#ddd);opacity:.16;box-shadow:0 -12px 0 rgba(255,255,255,0.04),0 12px 0 rgba(255,255,255,0.04);animation:hintPulse 1.8s infinite}
-@keyframes hintPulse{0%{opacity:.08;transform:translate(-50%,-50%) scale(.9)}50%{opacity:.2;transform:translate(-50%,-52%) scale(1.04)}100%{opacity:.08;transform:translate(-50%,-50%) scale(.9)}
-.spoiler.open .spoiler-cover{transform:translateY(-110%);opacity:0;pointer-events:none}
-.spoiler .line{position:relative;z-index:2;color:#fff;font-size:16px}
-.beer-word{color:#ffd166;text-decoration:underline;cursor:pointer;font-weight:700}
-
-/* ---------- beer scene ---------- */
-#beerScene{position:fixed;inset:0;z-index:50;pointer-events:none}
-#beer{position:absolute;left:50%;top:-380px;transform:translateX(-50%) rotate(0deg);width:170px;display:none;filter:drop-shadow(0 30px 80px rgba(0,0,0,.6))}
-.splash{position:absolute;border-radius:50%;background:radial-gradient(circle,#ffd86a,#c98a2b);opacity:0;pointer-events:none}
-#puddle{position:absolute;left:50%;transform:translateX(-50%);bottom:12vh;width:18px;height:8px;border-radius:999px;background:radial-gradient(circle,#ffd86a,#ffb14a);filter:blur(3px);opacity:0}
-
-/* shake */
-.page-shake{animation:shakeAnim .45s linear}
-@keyframes shakeAnim{0%{transform:translate(0,0)}20%{transform:translate(-6px,4px)}40%{transform:translate(6px,-6px)}60%{transform:translate(-4px,3px)}80%{transform:translate(4px,-3px)}100%{transform:translate(0,0)}}
-
-/* ---------- memes ---------- */
-.meme{position:fixed;z-index:80;cursor:pointer;transform-origin:center;animation:floaty 6s ease-in-out infinite,spinSlow 18s linear infinite;transition:opacity .45s ease, transform .45s ease}
-@keyframes floaty{0%{transform:translateY(0)}50%{transform:translateY(-18px)}100%{transform:translateY(0)}}
-@keyframes spinSlow{0%{rotate:0deg}100%{rotate:360deg}}
-
-/* ---------- love overlay & heart ---------- */
-#loveOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;z-index:100;padding:28px;text-align:center;font-family:'Marck Script',cursive;font-size:22px;line-height:1.6}
-#loveOverlay .heart{display:inline-block;margin-left:10px;font-size:40px;color:#ff4671;cursor:pointer;transition:transform .25s ease}
-#loveOverlay .heart:hover{transform:scale(1.06)}
-#loveOverlay .heart:active{transform:scale(.96)}
-
-/* ---------- video overlay ---------- */
-#videoOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.96);display:none;align-items:center;justify-content:center;z-index:120;padding:18px}
-#videoOverlay video{width:94vw;max-width:900px;height:auto;border-radius:12px;box-shadow:0 40px 90px rgba(0,0,0,.7)}
-#videoOverlay .placeholder{color:#fff;opacity:.95;font-size:18px;text-align:center;max-width:80vw}
-
-/* responsive tweaks */
-@media (min-width:900px){#cat{max-width:520px}.meme{width:140px
+/* ===== CINEMA ===== */
+.cinema:before,.cinema:after{
+content:"";
+position:fixed;
+inset:0;
+pointer-events:none;
+z-index:5;
+}
+.cinema:before{
+background:radial-gradient(circle at center,transparent 40%,rgba(0,0,0,.65));
+}
+.cinema:after{
+backgr
