@@ -18,15 +18,18 @@ img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 @keyframes breathe{0%{transform:scale(1)}50%{transform:scale(1.007)}100%{transform:scale(1)}}
 
 /* ===== Background layers ===== */
-.bg-mystic, .bg-romantic { position:fixed; inset:0; z-index:-10; pointer-events:none; }
-.bg-mystic { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.03), transparent 10%), linear-gradient(180deg,#071021,#02030a); }
-.bg-mystic::after{ content:""; position:absolute; inset:-20%; background-image: url(''); opacity:0.06 }
-.bg-mystic .fog{ position:absolute; inset:0; background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.035), transparent 10%); animation:mistMove 36s linear infinite; mix-blend-mode:overlay; opacity:0.95; }
-@keyframes mistMove{0%{transform:translateY(0)}50%{transform:translateY(-40px)}100%{transform:translateY(0)}}
+.bg-mystic, .bg-romantic { position:fixed; inset:0; z-index:-10; pointer-events:none; overflow:hidden; }
+.bg-mystic { background: linear-gradient(180deg,#071021,#02030a); }
+.bg-mystic .fog1, .bg-mystic .fog2 { position:absolute; inset:-20%; opacity:.9; mix-blend-mode:overlay; filter: blur(8px); }
+.bg-mystic .fog1 { background: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.04), transparent 18%); animation:mist1 38s linear infinite; }
+.bg-mystic .fog2 { background: radial-gradient(circle at 70% 75%, rgba(18,22,30,0.045), transparent 18%); animation:mist2 46s linear infinite; opacity:.8; }
+@keyframes mist1{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-60px) rotate(0.2deg)}100%{transform:translateY(0) rotate(0)}}
+@keyframes mist2{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-110px) rotate(-0.2deg)}100%{transform:translateY(0) rotate(0)}}
 
-/* romantic background (after beer) */
-.bg-romantic { display:none; background:linear-gradient(120deg,#2b1055,#7597de,#ff6ec7); background-size:400% 400%; animation:romShift 18s ease infinite; }
-.bg-romantic::after{ content:""; position:absolute; inset:0; background-image: url('hearts-bg.jpg'); background-size:cover; background-position:center; opacity:0.28; mix-blend-mode:screen; transform-origin:center; animation:heartsFloat 20s linear infinite; }
+/* romantic background (after beer) with stronger hearts + particles */
+.bg-romantic { display:none; background:linear-gradient(120deg,#2b1055,#7597de,#ff6ec7); background-size:400% 400%; animation:romShift 20s ease-in-out infinite; }
+.bg-romantic .hearts { position:absolute; inset:0; background-image: url('hearts-bg.jpg'); background-size:cover; background-position:center; opacity:0.34; mix-blend-mode:screen; animation:heartsFloat 26s linear infinite; }
+.bg-romantic .particles { position:absolute; inset:0; pointer-events:none; }
 @keyframes romShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes heartsFloat{0%{transform:translateY(0)}100%{transform:translateY(420px)}}
 
@@ -39,29 +42,43 @@ img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 .scene { position:relative; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px; text-align:center; }
 .hidden { display:none !important; }
 
-/* ===== Intro Cat ===== */
-#cat { width:82vw; max-width:520px; border-radius:18px; box-shadow: 0 40px 120px rgba(0,0,0,.75); cursor:pointer; transition: transform .12s linear; }
-#cat:active{ transform: scale(.995) }
+/* ===== Cat frame & image ===== */
+.cat-frame {
+  display:inline-block;
+  padding:14px;
+  border-radius:26px;
+  background:linear-gradient(180deg,#2b1f16,#1b1209);
+  box-shadow: 0 40px 140px rgba(0,0,0,0.7);
+  border:6px solid rgba(255,255,255,0.03);
+  position:relative;
+  overflow:hidden;
+  transform-origin:center;
+}
+.cat-frame::after{
+  content:"";
+  position:absolute; inset:2px; border-radius:20px;
+  background: radial-gradient(circle at 30% 30%, rgba(0,0,0,0.12), transparent 35%), linear-gradient(180deg, rgba(0,0,0,0.06), rgba(255,255,255,0.01));
+  pointer-events:none;
+}
+#cat { width:78vw; max-width:480px; border-radius:14px; display:block; }
 
-/* hint */
-.hint { position:absolute; bottom:28px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.18); padding:8px 12px; border-radius:999px; font-size:13px; color:rgba(255,255,255,.9) }
+/* hint under cat (moved outside frame) */
+.hint { margin-top:18px; font-size:14px; color:rgba(255,255,255,0.9); background: rgba(0,0,0,0.14); padding:8px 12px; border-radius:999px; display:inline-block; }
+
+/* subtle float on cat frame */
+@keyframes catFloat{ 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+.cat-frame { animation: catFloat 6s ease-in-out infinite; }
 
 /* ===== Story block ===== */
-.story-wrap { width:100%; max-width:920px; margin:0 auto; padding:28px; color:#eaeaf0; line-height:1.72; font-size:16px; background: linear-gradient(180deg, rgba(10,12,18,0.2), rgba(5,6,8,0.1)); border-radius:14px; box-shadow: 0 30px 60px rgba(0,0,0,.6); backdrop-filter: blur(6px); }
+.story-wrap { width:100%; max-width:920px; margin:0 auto; padding:28px; color:#eaeaf0; line-height:1.78; font-size:16px; background: linear-gradient(180deg, rgba(10,12,18,0.12), rgba(5,6,8,0.08)); border-radius:14px; box-shadow: 0 30px 60px rgba(0,0,0,.6); backdrop-filter: blur(6px); }
 .story-par { margin-bottom:16px; text-align:left; }
 
-/* ===== SPOILER (fully hidden until reveal) =====
-   Mechanic:
-   - .spoiler .line has color: transparent (invisible)
-   - .beer-word stays clickable even when text invisible
-   - veil overlay (visual) sits above but pointer-events: none so clicks pass through
-   - on reveal we add class "open" to show text
-*/
+/* ===== SPOILER (fully hidden until reveal) ===== */
 .spoiler { position:relative; display:inline-block; padding:12px 14px; border-radius:12px; background: linear-gradient(180deg,#0f1016,#0b0b11); cursor:pointer; overflow:visible; }
-.spoiler .veil { position:absolute; inset:0; z-index:3; pointer-events:none; border-radius:12px; background: linear-gradient(120deg, rgba(20,22,28,0.86), rgba(6,8,10,0.94)); backdrop-filter: blur(10px) saturate(.92); mix-blend-mode:overlay; transition: transform .55s cubic-bezier(.2,.9,.3,1), opacity .55s; }
+.spoiler .veil { position:absolute; inset:0; z-index:4; pointer-events:none; border-radius:12px; background: linear-gradient(120deg, rgba(20,22,28,0.88), rgba(6,8,10,0.96)); backdrop-filter: blur(12px) saturate(.92); mix-blend-mode:overlay; transition: transform .55s cubic-bezier(.2,.9,.3,1), opacity .55s; }
 .spoiler .veil::before{ content:""; position:absolute; inset:0; background: repeating-linear-gradient(90deg, rgba(255,255,255,0.01) 0 1px, transparent 1px 4px); opacity:.06 }
 .spoiler .line { position:relative; z-index:2; color: transparent; font-size:16px; transition: color .55s ease, text-shadow .55s ease; }
-.spoiler .beer-word { position:relative; z-index:4; color: transparent; cursor:pointer; font-weight:700; pointer-events:auto; text-decoration:none; }
+.spoiler .beer-word { position:relative; z-index:6; color: transparent; cursor:pointer; font-weight:700; pointer-events:auto; text-decoration:none; }
 .spoiler.open .veil { transform: translateY(-120%); opacity:0; }
 .spoiler.open .line { color:#fff; text-shadow:0 6px 18px rgba(0,0,0,0.6); }
 .spoiler.open .beer-word { color:#ffd166; text-decoration:underline; }
@@ -69,21 +86,25 @@ img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 /* ===== Beer physics visuals ===== */
 #beerLayer { position:fixed; inset:0; z-index:60; pointer-events:none; }
 #beerSprite { position:absolute; left:50%; top:-420px; width:180px; transform-origin:50% 50%; transform:translateX(-50%) rotate(0deg); filter: drop-shadow(0 40px 100px rgba(0,0,0,.6)); display:none; will-change: transform, top; }
+.splash { position:absolute; border-radius:50%; background:radial-gradient(circle,#ffd86a,#c98a2b); opacity:0; pointer-events:none; will-change:transform,opacity; z-index:62; }
 .puddle { position:absolute; left:50%; transform:translateX(-50%); bottom:12vh; width:18px; height:8px; border-radius:999px; background: radial-gradient(circle,#ffd86a,#ffb14a); filter:blur(3px); opacity:0; box-shadow:0 10px 28px rgba(0,0,0,.5); will-change: width, height, opacity; }
 .ripple { position:absolute; left:50%; transform:translateX(-50%); bottom:12vh; border-radius:50%; background: radial-gradient(circle,#ffd86a44, transparent 60%); opacity:0; will-change:width,height,opacity; }
 
 /* ===== Memes as framed paintings ===== */
-.meme-frame { position:fixed; z-index:80; width:140px; padding:8px; border-radius:10px; background: linear-gradient(180deg,#2b2012,#1b130a); box-shadow: 0 40px 100px rgba(0,0,0,0.7); border:8px solid rgba(20,14,7,0.9); overflow:hidden; cursor:pointer; transform-origin:center; animation:drift 7s ease-in-out infinite; }
-.meme-frame img { display:block; width:100%; height:auto; object-fit:cover; filter:contrast(1.05) saturate(1.05); }
+.meme-frame { position:fixed; z-index:80; width:140px; padding:8px; border-radius:10px; background: linear-gradient(180deg,#2b2012,#1b130a); box-shadow: 0 40px 100px rgba(0,0,0,0.7); border:8px solid rgba(20,14,7,0.9); overflow:hidden; cursor:pointer; transform-origin:center; }
+.meme-frame img { display:block; width:100%; height:100%; object-fit:cover; filter:contrast(1.05) saturate(1.05); }
 .meme-frame::after { content:""; position:absolute; inset:0; box-shadow: inset 0 0 80px rgba(0,0,0,0.6); pointer-events:none; }
-@keyframes drift { 0%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-22px) rotate(1deg)} 100%{transform:translateY(0) rotate(-1deg)} }
+
+/* We'll animate positions and rotations via JS for randomness */
 
 /* ===== Confession (romantic) ===== */
 #loveOverlay { position:fixed; inset:0; background:rgba(0,0,0,0.9); display:none; align-items:center; justify-content:center; z-index:120; padding:28px; text-align:center; }
-.confession-box { max-width:880px; padding:26px; border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow: 0 40px 120px rgba(0,0,0,0.6); font-family: 'Marck Script', cursive; color:#ffdfe8; font-size:20px; line-height:1.6; }
-.confession-box p { opacity:0; transform:translateY(12px); transition:transform .45s ease, opacity .45s ease; margin-bottom:10px; }
-.heart-btn { display:inline-block; margin-top:14px; font-size:44px; cursor:pointer; color:#ff4671; }
-.heart-label { font-size:14px; color:#ffd6e0; margin-top:8px; }
+.confession-box { max-width:900px; padding:26px; border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow: 0 40px 120px rgba(0,0,0,0.6); font-family: 'Marck Script', cursive; color:#ffdfe8; font-size:22px; line-height:1.7; }
+.confession-box p { opacity:0; transform:translateY(12px); transition:transform .45s ease, opacity .45s ease; margin-bottom:12px; }
+/* breathing letters effect - applied to container to avoid per-letter JS */
+.breathing { display:inline-block; animation:breathText 3.6s ease-in-out infinite; transform-origin:center; letter-spacing:0.2px; }
+@keyframes breathText { 0%{ transform:translateY(0) scale(1); letter-spacing:0.2px } 50%{ transform:translateY(-4px) scale(1.01); letter-spacing:0.9px } 100%{ transform:translateY(0) scale(1); letter-spacing:0.2px } }
+.heart-btn { display:inline-block; margin-top:14px; font-size:48px; cursor:pointer; color:#ff4671; }
 
 /* ===== Video overlay ===== */
 #videoOverlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:150; background:rgba(0,0,0,0.96); }
@@ -93,27 +114,39 @@ img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 .page-shake { animation:pageShake .7s linear; }
 @keyframes pageShake { 0%{transform:translate(0)} 20%{transform:translate(-6px,4px)} 40%{transform:translate(6px,-6px)} 60%{transform:translate(-4px,3px)} 80%{transform:translate(4px,-3px)} 100%{transform:translate(0)} }
 
-/* responsive tweaks */
-@media (max-width:420px){ .meme-frame{ width:110px; } .confession-box{ font-size:18px } #cat{ width:90vw } }
+/* responsive tweaks for iPhone 14 Plus readability */
+@media (max-width:430px){
+  .confession-box{ font-size:20px; padding:20px }
+  .meme-frame{ width:120px }
+  #cat{ max-width:86vw }
+}
 </style>
 </head>
 <body>
 <div id="page">
   <!-- backgrounds -->
-  <div class="bg-mystic" id="bgMystic"><div class="fog"></div></div>
-  <div class="bg-romantic" id="bgRomantic"></div>
+  <div class="bg-mystic" id="bgMystic">
+    <div class="fog1"></div>
+    <div class="fog2"></div>
+  </div>
+  <div class="bg-romantic" id="bgRomantic">
+    <div class="hearts"></div>
+    <div class="particles"></div>
+  </div>
   <div class="cinema"></div>
 
   <!-- Intro (cat) -->
-  <section class="scene" id="sceneIntro">
-    <div style="position:relative;">
-      <img id="cat" src="cat.jpg" alt="кот Буся — нажми" />
-      <div class="hint">нажми на котика 🐾</div>
+  <section class="scene" id="sceneIntro" aria-label="Кот Буся">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+      <div class="cat-frame" role="button" aria-label="Нажми на котика">
+        <img id="cat" src="cat.jpg" alt="кот Буся — нажми" />
+      </div>
+      <div class="hint" id="catHint">нажми на котика 🐾</div>
     </div>
   </section>
 
   <!-- Story -->
-  <section class="scene hidden" id="sceneStory">
+  <section class="scene hidden" id="sceneStory" aria-label="Рассказ">
     <div class="story-wrap" role="article" aria-labelledby="storyTitle">
       <!-- FULL STORY: exact text as provided -->
       <div id="story">
@@ -144,19 +177,19 @@ img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
   </section>
 
   <!-- Memes scene (spawned dynamically) -->
-  <section class="scene hidden" id="sceneMemes"></section>
+  <section class="scene hidden" id="sceneMemes" aria-label="Мемы"></section>
 
   <!-- Confession / Love -->
-  <section class="scene hidden" id="sceneLove">
+  <section class="scene hidden" id="sceneLove" aria-label="Признание">
     <div id="loveOverlay" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
       <div class="confession-box" role="dialog" aria-label="Признание">
         <!-- FULL CONFESSION TEXT: exact text supplied by you -->
-        <div id="confessionText">
+        <div id="confessionText" class="breathing">
           буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было. и не будет. ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было. полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя. очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни
         </div>
-        <div style="margin-top:16px;">
-          <div class="heart-btn" id="heartBtn">💘</div>
-          <div class="heart-label">сердечко тык</div>
+        <div style="margin-top:18px;">
+          <div class="heart-btn" id="heartBtn" tabindex="0" role="button" aria-label="Нажать сердечко">💘</div>
+          <div class="heart-label" style="margin-top:8px">сердечко тык</div>
         </div>
       </div>
     </div>
@@ -178,8 +211,8 @@ img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 const $ = (sel)=>document.querySelector(sel)
 const $$ = (sel)=>Array.from(document.querySelectorAll(sel))
 
-function show(el){ if(!el) return; el.classList.remove('hidden'); el.style.display = ''; }
-function hide(el){ if(!el) return; el.classList.add('hidden'); el.style.display = 'none'; }
+function show(el){ if(!el) return; el.classList.remove('hidden'); el.style.display = '' }
+function hide(el){ if(!el) return; el.classList.add('hidden'); el.style.display = 'none' }
 function safePlay(audio){ try{ const p = audio.play(); if(p && p.catch) p.catch(()=>{}); }catch(e){} }
 
 /* Audio fade utility */
@@ -234,7 +267,7 @@ $('#bgRomantic').style.display = 'none'
 darkMusic.volume = 0
 loveMusic.volume = 0
 
-/* Ensure user gesture unlocked audio */
+/* Unlock audio on first gesture */
 let firstGesture = false
 function unlockAudio(){
   if(firstGesture) return
@@ -245,7 +278,7 @@ function unlockAudio(){
 window.addEventListener('click', unlockAudio, {once:true})
 window.addEventListener('touchstart', unlockAudio, {once:true,passive:true})
 
-/* ===== Intro -> Story ===== */
+/* Intro -> Story */
 $('#cat').addEventListener('click', ()=>{
   hide(sceneIntro)
   show(sceneStory)
@@ -254,29 +287,19 @@ $('#cat').addEventListener('click', ()=>{
 })
 $('#cat').addEventListener('touchend', (e)=>{ e.preventDefault(); $('#cat').click(); }, {passive:false})
 
-/* ===== Spoiler behavior =====
-   - initially line text color is transparent (so invisible)
-   - clicking spoiler container opens it (reveals text)
-   - clicking beerWord triggers beer drop and reveals
-*/
+/* Spoiler reveal / beer-word interaction */
 finalSpoiler.addEventListener('click', function(ev){
-  // if clicked the beer word, leave to beer handler
   if(ev.target && ev.target.closest && ev.target.closest('.beer-word')) return;
   if(this.classList.contains('open')) return;
   this.classList.add('open');
   this.setAttribute('aria-pressed','true');
 });
+finalSpoiler.addEventListener('keydown', ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); finalSpoiler.click(); } })
 
-/* Allow keyboard reveal */
-finalSpoiler.addEventListener('keydown', ev=>{
-  if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); finalSpoiler.click(); }
-})
-
-/* ===== Beer drop: physics-ish with visual polish ===== */
+/* Beer drop (physics-like) */
 let beerRunning = false
 beerWord.addEventListener('click', (ev)=>{
   ev.stopPropagation()
-  // reveal spoiler visually
   if(!finalSpoiler.classList.contains('open')){
     finalSpoiler.classList.add('open')
     finalSpoiler.setAttribute('aria-pressed','true')
@@ -284,26 +307,22 @@ beerWord.addEventListener('click', (ev)=>{
   if(beerRunning) return
   beerRunning = true
 
-  // ensure dark music playing (soft)
-  if(darkMusic.paused) playWithFade(darkMusic, 0.18, 800)
+  if(darkMusic.paused) playWithFade(darkMusic, 0.18, 700)
 
-  // init sprite
   beerSprite.style.display = 'block'
   beerSprite.style.left = (window.innerWidth/2) + 'px'
   beerSprite.style.top = '-420px'
-  beerSprite.style.transform = 'translateX(-50%) rotate(0deg)'
   beerLayer.style.pointerEvents = 'none'
 
-  // Physics state
   const state = { x: window.innerWidth/2, y:-420, vx:(Math.random()*240-120)*0.002, vy:0, angle: Math.random()*40-20, av: Math.random()*8-4 }
-  const gravity = 3000 // px/s^2 (tuned)
+  const gravity = 3000
   const damping = 0.996
   const groundY = Math.round(window.innerHeight * 0.66)
   let last = performance.now()
   let landed = false
   let bounces = 0
 
-  // small trail particles (visual)
+  // trail bubbles (visual)
   for(let i=0;i<6;i++){
     const bubble = document.createElement('div')
     bubble.style.position='absolute'
@@ -313,14 +332,13 @@ beerWord.addEventListener('click', (ev)=>{
     bubble.style.height = bubble.style.width
     bubble.style.borderRadius='50%'
     bubble.style.background = 'radial-gradient(circle,#fff8ea,#ffdcb2)'
-    bubble.style.opacity = '0.9'
+    bubble.style.opacity = '0.95'
     bubble.style.zIndex = 62
     document.body.appendChild(bubble)
     bubble.animate([{ transform:'translateY(0) scale(1)', opacity:1 }, { transform:`translateY(${groundY}px) scale(.2)`, opacity:0 }], { duration: 2000 + Math.random()*400, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards' })
     setTimeout(()=> bubble.remove(), 2400 + Math.random()*400)
   }
 
-  // animation loop
   function step(now){
     const dt = Math.min((now - last)/1000, 0.05)
     last = now
@@ -343,7 +361,6 @@ beerWord.addEventListener('click', (ev)=>{
       state.vx *= 0.55
       state.av *= 0.36
       impactEffects()
-      // page shake and vibration
       document.body.classList.add('page-shake')
       if(navigator.vibrate) try{ navigator.vibrate([80,40,80]) }catch(e){}
       setTimeout(()=> document.body.classList.remove('page-shake'), 900)
@@ -352,7 +369,6 @@ beerWord.addEventListener('click', (ev)=>{
     if(landed && Math.abs(state.vy) > 90 && bounces < 6){
       landed = false
     } else if(landed && Math.abs(state.vy) <= 90){
-      // settle final
       state.vy = 0; state.av = 0; state.vx = 0
       beerSprite.style.top = groundY + 'px'
       beerSprite.style.transform = `translateX(-50%) rotate(${state.angle}deg)`
@@ -365,7 +381,7 @@ beerWord.addEventListener('click', (ev)=>{
   requestAnimationFrame(step)
 })
 
-/* Impact visual effects (splashes, puddle, foam) */
+/* Impact effects */
 function impactEffects(){
   const splCount = 20
   const maxW = Math.min(window.innerWidth * 0.72, 820)
@@ -397,7 +413,7 @@ function impactEffects(){
   ripple.style.opacity = 0.9
   ripple.animate([{ width:'18px', height:'18px', opacity:.9 }, { width: maxWidth+'px', height: Math.min(150, maxWidth/6)+'px', opacity:.12 }], { duration:1100, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards' })
 
-  // foam particles
+  // foam bits
   for(let i=0;i<12;i++){
     const foam = document.createElement('div')
     foam.style.position='absolute'
@@ -414,19 +430,17 @@ function impactEffects(){
   }
 }
 
-/* After landing: switch to romantic mood, spawn memes */
+/* After landing: switch mood & spawn memes */
 function afterLanding(){
   hide(sceneStory)
-  // set romantic background visible
   $('#bgRomantic').style.display = 'block'
   $('#bgMystic').style.display = 'none'
-  // audio: fade dark out, start love track
-  try{ fadeAudio(darkMusic, 0, 600); setTimeout(()=> darkMusic.pause(), 700) }catch(e){}
+  try{ fadeAudio(darkMusic, 0, 600); setTimeout(()=> darkMusic.pause(),700) }catch(e){}
   try{ playWithFade(loveMusic, 0.24, 1000) }catch(e){}
   spawnMemes()
 }
 
-/* Spawn memes as framed paintings (not full-screen) */
+/* Spawn memes (framed), faster drift + random rotation */
 function spawnMemes(){
   show(sceneMemes)
   sceneMemes.innerHTML = ''
@@ -436,19 +450,36 @@ function spawnMemes(){
     frame.className = 'meme-frame'
     const w = 120 + Math.random()*160
     frame.style.width = w + 'px'
-    frame.style.left = (6 + Math.random()*80) + 'vw'
+    frame.style.left = (6 + Math.random()*84) + 'vw'
     frame.style.top = (6 + Math.random()*80) + 'vh'
     frame.style.position = 'fixed'
     frame.style.zIndex = 85
-    // inner image
+
+    // random rotation initial
+    const rot = (Math.random()*40 - 20)
+    frame.style.transform = `rotate(${rot}deg)`
+
+    // random drift/rotation animation settings
+    const dur = 4 + Math.random()*4 // faster, 4-8s
+    frame.style.transition = `transform ${dur}s ease-in-out`
+    // gentle periodic transform using setInterval for randomness
+    setInterval(()=>{
+      const dx = (Math.random()*36 - 18)
+      const dy = (Math.random()*36 - 18)
+      const r = rot + (Math.random()*40 - 20)
+      frame.style.transform = `translate(${dx}px, ${dy}px) rotate(${r}deg)`
+    }, 2000 + Math.random()*2200)
+
+    // image
     const img = document.createElement('img')
     img.src = 'meme.png'
     img.alt = 'meme'
     frame.appendChild(img)
-    // click -> remove all memes -> show confession
+
     frame.addEventListener('click', ()=>{
-      // gentle dissolve
-      $$('.meme-frame').forEach(m=> m.animate([{opacity:1},{opacity:0}],{duration:500,fill:'forwards'}))
+      $$('.meme-frame').forEach(m=>{
+        m.style.transition = 'opacity .5s ease'; m.style.opacity = 0
+      })
       setTimeout(()=> { $$('.meme-frame').forEach(m=>m.remove()); showConfession() }, 520)
     })
     frame.addEventListener('touchend', (e)=>{ e.preventDefault(); frame.click(); }, {passive:false})
@@ -456,14 +487,12 @@ function spawnMemes(){
   }
 }
 
-/* Show confession overlay with animated line-by-line reveal */
+/* Show confession with animated lines and breathing effect */
 function showConfession(){
   show(sceneLove)
-  // ensure bg romantic visible
   $('#bgRomantic').style.display = 'block'
-  // animate confession text into lines
+  // split confession text into segments for good line rhythm
   const text = confessionText.textContent.trim()
-  // split into sentences/commas for nicer lines
   const segments = text.split(/(?<=[\.!?])\s+|,\s+/)
   confessionText.innerHTML = ''
   segments.forEach((seg, idx)=>{
@@ -476,13 +505,13 @@ function showConfession(){
   })
 }
 
-/* Heart -> show video overlay (or placeholder) */
+/* Heart -> show video overlay */
 heartBtn.addEventListener('click', ()=>{
   $('#videoOverlay').style.display = 'flex'
   try{ secretVideo.play().catch(()=>{}) }catch(e){}
 })
 
-/* Clicking outside video closes it */
+/* Close video overlay */
 videoOverlay.addEventListener('click', (e)=>{
   if(e.target === videoOverlay){
     videoOverlay.style.display = 'none'
@@ -490,24 +519,22 @@ videoOverlay.addEventListener('click', (e)=>{
   }
 })
 
-/* Make spoiler beer-word clickable even when text hidden:
-   finalSpoiler's veil has pointer-events:none so clicks pass.
-   beerWord has its own event attached (above).
-*/
-/* ensure beerWord touch */
+/* touch support for beerWord */
 beerWord.addEventListener('touchend', (e)=>{ e.preventDefault(); beerWord.click(); }, {passive:false})
 
-/* Keyboard accessibility for heart */
-document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape'){
-    // close overlays
-    $('#videoOverlay').style.display = 'none'
-    $('#videoOverlay video')?.pause?.()
-  }
-})
+/* accessibility: keyboard for heart and spoiler */
+heartBtn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') heartBtn.click() })
+finalSpoiler.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') finalSpoiler.click() })
 
-/* Ensure layout stays responsive on orientation change */
-window.addEventListener('orientationchange', ()=>{ /* nothing special, but can adjust if needed */ })
+/* ensure responsive: reposition memes on resize */
+window.addEventListener('resize', ()=> {
+  $$('.meme-frame').forEach(m=>{
+    // keep current transform but ensure still visible: clamp left/top if overflow
+    const rect = m.getBoundingClientRect()
+    if(rect.left < 6) m.style.left = '6vw'
+    if(rect.top < 6) m.style.top = '6vh'
+  })
+})
 
 </script>
 </body>
