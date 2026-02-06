@@ -27,9 +27,10 @@ img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 @keyframes mist2{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-110px) rotate(-0.2deg)}100%{transform:translateY(0) rotate(0)}}
 
 /* romantic background (after beer) with stronger hearts + particles */
-.bg-romantic { display:none; background:linear-gradient(120deg,#2b1055,#7597de,#ff6ec7); background-size:400% 400%; animation:romShift 20s ease-in-out infinite; }
-.bg-romantic .hearts { position:absolute; inset:0; background-image: url('hearts-bg.jpg'); background-size:cover; background-position:center; opacity:0.34; mix-blend-mode:screen; animation:heartsFloat 26s linear infinite; }
-.bg-romantic .particles { position:absolute; inset:0; pointer-events:none; }
+.bg-romantic { display:none; background:linear-gradient(120deg,#2b1055,#7597de,#ff6ec7); background-size:400% 400%; animation:romShift 20s ease-in-out infinite; transition:filter .6s ease, opacity .6s ease; }
+.bg-romantic .hearts { position:absolute; inset:0; background-image: url('hearts-bg.jpg'); background-size:cover; background-position:center; opacity:0.28; mix-blend-mode:screen; animation:heartsFloat 26s linear infinite; transition:opacity .6s ease, transform .6s ease; }
+.bg-romantic .particles { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.bg-romantic.active .hearts { opacity:0.56; transform:scale(1.02); filter: saturate(1.05) brightness(1.06); }
 @keyframes romShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 @keyframes heartsFloat{0%{transform:translateY(0)}100%{transform:translateY(420px)}}
 
@@ -63,7 +64,7 @@ img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 #cat { width:78vw; max-width:480px; border-radius:14px; display:block; }
 
 /* hint under cat (moved outside frame) */
-.hint { margin-top:18px; font-size:14px; color:rgba(255,255,255,0.9); background: rgba(0,0,0,0.14); padding:8px 12px; border-radius:999px; display:inline-block; }
+.hint { margin-top:12px; font-size:14px; color:rgba(255,255,255,0.95); background: rgba(0,0,0,0.14); padding:8px 12px; border-radius:999px; display:inline-block; }
 
 /* subtle float on cat frame */
 @keyframes catFloat{ 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
@@ -95,16 +96,28 @@ img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 .meme-frame img { display:block; width:100%; height:100%; object-fit:cover; filter:contrast(1.05) saturate(1.05); }
 .meme-frame::after { content:""; position:absolute; inset:0; box-shadow: inset 0 0 80px rgba(0,0,0,0.6); pointer-events:none; }
 
-/* We'll animate positions and rotations via JS for randomness */
-
 /* ===== Confession (romantic) ===== */
-#loveOverlay { position:fixed; inset:0; background:rgba(0,0,0,0.9); display:none; align-items:center; justify-content:center; z-index:120; padding:28px; text-align:center; }
-.confession-box { max-width:900px; padding:26px; border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow: 0 40px 120px rgba(0,0,0,0.6); font-family: 'Marck Script', cursive; color:#ffdfe8; font-size:22px; line-height:1.7; }
+#sceneLove { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+#loveOverlay { display:flex; align-items:center; justify-content:center; width:100%; height:100%; }
+.confession-box { max-width:900px; padding:26px; border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow: 0 40px 120px rgba(0,0,0,0.6); font-family: 'Marck Script', cursive; color:#ffdfe8; font-size:22px; line-height:1.7; text-align:center; }
 .confession-box p { opacity:0; transform:translateY(12px); transition:transform .45s ease, opacity .45s ease; margin-bottom:12px; }
-/* breathing letters effect - applied to container to avoid per-letter JS */
-.breathing { display:inline-block; animation:breathText 3.6s ease-in-out infinite; transform-origin:center; letter-spacing:0.2px; }
-@keyframes breathText { 0%{ transform:translateY(0) scale(1); letter-spacing:0.2px } 50%{ transform:translateY(-4px) scale(1.01); letter-spacing:0.9px } 100%{ transform:translateY(0) scale(1); letter-spacing:0.2px } }
-.heart-btn { display:inline-block; margin-top:14px; font-size:48px; cursor:pointer; color:#ff4671; }
+
+/* Per-letter inline span */
+.confessionChar { display:inline-block; transform-origin: center bottom; }
+
+/* small bounce animation (gentle) */
+@keyframes charBounce {
+  0% { transform: translateY(0) }
+  40% { transform: translateY(-6px) }
+  70% { transform: translateY(-3px) }
+  100% { transform: translateY(0) }
+}
+
+/* breathing container to give subtle scaling */
+.breathing { display:inline-block; animation:breathText 4s ease-in-out infinite; transform-origin:center; }
+@keyframes breathText { 0%{ transform:translateY(0) scale(1)} 50%{ transform:translateY(-3px) scale(1.005)} 100%{ transform:translateY(0) scale(1)} }
+
+.heart-btn { display:inline-block; margin-top:14px; font-size:48px; cursor:pointer; color:#ff4671; border-radius:8px; padding:6px; }
 
 /* ===== Video overlay ===== */
 #videoOverlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:150; background:rgba(0,0,0,0.96); }
@@ -131,7 +144,7 @@ img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
   </div>
   <div class="bg-romantic" id="bgRomantic">
     <div class="hearts"></div>
-    <div class="particles"></div>
+    <div class="particles" id="romParticles"></div>
   </div>
   <div class="cinema"></div>
 
@@ -255,6 +268,7 @@ const heartBtn = $('#heartBtn')
 const secretVideo = $('#secretVideo')
 const videoOverlay = $('#videoOverlay')
 const confessionText = $('#confessionText')
+const romParticles = $('#romParticles')
 
 /* initial states */
 hide(sceneStory)
@@ -459,16 +473,14 @@ function spawnMemes(){
     const rot = (Math.random()*40 - 20)
     frame.style.transform = `rotate(${rot}deg)`
 
-    // random drift/rotation animation settings
-    const dur = 4 + Math.random()*4 // faster, 4-8s
-    frame.style.transition = `transform ${dur}s ease-in-out`
-    // gentle periodic transform using setInterval for randomness
-    setInterval(()=>{
+    // random drift using interval, faster drift
+    const dur = 3000 + Math.random()*4000
+    const interval = setInterval(()=>{
       const dx = (Math.random()*36 - 18)
       const dy = (Math.random()*36 - 18)
       const r = rot + (Math.random()*40 - 20)
       frame.style.transform = `translate(${dx}px, ${dy}px) rotate(${r}deg)`
-    }, 2000 + Math.random()*2200)
+    }, 1200 + Math.random()*1600)
 
     // image
     const img = document.createElement('img')
@@ -477,6 +489,7 @@ function spawnMemes(){
     frame.appendChild(img)
 
     frame.addEventListener('click', ()=>{
+      clearInterval(interval)
       $$('.meme-frame').forEach(m=>{
         m.style.transition = 'opacity .5s ease'; m.style.opacity = 0
       })
@@ -487,22 +500,79 @@ function spawnMemes(){
   }
 }
 
-/* Show confession with animated lines and breathing effect */
+/* Show confession with animated letters & lively romantic bg */
 function showConfession(){
   show(sceneLove)
-  $('#bgRomantic').style.display = 'block'
-  // split confession text into segments for good line rhythm
-  const text = confessionText.textContent.trim()
-  const segments = text.split(/(?<=[\.!?])\s+|,\s+/)
+  $('#bgRomantic').classList.add('active')
+
+  // spawn gentle heart particles for 4s
+  spawnRomanticParticles(26, 3600)
+
+  // split confession into segments then into letters
+  const raw = confessionText.textContent.trim()
+  const segments = raw.split(/(?<=[\.!?])\s+|,\s+/)
   confessionText.innerHTML = ''
   segments.forEach((seg, idx)=>{
     const p = document.createElement('p')
-    p.textContent = seg.trim()
-    p.style.opacity = '0'
-    p.style.transform = 'translateY(12px)'
+    // create span for each character
+    const text = seg.trim()
+    for(let i=0;i<text.length;i++){
+      const ch = text[i]
+      const span = document.createElement('span')
+      span.className = 'confessionChar'
+      span.textContent = ch
+      // small stagger for each character (so bounce not simultaneous)
+      const totalDelay = (idx*0.35) + (i*0.02) + (Math.random()*0.06)
+      span.style.animation = `charBounce 1.6s cubic-bezier(.2,.8,.2,1) ${totalDelay}s infinite`
+      p.appendChild(span)
+    }
     confessionText.appendChild(p)
-    setTimeout(()=>{ p.style.opacity='1'; p.style.transform='translateY(0)' }, 300 + idx*420)
+    // reveal paragraph container (fade-in)
+    setTimeout(()=>{ p.style.opacity='1'; p.style.transform='translateY(0)' }, 220 + idx*420)
   })
+
+  // keep breathing effect on whole block
+  confessionText.classList.add('breathing')
+}
+
+/* spawn romantic floating hearts as particles */
+function spawnRomanticParticles(count=20, lifespan=4000){
+  const container = $('#romParticles')
+  if(!container) return
+  // clear old
+  container.innerHTML = ''
+  for(let i=0;i<count;i++){
+    const h = document.createElement('div')
+    h.style.position='absolute'
+    const size = 8 + Math.random()*18
+    h.style.width = size+'px'
+    h.style.height = size+'px'
+    h.style.left = (10 + Math.random()*80) + '%'
+    h.style.bottom = (-10 + Math.random()*10) + '%'
+    h.style.zIndex = 40
+    h.style.opacity = 0
+    // heart shape via CSS using background image or simple circle - we'll use emoji to keep it lightweight
+    h.style.fontSize = size + 'px'
+    h.style.lineHeight = size + 'px'
+    h.style.textAlign = 'center'
+    h.style.pointerEvents = 'none'
+    h.style.color = 'rgba(255,220,240,0.9)'
+    h.textContent = '❤'
+    container.appendChild(h)
+    // animate upward + fade + small drift + rotate
+    const dx = (Math.random()*80 - 40)
+    const dy = (50 + Math.random()*40)
+    const rot = (Math.random()*360 - 180)
+    const dur = lifespan + Math.random()*1200
+    h.animate([
+      { transform: `translate(0,0) rotate(0deg)`, opacity:0 },
+      { transform: `translate(${dx}px, -${dy}px) rotate(${rot}deg)`, opacity:1 },
+      { transform: `translate(${dx*1.2}px, -${dy*1.6}px) rotate(${rot*1.2}deg)`, opacity:0 }
+    ], { duration: dur, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' })
+    setTimeout(()=> h.remove(), dur + 200)
+  }
+  // remove 'active' class after a while but keep hearts slightly visible
+  setTimeout(()=>{ $('#bgRomantic').classList.remove('active') }, 4200)
 }
 
 /* Heart -> show video overlay */
@@ -526,16 +596,14 @@ beerWord.addEventListener('touchend', (e)=>{ e.preventDefault(); beerWord.click(
 heartBtn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') heartBtn.click() })
 finalSpoiler.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') finalSpoiler.click() })
 
-/* ensure responsive: reposition memes on resize */
+/* responsive: reposition memes on resize */
 window.addEventListener('resize', ()=> {
   $$('.meme-frame').forEach(m=>{
-    // keep current transform but ensure still visible: clamp left/top if overflow
     const rect = m.getBoundingClientRect()
     if(rect.left < 6) m.style.left = '6vw'
     if(rect.top < 6) m.style.top = '6vh'
   })
 })
-
 </script>
 </body>
 </html>
