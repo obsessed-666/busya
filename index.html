@@ -18,6 +18,7 @@ body{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-b
 #page{position:relative;min-height:100%}
 .section{min-height:100vh;min-height:100dvh;min-height:calc(var(--vh,1vh) * 100);width:100%;padding:clamp(16px,3.9vw,32px);padding-top:max(clamp(16px,3.9vw,32px),var(--safe-top));padding-right:max(clamp(16px,3.9vw,32px),var(--safe-right));padding-bottom:max(clamp(16px,3.9vw,32px),var(--safe-bottom));padding-left:max(clamp(16px,3.9vw,32px),var(--safe-left));display:flex;align-items:center;justify-content:center;position:relative;scroll-snap-align:start}
 
+/* Backgrounds */
 .bg-mystic,.bg-romantic{position:fixed;inset:0;z-index:-10;pointer-events:none;overflow:hidden;transition:opacity .9s ease}
 .bg-mystic{background:radial-gradient(circle at 22% 8%,#1b2946 0%,#0f182d 36%,#071126 64%,#02050d 100%),linear-gradient(180deg,#0a111f,#050b18);opacity:1}
 .bg-mystic .mist{position:absolute;inset:-30%;filter:blur(58px);mix-blend-mode:screen;opacity:.2}
@@ -42,21 +43,24 @@ body{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-b
 @keyframes romPulse{0%,100%{opacity:.64;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
 .bg-romantic .heart-particles{position:absolute;inset:0;pointer-events:none}
 
+/* Cinematic overlay */
 .cinema{pointer-events:none;position:fixed;inset:0;z-index:25}
 .cinema::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,.04) 0%,rgba(0,0,0,0) 36%,rgba(0,0,0,.68) 100%)}
 
+/* Cat */
 #sectionIntro .cat-box{display:flex;flex-direction:column;align-items:center;gap:12px}
-#catFrame{position:relative;border-radius:20px;padding:9px;background:linear-gradient(180deg,#2b1f17,#1a130d);box-shadow:0 35px 120px rgba(0,0,0,.65);border:5px solid rgba(255,255,255,.07);cursor:pointer;animation:catFloat 5.5s ease-in-out infinite}
+#catFrame{position:relative;border-radius:20px;padding:9px;background:linear-gradient(180deg,#2b1f17,#1a130d);box-shadow:0 35px 120px rgba(0,0,0,.65);border:5px solid rgba(255,255,255,.07);cursor:pointer;animation:catFloat 5.5s ease-in-out infinite;z-index:60;pointer-events:auto}
 #catFrame::after{content:"";position:absolute;inset:6px;border-radius:14px;box-shadow:inset 0 24px 46px rgba(0,0,0,.24);pointer-events:none}
 #cat{width:min(82vw,480px);aspect-ratio:3/4;object-fit:cover;border-radius:12px}
 @keyframes catFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 .hint{font-size:14px;padding:8px 12px;background:rgba(0,0,0,.24);border-radius:999px}
 
+/* Story */
 #sectionStory{align-items:flex-start}
 .story-wrap{width:min(100%,940px);margin-top:8vh;padding:clamp(16px,4vw,30px);background:linear-gradient(180deg,rgba(12,13,21,.4),rgba(8,9,13,.3));border-radius:15px;box-shadow:0 24px 70px rgba(0,0,0,.6);backdrop-filter:blur(8px);font-family:'Merriweather',serif;font-weight:500;letter-spacing:.2px;color:#e6e6ea;font-size:clamp(17px,4.2vw,18px);line-height:1.72;position:relative;transition:opacity .55s ease,transform .55s ease}
-.story-wrap::before{content:"";position:absolute;inset:0;border-radius:15px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,0));pointer-events:none}
 .story-par{margin-bottom:14px;position:relative;z-index:1}
 
+/* Spoiler */
 .spoiler{position:relative;display:inline-block;padding:12px 14px;border-radius:12px;background:linear-gradient(180deg,#0f1017,#090a0f);cursor:pointer;overflow:hidden}
 .spoiler .line{position:relative;z-index:2;color:transparent;transition:color .55s ease;text-shadow:none}
 .spoiler .beer-word-btn{position:relative;z-index:4;background:transparent;border:0;padding:0;margin:0;color:transparent;font:inherit;font-weight:700;cursor:pointer;pointer-events:auto;text-decoration:none}
@@ -66,6 +70,7 @@ body{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-b
 .spoiler .veil::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 4px)}
 .spoiler.open .veil{transform:translateY(-120%);opacity:0}
 
+/* Beer visuals */
 #beerLayer{position:fixed;inset:0;z-index:60;pointer-events:none;transition:opacity .5s ease}
 #beerSprite{position:absolute;left:50%;top:-360px;width:min(34vw,172px);transform:translateX(-50%) rotate(0deg);filter:drop-shadow(0 24px 60px rgba(0,0,0,.56));display:none;will-change:transform,top,left}
 .puddle{position:absolute;left:50%;bottom:12vh;transform:translateX(-50%) scale(.2,.26);width:26px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.8px);box-shadow:0 10px 26px rgba(0,0,0,.4),inset 0 -5px 12px rgba(100,60,20,.45),inset 0 4px 10px rgba(255,240,180,.28)}
@@ -78,12 +83,13 @@ body{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-b
 .page-shake{animation:pageShake .64s linear}
 @keyframes pageShake{0%{transform:translate(0)}18%{transform:translate(-4px,3px)}36%{transform:translate(4px,-4px)}54%{transform:translate(-3px,2px)}72%{transform:translate(3px,-2px)}100%{transform:translate(0)}}
 
+/* Memes */
 #memeLayer{position:fixed;inset:0;z-index:80;pointer-events:none;transition:opacity .4s ease}
 .meme-frame{position:absolute;width:clamp(140px,22vw,220px);padding:8px;border-radius:10px;background:linear-gradient(180deg,#2f251b,#1a130d);border:7px solid rgba(24,16,11,.92);box-shadow:0 28px 78px rgba(0,0,0,.58);overflow:hidden;cursor:pointer;pointer-events:auto;transform-style:preserve-3d;will-change:transform,opacity}
 .meme-frame img{width:100%;height:100%;object-fit:cover;filter:contrast(1.08) saturate(1.06)}
-.meme-frame::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 65px rgba(0,0,0,.45)}
 .fade-out{opacity:0 !important;transform:scale(.93) !important;transition:.42s ease}
 
+/* Confession */
 #sectionLove{align-items:center;justify-content:center;min-height:calc(100vh - var(--safe-top) - var(--safe-bottom));min-height:calc(100dvh - var(--safe-top) - var(--safe-bottom))}
 .confession-wrap{width:100%;min-height:calc(100vh - var(--safe-top) - var(--safe-bottom));display:flex;align-items:center;justify-content:center}
 .confession-box{width:min(100%,920px);padding:32px 24px;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));box-shadow:0 30px 110px rgba(0,0,0,.5);color:#ffe4ec;line-height:1.8;letter-spacing:.32px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;min-height:min(80vh,760px)}
@@ -93,7 +99,7 @@ body{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-b
 @keyframes breathText{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.005)}}
 #confessionText{font-family:'Merriweather',serif;font-size:clamp(27px,5.9vw,38px);position:relative;z-index:2}
 #confessionText p{opacity:0;transform:translateY(8px);transition:.44s ease;margin:10px 0;line-height:1.85;letter-spacing:.3px}
-.confession-char{display:inline-block;transform-origin:center bottom}
+.confession-char{display:inline-block;transform-origin:center bottom;white-space:pre}
 @keyframes charBounce{0%{transform:translateY(0)}35%{transform:translateY(-3px)}65%{transform:translateY(-1.5px)}100%{transform:translateY(0)}}
 
 .heart-btn{font-size:56px;margin-top:14px;cursor:pointer;color:#ff4f7d;text-shadow:0 7px 20px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite;position:relative;z-index:2}
@@ -106,6 +112,7 @@ body{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-b
 .film-burn{position:absolute;inset:0;background:radial-gradient(circle at 18% 84%,rgba(255,130,80,.1),transparent 20%),radial-gradient(circle at 82% 8%,rgba(255,80,120,.08),transparent 18%);opacity:.55;animation:burnPulse 6.6s ease-in-out infinite}
 @keyframes burnPulse{0%,100%{opacity:.45}50%{opacity:.74}}
 
+/* Video overlay */
 #videoOverlay{position:fixed;inset:0;z-index:180;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;padding:max(14px,var(--safe-top)) max(14px,var(--safe-right)) max(14px,var(--safe-bottom)) max(14px,var(--safe-left))}
 #videoOverlay video{width:94vw;max-width:900px;max-height:78vh;border-radius:12px;background:#000;box-shadow:0 22px 70px rgba(0,0,0,.6)}
 .video-placeholder{display:none;width:min(92vw,520px);padding:20px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.04));text-align:center;line-height:1.5}
@@ -440,6 +447,8 @@ function spawnHearts(num = 28){
 
 function createMemes(count = 9){
   memeLayer.innerHTML = ''
+  // allow clicks on memes
+  memeLayer.style.pointerEvents = 'auto'
   for(let i=0;i<count;i++){
     const frame = document.createElement('div')
     frame.className = 'meme-frame tap-target'
@@ -519,15 +528,18 @@ function startRomance(){
 
 function animateConfessionText(){
   const raw = confessionText.textContent
+  // split into sensible sentence chunks (preserve punctuation)
   const segments = raw.match(/[^.!?]+[.!?]?/g)?.map(s => s.trim()).filter(Boolean) || [raw]
   confessionText.innerHTML = ''
 
   segments.forEach((line, li) => {
     const p = document.createElement('p')
     for(let i=0;i<line.length;i++){
+      const ch = line[i]
       const span = document.createElement('span')
       span.className = 'confession-char'
-      span.textContent = line[i]
+      // preserve real spaces using NBSP so animation doesn't collapse them
+      span.textContent = (ch === ' ') ? '\u00A0' : ch
       const delay = (li * .22) + (i * .016) + Math.random() * .03
       const dur = 1.4 + Math.random() * 0.2
       span.style.animation = `charBounce ${dur}s ease-in-out ${delay}s infinite`
@@ -554,7 +566,6 @@ function openVideoOverlay(){
   videoPlaceholder.style.display = 'none'
   secretVideo.style.display = 'block'
 }
-
 heartBtn.addEventListener('click', openVideoOverlay)
 heartBtn.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideoOverlay() }})
 
