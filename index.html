@@ -9,142 +9,133 @@
 /* ---------- Reset & base ---------- */
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
+  --accent:#ff4f7d; --soft:#fff5f9; --panel-w:94vw;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
-  --accent:#ff4f7d;
-  --soft:#fff0f6;
 }
-html,body{height:100%;width:100%;background:#030414;color:var(--soft);font-family:Montserrat,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+html,body{height:100%;width:100%;background:#030414;color:var(--soft);font-family:Montserrat,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 button,[role="button"],.tap{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-html,body{overflow:hidden}
 
-/* ---------- Decorative backgrounds ---------- */
-.bg-mystic, .bg-romantic {position:fixed;inset:0;z-index:-60;pointer-events:none;overflow:hidden;transition:opacity .9s ease}
-.bg-mystic{background:linear-gradient(180deg,#03102a 0%,#02030a 78%);opacity:1}
-.bg-mystic .moon{position:absolute;right:14%;top:6%;width:28vmin;height:28vmin;border-radius:50%;background:radial-gradient(circle at 40% 40%, #f5f7ff, #d9e0ff 30%, rgba(255,255,255,0.02) 40%);filter:blur(8px);opacity:.18}
-.bg-mystic .mist{position:absolute;inset:-30%;filter:blur(60px);mix-blend-mode:screen;opacity:.22;background:
-  radial-gradient(circle at 18% 24%, rgba(120,140,200,0.12), transparent 20%),
-  radial-gradient(circle at 78% 72%, rgba(80,100,160,0.09), transparent 22%);animation:mistMove 36s linear infinite}
-@keyframes mistMove{0%{transform:translateY(0)}50%{transform:translateY(-120px)}100%{transform:translateY(0)}}
-
-/* romantic bg (appears later) */
-.bg-romantic{opacity:0;background:linear-gradient(132deg,#3b114a 0%,#6f4ac2 36%,#ff7db5 68%,#ffddec 100%)}
-.bg-romantic.active{opacity:1}
-.bg-romantic::after{content:"";position:absolute;inset:0;background-image:url('hearts-bg.jpg');background-size:cover;background-position:center;opacity:.38;filter:blur(6px)}
-
-/* vignette */
-.vignette{position:fixed;inset:0;z-index:-20;pointer-events:none;background:radial-gradient(circle at center, rgba(255,255,255,0.02), rgba(0,0,0,0) 36%, rgba(0,0,0,.66) 100%)}
+/* Prevent decorative layers from intercepting clicks */
+.bg-decor, .bg-romantic, .vignette, #beerLayer, #memeLayer { pointer-events:none !important; }
 
 /* ---------- Intro (cat) ---------- */
-.intro-panel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:2147483600;pointer-events:auto;padding:18px;transition:opacity .45s ease, transform .45s ease}
-.intro-panel.hidden{opacity:0;transform:scale(.995);pointer-events:none}
-.cat-frame{border-radius:18px;padding:10px;background:linear-gradient(180deg,#24181f,#0f0b0b);box-shadow:0 42px 140px rgba(0,0,0,.72);border:4px solid rgba(255,255,255,0.04);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;transition:transform .12s ease;z-index:2147483601}
-.cat-frame:active{transform:translateY(2px)}
-#cat{width:min(84vw,520px);aspect-ratio:3/4;object-fit:cover;border-radius:12px;display:block;box-shadow:0 18px 60px rgba(0,0,0,.6)}
-.cat-pulse{animation:catPulse 3.8s ease-in-out infinite}
-@keyframes catPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
-.hint{font-size:14px;padding:8px 12px;background:rgba(0,0,0,.14);border-radius:999px;color:rgba(255,255,255,.92)}
+.intro{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:40;padding:20px;transition:opacity .35s ease}
+.intro.hidden{opacity:0;pointer-events:none;transform:scale(.997)}
+.cat-card{border-radius:18px;padding:12px;background:linear-gradient(180deg,#24181f,#0f0b0b);box-shadow:0 36px 120px rgba(0,0,0,.72);border:4px solid rgba(255,255,255,0.04);cursor:pointer;display:flex;flex-direction:column;gap:12px;align-items:center}
+.cat-img{width:min(82vw,520px);aspect-ratio:3/4;object-fit:cover;border-radius:12px;box-shadow:0 18px 60px rgba(0,0,0,.6);transform-origin:center;animation:catPulse 3.8s ease-in-out infinite}
+@keyframes catPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+.cat-hint{font-size:14px;padding:8px 12px;background:rgba(0,0,0,.14);border-radius:999px;color:rgba(255,255,255,.94)}
 
-/* ---------- Story panel (appears when cat clicked) ---------- */
-.story-panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(96vw,920px);height:86vh;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 40px);background:transparent;border-radius:14px;box-shadow:0 42px 160px rgba(0,0,0,.7);display:none;z-index:2147483550;overflow:hidden}
+/* ---------- Backgrounds ---------- */
+.bg-decor{position:fixed;inset:0;z-index:-20;pointer-events:none;overflow:hidden}
+.bg-mystic{position:absolute;inset:0;background-image: url('forest.jpg'); background-size:cover; background-position:center; filter:brightness(.52) contrast(.95); transition:opacity .6s ease}
+.bg-mystic .mist{position:absolute;inset:-30%;filter:blur(60px);opacity:.22;mix-blend-mode:screen;background:
+  radial-gradient(circle at 18% 24%, rgba(120,140,200,0.12), transparent 18%),
+  radial-gradient(circle at 78% 72%, rgba(80,100,160,0.09), transparent 22%);animation:mistMove 36s linear infinite}
+@keyframes mistMove{0%{transform:translateY(0)}50%{transform:translateY(-120px)}100%{transform:translateY(0)}}
+.vignette{position:fixed;inset:0;z-index:-10;pointer-events:none;background:radial-gradient(circle at center, rgba(255,255,255,0.02), rgba(0,0,0,0) 36%, rgba(0,0,0,.7) 100%)}
+
+/* Romantic bg using video */
+.bg-romantic{position:fixed;inset:0;z-index:-18;opacity:0;transition:opacity .9s ease}
+.bg-romantic.active{opacity:1}
+.bg-romantic video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:contrast(1.02) saturate(1.06);}
+
+/* ---------- Story panel ---------- */
+.story-panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(var(--panel-w),920px);height:86vh;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 36px);border-radius:14px;overflow:hidden;box-shadow:0 48px 180px rgba(0,0,0,.7);z-index:30;display:none}
 .story-panel.open{display:block}
-
-/* story background more visible: layered fog + animated subtle noise + moon glow */
-.story-bg{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;background:linear-gradient(180deg, rgba(6,8,12,0.96), rgba(3,4,8,0.98))}
-.story-bg .fogA{position:absolute;inset:-20%;background:radial-gradient(circle at 24% 36%, rgba(120,140,190,0.07), transparent 20%);filter:blur(26px);animation:fogA 30s linear infinite;opacity:.98}
-.story-bg .fogB{position:absolute;inset:-20%;background:radial-gradient(circle at 76% 62%, rgba(90,110,140,0.06), transparent 20%);filter:blur(38px);animation:fogB 42s linear infinite;opacity:.86}
-.story-bg .scan{position:absolute;inset:0;background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.01) 0 2px, transparent 2px 8px);mix-blend-mode:overlay;opacity:.05;animation:scrollLines 1.6s linear infinite}
+.story-bg{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg, rgba(6,8,12,0.96), rgba(3,4,8,0.98))}
+.story-bg .fogA{position:absolute;inset:-20%;filter:blur(28px);background:radial-gradient(circle at 24% 36%, rgba(120,140,190,0.07), transparent 18%);animation:fogA 28s linear infinite;opacity:.98}
+.story-bg .fogB{position:absolute;inset:-20%;filter:blur(36px);background:radial-gradient(circle at 76% 62%, rgba(90,110,140,0.06), transparent 20%);animation:fogB 42s linear infinite;opacity:.86}
+.story-bg .scan{position:absolute;inset:0;background-image:repeating-linear-gradient(180deg, rgba(255,255,255,.01) 0 2px, transparent 2px 8px);mix-blend-mode:overlay;opacity:.05;animation:scan 1.6s linear infinite}
 @keyframes fogA{0%{transform:translateY(0)}50%{transform:translateY(-72px)}100%{transform:translateY(0)}}
 @keyframes fogB{0%{transform:translateY(0)}50%{transform:translateY(-118px)}100%{transform:translateY(0)}}
-@keyframes scrollLines{0%{background-position:0 0}100%{background-position:0 20px}}
+@keyframes scan{0%{background-position:0 0}100%{background-position:0 20px}}
 
-/* story content (scrollable) */
-.story-content{position:relative;z-index:6;overflow:auto;height:100%;padding:28px 28px 18px 28px;-webkit-overflow-scrolling:touch}
-.story-card{max-width:920px;margin:0 auto;background:linear-gradient(180deg, rgba(8,9,12,.36), rgba(6,6,8,.26));border-radius:12px;padding:28px;backdrop-filter: blur(6px);box-shadow:0 28px 90px rgba(0,0,0,.6);color:#eaeaf0;font-family:'Merriweather',serif;line-height:1.72;font-size:17px}
+/* story content scroll */
+.story-scroll{position:relative;z-index:6;height:100%;overflow:auto;padding:26px;-webkit-overflow-scrolling:touch}
+.story-card{max-width:920px;margin:0 auto;background:linear-gradient(180deg, rgba(8,9,12,.36), rgba(6,6,8,.24));border-radius:12px;padding:26px;backdrop-filter:blur(6px);box-shadow:0 28px 90px rgba(0,0,0,.6);color:#e9e9ee;font-family:'Merriweather',serif;font-size:17px;line-height:1.72}
 .story-card p{margin-bottom:14px}
-.story-close{position:absolute;right:14px;top:12px;z-index:12;border:0;background:rgba(255,255,255,0.04);color:var(--soft);padding:8px 10px;border-radius:8px;cursor:pointer}
+.story-close{position:absolute;right:12px;top:12px;z-index:12;border:0;background:rgba(255,255,255,0.04);color:var(--soft);padding:8px 10px;border-radius:8px;cursor:pointer}
 
-/* spoiler: improved blur + animated sheen */
+/* spoiler veil */
 .spoiler{position:relative;display:inline-block;padding:12px 16px;border-radius:12px;background:linear-gradient(180deg, rgba(10,11,12,.18), rgba(6,7,9,.28));cursor:pointer;overflow:visible}
-.spoiler .line{position:relative;z-index:6;color:transparent;transition:color .45s ease,text-shadow .45s ease}
+.spoiler .line{position:relative;z-index:6;color:transparent;transition:color .45s ease}
 .spoiler .beer-btn{position:relative;z-index:7;background:transparent;border:0;padding:0;margin:0;color:transparent;font:inherit;font-weight:700;cursor:pointer}
-.spoiler .veil{position:absolute;inset:-8px;z-index:5;border-radius:12px;background:linear-gradient(120deg, rgba(16,18,22,0.96), rgba(6,7,9,0.99));backdrop-filter: blur(20px) saturate(.95);transition:transform .58s cubic-bezier(.2,.9,.3,1),opacity .58s;pointer-events:none;box-shadow:inset 0 10px 40px rgba(255,255,255,0.02)}
-.spoiler .veil::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 8px);opacity:.06;animation:veilSheen 2.2s linear infinite}
-@keyframes veilSheen{0%{transform:translateX(-30%)}100%{transform:translateX(130%)}}
+.spoiler .veil{position:absolute;inset:-8px;z-index:5;border-radius:12px;background:linear-gradient(120deg, rgba(16,18,22,0.96), rgba(6,7,9,0.995));backdrop-filter:blur(20px) saturate(.95);transition:transform .58s cubic-bezier(.2,.9,.3,1),opacity .58s;pointer-events:none}
 .spoiler.open .veil{transform:translateY(-160%);opacity:0}
 .spoiler.open .line{color:#fff;text-shadow:0 10px 28px rgba(0,0,0,.58)}
 .spoiler.open .beer-btn{color:#ffd166;text-decoration:underline}
 
-/* ---------- Beer visuals (improved puddle) ---------- */
-#beerLayer{position:fixed;inset:0;z-index:2147483400;pointer-events:none}
+/* ---------- Beer layer visuals ---------- */
+#beerLayer{position:fixed;inset:0;z-index:28;pointer-events:none}
 #beerSprite{position:absolute;width:min(34vw,160px);transform:translate(-50%,0) rotate(0deg);display:none;will-change:left,top,transform}
-.puddle{position:absolute;left:50%;bottom:12vh;transform:translateX(-50%) scale(.2);width:26px;height:12px;border-radius:999px;opacity:0;background:
-  radial-gradient(ellipse at 40% 30%, #fff3c7 0%, #ffd98a 28%, #b96820 78%);filter:blur(1.1px);box-shadow:0 8px 24px rgba(0,0,0,.45), inset 0 -6px 12px rgba(100,60,20,.44)}
+.puddle{position:absolute;left:50%;bottom:12vh;transform:translateX(-50%) scale(.2);width:26px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff6d3 0%, #ffd58b 28%, #b66722 78%);filter:blur(1.1px);box-shadow:0 8px 24px rgba(0,0,0,.45),inset 0 -6px 12px rgba(100,60,20,.44)}
 .ripple{position:absolute;left:50%;bottom:12vh;transform:translateX(-50%) scale(.2);width:24px;height:10px;border-radius:50%;border:2px solid rgba(255,220,130,.86);opacity:0}
 .splash{position:absolute;border-radius:50%;pointer-events:none;will-change:transform,opacity}
+.foam{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,0));pointer-events:none;z-index:64}
+.page-shake{animation:pageShake .64s linear}
+@keyframes pageShake{0%{transform:translate(0)}18%{transform:translate(-4px,3px)}36%{transform:translate(4px,-4px)}54%{transform:translate(-3px,2px)}72%{transform:translate(3px,-2px)}100%{transform:translate(0)}}
 
 /* ---------- Meme layer ---------- */
-#memeLayer{position:fixed;inset:0;z-index:2147483450;pointer-events:none}
-.meme-frame{position:absolute;padding:8px;border-radius:12px;background:linear-gradient(180deg,#24181f,#12070b);border:6px solid rgba(255,95,155,0.12);box-shadow:0 30px 110px rgba(0,0,0,.5);overflow:hidden;cursor:pointer;pointer-events:auto;transform-origin:center;will-change:transform;transition:opacity .36s ease}
+#memeLayer{position:fixed;inset:0;z-index:32;pointer-events:none}
+.meme-frame{position:absolute;padding:8px;border-radius:12px;background:linear-gradient(180deg,#24181f,#12070b);border:6px solid rgba(255,95,155,0.14);box-shadow:0 30px 110px rgba(0,0,0,.5);overflow:hidden;cursor:pointer;pointer-events:auto;transform-origin:center;will-change:transform;transition:opacity .36s ease}
 .meme-frame img{width:100%;height:100%;object-fit:cover;display:block}
-.fade-out{opacity:0 !important;transform:scale(.92) !important;transition:.42s ease}
+.fade-out{opacity:0 !important;transform:scale(.94) !important;transition:.42s ease}
 
 /* ---------- Confession panel ---------- */
-#confessionPanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(96vw,920px);height:82vh;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 40px);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));border-radius:18px;box-shadow:0 42px 160px rgba(0,0,0,.6);display:none;flex-direction:column;z-index:2147483500;padding:22px;overflow:hidden}
-#confessionPanel.open{display:flex}
-#confessionInner{overflow:auto;padding:12px;-webkit-overflow-scrolling:touch}
-#confessionText{font-family:'Marck Script',cursive;font-size:clamp(28px,6.2vw,44px);text-align:center;color:#ffeaf2;text-shadow:0 10px 30px rgba(120,30,60,0.18)}
-.confession-char{display:inline-block;white-space:pre;transform-origin:center bottom;animation:charFloat 3.6s ease-in-out infinite}
-@keyframes charFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-
-/* heart */
-.heart-wrap{display:flex;flex-direction:column;align-items:center;margin-top:16px}
+.conf-panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(var(--panel-w),920px);height:80vh;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 36px);border-radius:18px;box-shadow:0 48px 180px rgba(0,0,0,.7);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));z-index:34;display:none;overflow:hidden}
+.conf-panel.open{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px}
+.conf-inner{overflow:auto;-webkit-overflow-scrolling:touch;padding:12px;width:100%;text-align:center}
+#confText{font-family:'Marck Script',cursive;font-size:clamp(28px,6.2vw,44px);color:#ffeaf2;text-shadow:0 10px 30px rgba(120,30,60,0.18);line-height:1.4}
+.conf-char{display:inline-block;white-space:pre;transform-origin:center bottom;animation:confFloat 3.6s ease-in-out infinite}
+@keyframes confFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.heart-wrap{display:flex;flex-direction:column;align-items:center;margin-top:18px}
 .heart-btn{font-size:62px;cursor:pointer;color:var(--accent);text-shadow:0 12px 30px rgba(255,79,125,.36);animation:heartPulse 1.8s ease-in-out infinite}
 @keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
-.heart-caption{font-size:13px;color:#ffd8e6;margin-top:8px}
+.heart-caption{margin-top:8px;font-size:13px;color:#ffd8e6}
 
 /* video overlay */
-#videoOverlay{position:fixed;inset:0;z-index:2147483602;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;padding:max(12px,var(--safe-top))}
+#videoOverlay{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.94)}
 #videoOverlay video{width:94vw;max-width:900px;max-height:78vh;border-radius:12px;background:#000;box-shadow:0 22px 70px rgba(0,0,0,.6)}
-.video-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));color:var(--soft)}
 
-/* responsive */
 @media (max-width:430px){
-  #cat{width:min(88vw,420px)}
-  .story-card{padding:20px;font-size:16px}
-  #confessionText{font-size:clamp(26px,7.3vw,40px)}
+  .cat-img{width:min(88vw,420px)}
+  .story-card{padding:18px;font-size:16px}
+  #confText{font-size:clamp(26px,7.3vw,40px)}
 }
-
-/* defensive: decorative layers must not catch clicks */
-.bg-mystic, .bg-romantic, .vignette, #beerLayer, #memeLayer { pointer-events: none !important; }
-.cat-frame, #cat { position: relative; z-index:2147483601 !important; pointer-events: auto !important; }
 </style>
 </head>
 <body>
-  <!-- backgrounds -->
-  <div class="bg-mystic" id="bgMystic"><div class="moon"></div><div class="mist"></div></div>
-  <div class="bg-romantic" id="bgRomantic"></div>
+  <!-- Decorative backgrounds -->
+  <div class="bg-decor">
+    <div class="bg-mystic" id="bgMystic"><div class="mist"></div></div>
+    <div class="bg-romantic" id="bgRomantic">
+      <!-- romance.mp4 used as romantic background (muted autoplay loop) -->
+      <video id="romVideo" src="romance.mp4" muted playsinline loop preload="auto" style="width:100%;height:100%;object-fit:cover;"></video>
+    </div>
+  </div>
   <div class="vignette"></div>
 
   <!-- Intro -->
-  <div class="intro-panel" id="introPanel" aria-label="Начало">
-    <div class="cat-frame tap" id="catFrame" role="button" tabindex="0" aria-label="Нажми на котика">
-      <img id="cat" class="cat-pulse" src="cat.jpg" alt="кот Буся — нажми" />
-      <div class="hint">нажми на котика 🐾</div>
+  <div class="intro" id="intro">
+    <div class="cat-card" id="catCard" role="button" tabindex="0" aria-label="Нажми на котика">
+      <img id="catImg" class="cat-img" src="cat.jpg" alt="кот Буся — нажми" />
+      <div class="cat-hint">нажми на котика 🐾</div>
     </div>
   </div>
 
   <!-- Story panel -->
   <div class="story-panel" id="storyPanel" role="dialog" aria-label="Рассказ">
-    <div class="story-bg">
+    <div class="story-bg" aria-hidden="true">
       <div class="fogA"></div><div class="fogB"></div><div class="scan"></div>
     </div>
 
     <button class="story-close" id="closeStory" aria-label="Закрыть рассказ">✕</button>
 
-    <div class="story-content">
-      <div class="story-card" id="storyCard">
+    <div class="story-scroll">
+      <article class="story-card" id="storyCard" aria-live="polite">
         <!-- ПОЛНЫЙ РАССКАЗ (буква в букву) -->
         <p>Однажды я сидел как ни в чём не бывало дома, слушал грустную музыку, смотрел в окно, думал о своём тленном будущем, как вдруг… звонок в дверь. Я опешил, ведь было 3 часа ночи, и я никого не ждал. В тот день ощущения поистине были странные. На дворе стояла лёгкая дымка, а на небе отчётливо виднелась яркая полная луна, прямо как с картинки — мрачная и загадочная. Погода за окном лишь добавляла таинственности и неопределённости данному событию.</p>
 
@@ -156,16 +147,16 @@ html,body{overflow:hidden}
 
         <p>Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
 
-        <div class="spoiler tap" id="finalSpoiler" role="button" tabindex="0" aria-pressed="false" aria-label="Открыть панчлайн">
+        <div class="spoiler" id="finalSpoiler" role="button" tabindex="0" aria-pressed="false" aria-label="Открыть панчлайн">
           <div class="veil" aria-hidden="true"></div>
-          <div class="line">— Ой, извини, у меня <button class="beer-btn tap" id="beerWord" type="button" aria-label="Запустить падение пива">пиво</button> упало.</div>
+          <div class="line">— Ой, извини, у меня <button class="beer-btn" id="beerWord" type="button" aria-label="Запустить падение пива">пиво</button> упало.</div>
         </div>
 
-      </div>
+      </article>
     </div>
   </div>
 
-  <!-- Beer & memes -->
+  <!-- Beer & Meme layers -->
   <div id="beerLayer" aria-hidden="true">
     <img id="beerSprite" src="beer.png" alt="банка Desperados" />
     <div class="puddle" id="puddle"></div>
@@ -175,340 +166,294 @@ html,body{overflow:hidden}
   <div id="memeLayer" aria-hidden="true"></div>
 
   <!-- Confession -->
-  <div id="confessionPanel" role="dialog" aria-label="Признание">
-    <div id="confessionInner">
-      <div id="confessionText" aria-live="polite">
+  <div class="conf-panel" id="confPanel" role="dialog" aria-label="Признание">
+    <div class="conf-inner">
+      <div id="confText" aria-live="polite">
         буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было. и не будет. ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было. полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя. очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни
       </div>
+
       <div class="heart-wrap">
-        <div class="heart-btn tap" id="heartBtn" role="button" tabindex="0">💘</div>
+        <div class="heart-btn" id="heartBtn" role="button" tabindex="0">💘</div>
         <div class="heart-caption">сердечко тык</div>
       </div>
     </div>
-    <button id="closeConfession" class="close-btn tap" style="position:absolute;right:12px;top:12px">✕</button>
+    <button id="closeConf" style="position:absolute;right:12px;top:12px;background:rgba(255,255,255,0.04);border:0;padding:8px;border-radius:8px;cursor:pointer;">✕</button>
   </div>
 
   <!-- Video overlay -->
-  <div id="videoOverlay" role="dialog" aria-hidden="true" style="display:none;align-items:center;justify-content:center;">
-    <video id="secretVideo" src="video.mp4" controls playsinline webkit-playsinline preload="metadata" style="display:none"></video>
-    <div class="video-placeholder" id="videoPlaceholder" style="display:flex">
+  <div id="videoOverlay" style="display:none;position:fixed;inset:0;z-index:60;align-items:center;justify-content:center;background:rgba(0,0,0,.94);">
+    <video id="secretVideo" src="video.mp4" controls playsinline webkit-playsinline preload="metadata" style="display:none;border-radius:12px;max-width:94vw;max-height:78vh;"></video>
+    <div id="videoFallback" style="display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--soft);">
       <div style="font-size:44px">🎬</div>
       <div>Видео скоро будет здесь.</div>
       <div style="opacity:.78;font-size:13px;margin-top:6px">Пока что заглушка для финала 💝</div>
     </div>
   </div>
 
-  <!-- Audio (provide your files: dark.mp3 and love.mp3) -->
-  <audio id="darkMusic" src="dark.mp3" preload="auto"></audio>
-  <audio id="loveMusic" src="love.mp3" preload="auto"></audio>
+  <!-- Audio: dark (forest/music), impact sfx, romantic -->
+  <audio id="darkMusic" src="dark.mp3" preload="auto" loop></audio>
+  <audio id="impactSfx" src="beer-sfx.mp3" preload="auto"></audio>
+  <audio id="loveMusic" src="love.mp3" preload="auto" loop></audio>
 
 <script>
-/* Helpers */
+/* ========== Helpers & refs ========== */
 const $ = s => document.querySelector(s)
 const $$ = s => Array.from(document.querySelectorAll(s))
-function clamp(v,a,b){ return Math.max(a, Math.min(b, v)) }
-function rectContainsPoint(rect, x, y){ return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom }
-function getCenter(el){ const r = el.getBoundingClientRect(); return {x: r.left + r.width/2, y: r.top + r.height/2} }
 
-/* Elements */
-const introPanel = $('#introPanel')
-const catFrame = $('#catFrame')
+const intro = $('#intro')
+const catCard = $('#catCard')
 const storyPanel = $('#storyPanel')
-const storyBg = $('.story-bg') || $('#storyPanel .story-bg')
-const closeStory = $('#closeStory')
 const finalSpoiler = $('#finalSpoiler')
 const beerWord = $('#beerWord')
 const beerSprite = $('#beerSprite')
 const puddle = $('#puddle')
 const ripple = $('#ripple')
 const memeLayer = $('#memeLayer')
-const confessionPanel = $('#confessionPanel')
-const confessionText = $('#confessionText')
-const closeConfession = $('#closeConfession')
+const confPanel = $('#confPanel')
+const confText = $('#confText')
 const heartBtn = $('#heartBtn')
+const closeConf = $('#closeConf')
 const videoOverlay = $('#videoOverlay')
 const secretVideo = $('#secretVideo')
-const videoPlaceholder = $('#videoPlaceholder')
+const videoFallback = $('#videoFallback')
 const bgRomantic = $('#bgRomantic')
-const bgMystic = $('#bgMystic')
+const romVideo = $('#romVideo')
 const darkMusic = $('#darkMusic')
+const impactSfx = $('#impactSfx')
 const loveMusic = $('#loveMusic')
 
-/* State */
-let beerStarted=false, romanceStarted=false, audioUnlocked=false, puddleTimer=null
+let audioUnlocked = false, beerStarted=false, romanceStarted=false, puddleTimer=null
 
-/* Make decorative layers not intercept clicks */
-;['.bg-mystic','.bg-romantic','.vignette','#beerLayer','#memeLayer'].forEach(sel=>{
+/* Ensure decorative layers don't block */
+;['.bg-decor','.bg-romantic','.vignette','#beerLayer','#memeLayer'].forEach(sel => {
   const el = document.querySelector(sel); if(el) el.style.pointerEvents = 'none'
 })
 
-/* Unlock audio on first gesture (cat click will suffice) */
-function unlockAudio(){ if(audioUnlocked) return; audioUnlocked=true; try{ darkMusic.volume=0; loveMusic.volume=0; darkMusic.play().then(()=>darkMusic.pause()).catch(()=>{}); loveMusic.play().then(()=>loveMusic.pause()).catch(()=>{}); }catch(e){} }
-window.addEventListener('click', unlockAudio, {once:true}); window.addEventListener('touchstart', unlockAudio, {once:true, passive:true})
-
-/* Show story: hide intro (fade) and open story panel + play dark music */
-function openStory(){
-  // fade out intro
-  introPanel.classList.add('hidden')
-  setTimeout(()=>{ try{ introPanel.style.display='none' }catch(e){}; storyPanel.classList.add('open'); try{ darkMusic.currentTime = 0; darkMusic.volume = 0; darkMusic.play().catch(()=>{}); fadeAudio(darkMusic, 0.16, 900); }catch(e){} }, 420)
-}
-
-/* Direct click + pointer-capture fallback */
-catFrame.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); openStory() })
-catFrame.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openStory() } })
-function pointerCaptureHandler(e){
+/* Unlock audio on first gesture so subsequent plays work on mobile */
+function unlockAudio(){
+  if(audioUnlocked) return
+  audioUnlocked = true
   try{
-    const r = catFrame.getBoundingClientRect()
-    const x = (typeof e.clientX === 'number') ? e.clientX : (e.touches && e.touches[0] && e.touches[0].clientX) || -1
-    const y = (typeof e.clientY === 'number') ? e.clientY : (e.touches && e.touches[0] && e.touches[0].clientY) || -1
-    if(rectContainsPoint(r, x, y)){ e.preventDefault && e.preventDefault(); e.stopPropagation && e.stopPropagation(); openStory() }
-  }catch(_){}
+    darkMusic.volume = 0
+    loveMusic.volume = 0
+    darkMusic.play().then(()=>darkMusic.pause()).catch(()=>{})
+    loveMusic.play().then(()=>loveMusic.pause()).catch(()=>{})
+    impactSfx.play().then(()=>impactSfx.pause()).catch(()=>{})
+  }catch(e){}
 }
-document.addEventListener('pointerdown', pointerCaptureHandler, {capture:true, passive:false})
-document.addEventListener('touchstart', pointerCaptureHandler, {capture:true, passive:false})
+window.addEventListener('click', unlockAudio, {once:true})
+window.addEventListener('touchstart', unlockAudio, {once:true, passive:true})
 
-closeStory.addEventListener('click', ()=> storyPanel.classList.remove('open'))
+/* ========= Opening story (cat click) ========= */
+function openStory(){
+  intro.classList.add('hidden')
+  setTimeout(()=>{ intro.style.display='none'; storyPanel.classList.add('open'); playFade(darkMusic, 0.18, 900); }, 360)
+}
+catCard.addEventListener('click', e=>{ e.preventDefault(); openStory() })
+catCard.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openStory() }})
 
-/* Audio fade helper */
-function fadeAudio(audio, target=0.2, ms=900){
-  const start = audio.volume || 0; const t0 = performance.now()
+/* close story */
+$('#closeStory').addEventListener('click', ()=> storyPanel.classList.remove('open'))
+
+/* Audio fade helpers */
+function fadeAudio(audio, to=0.2, ms=900){
+  const from = audio.volume || 0
+  const t0 = performance.now()
   function step(now){
-    const k = Math.min(1,(now - t0)/ms); audio.volume = start + (target - start) * k; if(k < 1) requestAnimationFrame(step)
+    const k = Math.min(1, (now - t0)/ms)
+    audio.volume = from + (to - from) * k
+    if(k < 1) requestAnimationFrame(step)
   }
   requestAnimationFrame(step)
 }
+function playFade(audio, to=0.18, ms=900){
+  try{ audio.volume = 0; audio.currentTime = 0; audio.play().catch(()=>{}); fadeAudio(audio,to,ms) }catch(e){}
+}
 
-/* SPOILER: reveal veil (style) */
-finalSpoiler.addEventListener('click', (e)=>{ if(e.target && e.target.closest && e.target.closest('.beer-btn')) return; finalSpoiler.classList.add('open'); finalSpoiler.setAttribute('aria-pressed','true') })
-finalSpoiler.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); finalSpoiler.click() } })
+/* ========= Spoiler reveal ========= */
+finalSpoiler.addEventListener('click', (e)=>{
+  if(e.target && e.target.closest && e.target.closest('.beer-btn')) return
+  finalSpoiler.classList.add('open'); finalSpoiler.setAttribute('aria-pressed','true')
+})
+finalSpoiler.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); finalSpoiler.click() } })
 
-/* Improved splash/foam and smaller, nicer puddle behavior */
+/* ========= Splash/foam/puddle helpers ========= */
 function spawnSplashes(cx, cy){
-  const count = 26
+  const count = 28
   for(let i=0;i<count;i++){
-    const d = document.createElement('div'); d.className='splash'
-    const size = (i<4 ? 14 + Math.random()*14 : 6 + Math.random()*12)
-    d.style.width = d.style.height = size + 'px'
-    d.style.left = (cx - size/2) + 'px'
-    d.style.top = (cy - size/2) + 'px'
-    d.style.background = 'radial-gradient(circle, rgba(255,236,170,.96), rgba(255,194,96,.8) 56%, rgba(255,150,50,0) 100%)'
-    d.style.zIndex = 2147483401
+    const d=document.createElement('div'); d.className='splash'
+    const size=(i<4?14+Math.random()*14:6+Math.random()*12)
+    d.style.width=d.style.height=size+'px'; d.style.left=(cx-size/2)+'px'; d.style.top=(cy-size/2)+'px'
+    d.style.zIndex=1000; d.style.background='radial-gradient(circle, rgba(255,240,160,.96), rgba(255,190,80,.8) 56%, rgba(255,150,50,0) 100%)'
     document.body.appendChild(d)
-    const dx = (Math.random()*340)-170; const dy = -(60 + Math.random()*140)
-    const rot = Math.random()*360-180; const dur = 650 + Math.random()*700
-    d.animate([{transform:'translate(0,0) scale(.6)',opacity:1},{transform:`translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(1)`,opacity:1},{transform:`translate(${dx*1.1}px, ${dy+220}px) rotate(${rot*1.05}deg) scale(.28)`,opacity:0}],{duration:dur,easing:'cubic-bezier(.2,.9,.2,1)',fill:'forwards'})
+    const dx=(Math.random()*340)-170, dy=-(60+Math.random()*140), rot=Math.random()*360-180, dur=700+Math.random()*680
+    d.animate([{transform:'translate(0,0) scale(.6)',opacity:1},{transform:`translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(1)`,opacity:1},{transform:`translate(${dx*1.06}px, ${dy+240}px) rotate(${rot*1.05}deg) scale(.28)`,opacity:0}],{duration:dur,easing:'cubic-bezier(.2,.9,.2,1)',fill:'forwards'})
     setTimeout(()=>d.remove(), dur+80)
   }
 }
 function spawnFoam(cx, cy){
-  const n = 8 + Math.floor(Math.random()*6)
+  const n=8+Math.floor(Math.random()*6)
   for(let i=0;i<n;i++){
-    const f = document.createElement('div'); f.className='foam'
-    const size = 4 + Math.random()*9; f.style.width = f.style.height = size + 'px'
-    f.style.left = (cx + (Math.random()*70-35)) + 'px'; f.style.top = (cy + (Math.random()*18-8)) + 'px'
-    f.style.zIndex = 2147483402
-    const dur = 900 + Math.random()*700
-    f.animate([{transform:'translateY(0)',opacity:.86},{transform:`translateY(${-12 - Math.random()*22}px)`,opacity:0}],{duration:dur,easing:'ease-out',fill:'forwards'})
+    const f=document.createElement('div'); f.className='foam'
+    const size=4+Math.random()*9; f.style.width=f.style.height=size+'px'
+    f.style.left=(cx + (Math.random()*70-35))+'px'; f.style.top=(cy + (Math.random()*18-8))+'px'
     document.body.appendChild(f)
-    setTimeout(()=>f.remove(), dur+80)
+    f.animate([{transform:'translateY(0)',opacity:.86},{transform:`translateY(${-12 - Math.random()*22}px)`,opacity:0}],{duration:900+Math.random()*700,easing:'ease-out',fill:'forwards'})
+    setTimeout(()=>f.remove(), 1100+Math.random()*700)
   }
 }
 function cleanupPuddleLater(){
   if(puddleTimer) clearTimeout(puddleTimer)
   puddleTimer = setTimeout(()=>{
-    puddle.animate([{opacity:1, transform:'translateX(-50%) scale(1,.7) rotateX(14deg)'},{opacity:0, transform:'translateX(-50%) scale(.58,.18) translateY(8px) rotateX(14deg)'}], {duration:900, easing:'ease-in-out', fill:'forwards'})
-    setTimeout(()=>{ puddle.style.display='none' }, 980)
+    puddle.animate([{opacity:1, transform:'translateX(-50%) scale(1,.7) rotateX(12deg)'},{opacity:0, transform:'translateX(-50%) scale(.58,.18) translateY(8px) rotateX(12deg)'}],{duration:900,easing:'ease-in-out',fill:'forwards'})
+    setTimeout(()=>puddle.style.display='none',980)
   }, 3000 + Math.random()*600)
 }
 
-/* Beer physics: improved so puddle doesn't cover sprite */
-function beerFallFrom(x0, y0){
-  if(beerStarted) return
-  beerStarted = true
-  beerSprite.style.display='block'
-  beerSprite.style.zIndex=2147483401
-  const startX = x0
-  const startY = y0 - 240
-  beerSprite.style.left = startX + 'px'
-  beerSprite.style.top = startY + 'px'
-  beerSprite.style.transform = 'translate(-50%,0) rotate(' + (Math.random()*18 - 9) + 'deg)'
-
-  let state = { x:startX, y:startY, vx:(Math.random()*360 - 180), vy:0, angle:Math.random()*34 - 17, av:Math.random()*560 - 280 }
-  const gravity = 3200, drag = 0.997, floorY = Math.round(window.innerHeight * 0.70), fixedDt = 1/120
-  let prev = performance.now(), acc = 0, bounces = 0
-
-  function step(){
-    state.vy += gravity * fixedDt
-    state.vx *= drag
-    state.x += state.vx * fixedDt
-    state.y += state.vy * fixedDt
-    state.angle += state.av * fixedDt
-    state.av *= 0.995
-    if(state.y >= floorY){
-      state.y = floorY
-      if(bounces < 2){
-        state.vy *= -(0.32 + Math.random()*0.13)
-        state.vx *= 0.72
-        state.av *= -0.44
-        bounces++
-      } else {
-        state.vy = 0
-        state.vx *= 0.94
-        state.av *= 0.92
-        state.angle *= 0.985
-      }
+/* ========= Beer physics with impact SFX and audio logic ========= */
+function getCenter(el){
+  const r = el.getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }
+}
+function beerFallFrom(x0,y0){
+  if(beerStarted) return; beerStarted=true
+  beerSprite.style.display='block'; beerSprite.style.zIndex=1000
+  const startX = x0, startY = y0 - 240
+  beerSprite.style.left=startX+'px'; beerSprite.style.top=startY+'px'; beerSprite.style.transform='translate(-50%,0) rotate(' + (Math.random()*18-9) + 'deg)'
+  let state={x:startX,y:startY,vx:(Math.random()*360-180),vy:0,angle:Math.random()*34-17,av:Math.random()*560-280}
+  const gravity=3200, drag=0.997, floorY = Math.round(window.innerHeight * 0.70), fixedDt=1/120
+  let prev=performance.now(), acc=0, bounces=0
+  function step(){ state.vy += gravity*fixedDt; state.vx *= drag; state.x += state.vx*fixedDt; state.y += state.vy*fixedDt; state.angle += state.av*fixedDt; state.av *= 0.995
+    if(state.y >= floorY){ state.y = floorY
+      if(bounces < 2){ state.vy *= -(0.32 + Math.random()*0.13); state.vx *= 0.72; state.av *= -0.44; bounces++ }
+      else { state.vy = 0; state.vx *= 0.94; state.av *= 0.92; state.angle *= 0.985 }
     }
   }
   function render(){ beerSprite.style.left = state.x + 'px'; beerSprite.style.top = state.y + 'px'; beerSprite.style.transform = 'translate(-50%,0) rotate(' + state.angle + 'deg)' }
   function loop(now){
-    let dt=(now - prev)/1000; if(dt>.05) dt=.05; prev = now; acc += dt
+    let dt = (now - prev)/1000; if(dt > .05) dt = .05; prev = now; acc += dt
     while(acc >= fixedDt){ step(); acc -= fixedDt }
     render()
-    if(!(bounces >=2 && Math.abs(state.vy) < 18 && state.y >= floorY)){
-      requestAnimationFrame(loop)
-    } else {
+    if(!(bounces >= 2 && Math.abs(state.vy) < 18 && state.y >= floorY)) requestAnimationFrame(loop)
+    else {
+      // impact moment: stop/dampen darkMusic, play impact sfx, then start loveMusic after sfx ends
+      try{ darkMusic.volume = 0; darkMusic.pause() }catch(e){}
+      try{
+        impactSfx.currentTime = 0; impactSfx.play().catch(()=>{})
+      }catch(e){}
+      // visual effects
       try{ navigator.vibrate && navigator.vibrate([80,40,70]) }catch(e){}
-      // spawn splashes slightly in front of sprite so puddle doesn't cover it
       spawnSplashes(state.x, floorY + 20); spawnFoam(state.x, floorY + 18)
-      // nicer puddle: width limited, not covering sprite
       const maxW = Math.max(260, Math.min(window.innerWidth * 0.56, 760))
       const maxH = Math.max(52, Math.min(window.innerWidth * 0.12, 88))
       puddle.style.display='block'
-      puddle.animate([{opacity:0, width:'24px', height:'10px', transform:'translateX(-50%) scale(.22,.24) rotateX(12deg)'},{opacity:1, width: maxW + 'px', height: maxH + 'px', transform:'translateX(-50%) scale(1,.7) rotateX(12deg)'}], {duration:820, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
-      ripple.animate([{opacity:.9, width:'26px', height:'10px', transform:'translateX(-50%) scale(.2)'},{opacity:0, width:'360px', height:'92px', transform:'translateX(-50%) scale(1)'}], {duration:880, easing:'ease-out', fill:'forwards'})
+      puddle.animate([{opacity:0,width:'24px',height:'10px',transform:'translateX(-50%) scale(.22,.24) rotateX(12deg)'},{opacity:1,width:maxW+'px',height:maxH+'px',transform:'translateX(-50%) scale(1,.7) rotateX(12deg)'}],{duration:820,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'})
+      ripple.animate([{opacity:.9,width:'26px',height:'10px',transform:'translateX(-50%) scale(.2)'},{opacity:0,width:'360px',height:'92px',transform:'translateX(-50%) scale(1)'}],{duration:880,easing:'ease-out',fill:'forwards'})
       cleanupPuddleLater()
-      // after a short delay, switch to romance: background + music + memes
-      setTimeout(()=> startRomance(), 1200)
+      // when sfx ends -> start romantic music (fade-in) + romantic bg + spawn memes
+      impactSfx.onended = function(){
+        try{ loveMusic.currentTime = 0; loveMusic.volume = 0; loveMusic.play().catch(()=>{}); fadeAudio(loveMusic, 0.22, 1000) }catch(e){}
+        bgRomantic.classList.add('active'); try{ romVideo.play().catch(()=>{}) }catch(e){}
+        setTimeout(()=> spawnMemes(22), 560)
+      }
+      // fallback if sfx doesn't fire 'ended' (timeouts)
+      setTimeout(()=>{ if(!loveMusic || loveMusic.paused){ try{ loveMusic.currentTime = 0; loveMusic.volume = 0; loveMusic.play().catch(()=>{}); fadeAudio(loveMusic, 0.22, 1000) }catch(_){}; bgRomantic.classList.add('active'); try{ romVideo.play().catch(()=>{}) }catch(_){}; setTimeout(()=> spawnMemes(22),560) }, 2600)
     }
   }
   requestAnimationFrame(loop)
 }
 
-/* Attach beer trigger */
-beerWord.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); finalSpoiler.classList.add('open'); finalSpoiler.setAttribute('aria-pressed','true'); const c=getCenter(beerWord); beerFallFrom(c.x,c.y) })
-beerWord.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); beerWord.click() } })
+/* beer trigger */
+beerWord.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); if(!finalSpoiler.classList.contains('open')){ finalSpoiler.classList.add('open'); finalSpoiler.setAttribute('aria-pressed','true') } const pos = beerWord.getBoundingClientRect(); const cx = pos.left + pos.width/2; const cy = pos.top + pos.height/2; beerFallFrom(cx, cy) })
+beerWord.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); beerWord.click() }})
 
-/* Crossfade music to love and start memes */
-function crossFadeToLove(){
-  try{
-    const from = darkMusic, to = loveMusic
-    to.currentTime = 0; to.volume = 0; to.play().catch(()=>{})
-    const fromStart = from.volume || 0.16
-    const t0 = performance.now(), ms = 1400
-    function step(now){
-      const k = Math.min(1, (now - t0) / ms)
-      from.volume = fromStart * (1 - k)
-      to.volume = 0.22 * k
-      if(k < 1) requestAnimationFrame(step)
-      else { try{ from.pause(); from.currentTime = 0 }catch(_){} }
-    }
-    requestAnimationFrame(step)
-  }catch(e){}
-}
-
-function startRomance(){
-  if(romanceStarted) return
-  romanceStarted = true
-  // soften mystic background and show romantic one
-  try{ document.getElementById('bgMystic').style.opacity = '0.06' }catch(e){}
-  bgRomantic.classList.add('active')
-  crossFadeToLove()
-  spawnMemes(20)
-}
-
-/* spawn memes (as before) */
+/* ========= Spawn memes (drift/rotation/collision) ========= */
 function spawnMemes(count=18){
   memeLayer.innerHTML=''; memeLayer.style.pointerEvents='auto'
   const items=[]
   for(let i=0;i<count;i++){
-    const frame=document.createElement('div'); frame.className='meme-frame'
-    const size=80 + Math.random()*260; frame.style.width=size+'px'; frame.style.height=size+'px'
-    const left=clamp(3 + Math.random()*86, 2, 92), top=clamp(6 + Math.random()*80, 4, 92)
+    const frame = document.createElement('div'); frame.className='meme-frame'
+    const size = 100 + Math.random()*200; frame.style.width=size+'px'; frame.style.height=size+'px'
+    const left = clamp(2 + Math.random()*86,2,92), top = clamp(6 + Math.random()*80,4,92)
     frame.style.left = left + '%'; frame.style.top = top + '%'
-    const img=document.createElement('img'); img.src='meme.png'; img.alt='мем'; frame.appendChild(img)
-    memeLayer.appendChild(frame)
-    items.push({el:frame,left,top,w:size,h:size,vx:(Math.random()*240-120),vy:(Math.random()*240-120)})
+    const img = document.createElement('img'); img.src='meme.png'; img.alt='мем'
+    frame.appendChild(img); memeLayer.appendChild(frame)
+    items.push({el:frame,left,top,w:size,h:size,vx:(Math.random()*260-130),vy:(Math.random()*260-130)})
   }
-  setTimeout(()=>{ // resolve collisions & animate
+  setTimeout(()=>{
     for(let iter=0; iter<4; iter++){
       for(let a=0;a<items.length;a++){
         for(let b=a+1;b<items.length;b++){
-          const A=items[a], B=items[b]
-          const rectA=A.el.getBoundingClientRect(), rectB=B.el.getBoundingClientRect()
-          const ax=rectA.left + rectA.width/2, ay=rectA.top + rectA.height/2
-          const bx=rectB.left + rectB.width/2, by=rectB.top + rectB.height/2
-          const dx=ax-bx, dy=ay-by, dist=Math.sqrt(dx*dx + dy*dy) || 1
-          const min=(rectA.width + rectB.width) * 0.5 * 0.82
+          const A = items[a], B = items[b]
+          const ra = A.el.getBoundingClientRect(), rb = B.el.getBoundingClientRect()
+          const ax = ra.left + ra.width/2, ay = ra.top + ra.height/2
+          const bx = rb.left + rb.width/2, by = rb.top + rb.height/2
+          const dx = ax - bx, dy = ay - by, dist = Math.sqrt(dx*dx + dy*dy) || 1
+          const min = (ra.width + rb.width) * 0.5 * 0.82
           if(dist < min){
-            const push=(min - dist) * 0.5, nx=dx/dist, ny=dy/dist
+            const push = (min - dist) * 0.5, nx = dx/dist, ny = dy/dist
             const pushXper = (nx * push) / window.innerWidth * 100
             const pushYper = (ny * push) / window.innerHeight * 100
-            A.left = clamp(A.left + pushXper, 2, 92)
-            A.top = clamp(A.top + pushYper, 2, 92)
-            B.left = clamp(B.left - pushXper, 2, 92)
-            B.top = clamp(B.top - pushYper, 2, 92)
+            A.left = clamp(A.left + pushXper, 2, 92); A.top = clamp(A.top + pushYper, 2, 92)
+            B.left = clamp(B.left - pushXper, 2, 92); B.top = clamp(B.top - pushYper, 2, 92)
           }
         }
       }
     }
     items.forEach(it=>{
       it.el.style.left = it.left + '%'; it.el.style.top = it.top + '%'
-      const dur = 2000 + Math.random()*5200
-      const rx = (Math.random()*70-35), ry=(Math.random()*70-35), rz=(Math.random()*140-70)
+      const dur = 2000 + Math.random()*5200; const rx = (Math.random()*70-35), ry=(Math.random()*70-35), rz=(Math.random()*140-70)
       it.el.animate([
         { transform: `translate3d(0,0,0) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)` },
         { transform: `translate3d(${(it.vx*0.05).toFixed(1)}px,${(it.vy*0.03 - 26).toFixed(1)}px,0) rotateX(${(rx*1.05).toFixed(1)}deg) rotateY(${(ry*1.05).toFixed(1)}deg) rotateZ(${(rz+12).toFixed(1)}deg)` },
         { transform: `translate3d(${- (it.vx*0.03).toFixed(1)}px,${(-it.vy*0.02).toFixed(1)}px,0) rotateX(${(rx*0.8).toFixed(1)}deg) rotateY(${(ry*0.8).toFixed(1)}deg) rotateZ(${(rz-9).toFixed(1)}deg)` },
         { transform: `translate3d(0,0,0) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)` }
       ], { duration: dur, iterations: Infinity, easing: 'ease-in-out' })
-      it.el.addEventListener('click', ()=>{ $$('.meme-frame').forEach(m=> m.classList.add('fade-out')); setTimeout(()=>{ memeLayer.innerHTML=''; showConfession() }, 420) }, {once:true})
+      it.el.addEventListener('click', ()=>{
+        $$('.meme-frame').forEach(m=>m.classList.add('fade-out'))
+        setTimeout(()=>{ memeLayer.innerHTML=''; showConfession() }, 420)
+      }, {once:true})
     })
   }, 60)
 }
 
-/* Confession text animation */
-function animateConfessionText(){
-  const raw = confessionText.textContent.trim()
+/* ========= Confession animation ========= */
+function animateConfession(){
+  const raw = confText.textContent.trim()
   const segments = raw.match(/[^.!?]+[.!?]?/g)?.map(s=>s.trim()).filter(Boolean) || [raw]
-  confessionText.innerHTML = ''
-  segments.forEach((seg, si)=>{
+  confText.innerHTML = ''
+  segments.forEach((seg,si)=>{
     const p = document.createElement('p')
     for(let i=0;i<seg.length;i++){
-      const ch = seg[i]
-      const span = document.createElement('span'); span.className = 'confession-char'
-      span.textContent = (ch === ' ') ? '\u00A0' : ch
-      const delay = (si*0.22) + (i*0.014) + Math.random()*0.03
-      span.style.animationDelay = delay + 's'
-      p.appendChild(span)
+      const ch = seg[i]; const span = document.createElement('span'); span.className='conf-char'
+      span.textContent = (ch===' ' ? '\u00A0' : ch)
+      const delay = (si*0.22) + (i*0.012) + Math.random()*0.03
+      span.style.animationDelay = delay + 's'; p.appendChild(span)
     }
-    confessionText.appendChild(p)
-    setTimeout(()=>{ p.style.opacity = 1; p.style.transform = 'translateY(0)' }, 280 + si*240)
+    confText.appendChild(p)
+    setTimeout(()=>{ p.style.opacity = 1; p.style.transform = 'translateY(0)' }, 280 + si*200)
   })
 }
-function showConfession(){
-  document.querySelector('.bg-romantic')?.classList.add('active')
-  animateConfessionText()
-  confessionPanel.classList.add('open')
-}
+function showConfession(){ bgRomantic.classList.add('active'); try{ romVideo.play().catch(()=>{}) }catch(e){}; animateConfession(); confPanel.classList.add('open') }
 
-/* Heart -> video */
+/* ========= Heart -> video ========= */
 heartBtn.addEventListener('click', ()=>{
   videoOverlay.style.display = 'flex'
-  videoOverlay.setAttribute('aria-hidden','false')
-  videoPlaceholder.style.display = 'none'
-  secretVideo.style.display = 'block'
-  secretVideo.play().catch(()=>{ secretVideo.style.display='none'; videoPlaceholder.style.display='flex' })
+  try{ secretVideo.style.display = 'block'; videoFallback.style.display = 'none'; secretVideo.play().catch(()=>{ secretVideo.style.display='none'; videoFallback.style.display='flex' }) }catch(e){ videoFallback.style.display='flex' }
 })
-heartBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); heartBtn.click() }})
-videoOverlay.addEventListener('click', (e)=>{ if(e.target === videoOverlay){ videoOverlay.style.display = 'none'; try{ secretVideo.pause() }catch(_){} } })
-secretVideo.addEventListener('error', ()=>{ secretVideo.style.display = 'none'; videoPlaceholder.style.display = 'flex' })
-closeConfession.addEventListener('click', ()=> confessionPanel.classList.remove('open'))
+heartBtn.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); heartBtn.click() }})
+videoOverlay.addEventListener('click', (e)=>{ if(e.target === videoOverlay){ videoOverlay.style.display = 'none'; try{ secretVideo.pause() }catch(_){} }})
+secretVideo.addEventListener('error', ()=>{ secretVideo.style.display='none'; videoFallback.style.display='flex' })
+closeConf.addEventListener('click', ()=> confPanel.classList.remove('open'))
 
-/* ESC closes */
-document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ if(storyPanel.classList.contains('open')) storyPanel.classList.remove('open'); if(confessionPanel.classList.contains('open')) confessionPanel.classList.remove('open'); if(videoOverlay.style.display === 'flex') videoOverlay.style.display = 'none' } })
+/* ESC closes overlays */
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ if(storyPanel.classList.contains('open')) storyPanel.classList.remove('open'); if(confPanel.classList.contains('open')) confPanel.classList.remove('open'); if(videoOverlay.style.display === 'flex') videoOverlay.style.display = 'none' } })
 
-/* expose debugging shortcuts */
-window._gift = { openStory, beerFallFrom, spawnMemes, showConfession, crossFadeToLove }
+/* small helper */
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)) }
+
+/* expose debug helpers if you need quick testing in console */
+window._gift = { openStory: ()=>{ openStory() }, beerFallFrom, spawnMemes, showConfession }
+
 </script>
 </body>
 </html>
