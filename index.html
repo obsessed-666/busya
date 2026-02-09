@@ -13,30 +13,28 @@
   --safe-bottom:env(safe-area-inset-bottom,0px);
   --accent:#ff4f7d;
   --soft:#fff0f6;
+  --panel-w:96vw;
 }
 html,body{height:100%;width:100%;background:#030414;color:var(--soft);font-family:Montserrat,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 img{display:block;max-width:100%;-webkit-user-drag:none;user-select:none}
 button,[role="button"],.tap{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
-/* Keep body visible (we use panels for scrolling) */
+/* Keep page overflow hidden - panels scroll internally */
 html,body{overflow:hidden}
 
-/* Backgrounds */
-.bg-mystic, .bg-romantic {position:fixed;inset:0;z-index:-40;pointer-events:none;overflow:hidden;transition:opacity .9s ease}
-.bg-mystic{background:linear-gradient(180deg,#061028 0%,#02030a 72%)}
-.bg-mystic .mist{position:absolute;inset:-30%;filter:blur(66px);mix-blend-mode:screen;opacity:.22;background:
-  radial-gradient(circle at 18% 24%, rgba(140,170,245,0.13), transparent 20%),
-  radial-gradient(circle at 78% 72%, rgba(120,140,190,0.11), transparent 22%);animation:mistMove 38s linear infinite}
-@keyframes mistMove{0%{transform:translateY(0)}50%{transform:translateY(-120px)}100%{transform:translateY(0)}}
-.bg-romantic{opacity:0;background:linear-gradient(132deg,#3b114a 0%,#6f4ac2 36%,#ff7db5 68%,#ffddec 100%)}
-.bg-romantic.active{opacity:1}
-.bg-romantic::before{content:"";position:absolute;inset:0;background-image:url('hearts-bg.jpg');background-size:cover;background-position:center;opacity:.42;filter:blur(6px) contrast(.95);mix-blend-mode:screen}
+/* ---------- Background wrappers (decorative) ---------- */
+.bg-mystic, .bg-romantic {position:fixed;inset:0;z-index:-60;pointer-events:none;overflow:hidden;transition:opacity .9s ease}
+.bg-mystic{background:linear-gradient(180deg,#041026 0%,#02030a 72%)}
+.bg-mystic .mist1{position:absolute;inset:-30%;filter:blur(66px);mix-blend-mode:screen;opacity:.22;background:
+  radial-gradient(circle at 18% 24%, rgba(140,170,245,0.12), transparent 20%);animation:mist1 34s linear infinite}
+.bg-mystic .mist2{position:absolute;inset:-30%;filter:blur(46px);mix-blend-mode:screen;opacity:.14;background:
+  radial-gradient(circle at 78% 72%, rgba(120,140,190,0.10), transparent 22%);animation:mist2 40s linear infinite}
+@keyframes mist1{0%{transform:translateY(0)}50%{transform:translateY(-120px)}100%{transform:translateY(0)}}
+@keyframes mist2{0%{transform:translateY(0)}50%{transform:translateY(-86px)}100%{transform:translateY(0)}}
 
-/* vignette */
-.vignette{position:fixed;inset:0;z-index:-20;pointer-events:none;background:radial-gradient(circle at center, rgba(255,255,255,0.02), rgba(0,0,0,0) 34%, rgba(0,0,0,.66) 100%)}
-
-/* Intro (cat) on top */
-.intro-panel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:2147483600;pointer-events:auto;padding:18px}
+/* ---------- Intro (cat) - on top and clickable ---------- */
+.intro-panel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:2147483600;pointer-events:auto;padding:18px;transition:opacity .45s ease, transform .45s ease}
+.intro-panel.hidden{opacity:0;transform:scale(.995);pointer-events:none}
 .cat-frame{border-radius:18px;padding:10px;background:linear-gradient(180deg,#24181f,#0f0b0b);box-shadow:0 42px 140px rgba(0,0,0,.72);border:4px solid rgba(255,255,255,0.04);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;transition:transform .12s ease;z-index:2147483601}
 .cat-frame:active{transform:translateY(2px)}
 #cat{width:min(84vw,520px);aspect-ratio:3/4;object-fit:cover;border-radius:12px;display:block;box-shadow:0 18px 60px rgba(0,0,0,.6)}
@@ -44,78 +42,86 @@ html,body{overflow:hidden}
 @keyframes catPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
 .hint{font-size:14px;padding:8px 12px;background:rgba(0,0,0,.14);border-radius:999px;color:rgba(255,255,255,.92)}
 
-/* Panel (internal scroll) */
-.panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(96vw,920px);height:86vh;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 40px);background:linear-gradient(180deg, rgba(10,11,16,.45), rgba(6,7,12,.36));border-radius:14px;box-shadow:0 40px 140px rgba(0,0,0,.72);display:none;flex-direction:column;overflow:hidden;padding:12px;z-index:2147483500;backdrop-filter: blur(8px)}
-.panel.open{display:flex}
-.panel .content{overflow:auto;padding:8px 12px;-webkit-overflow-scrolling:touch}
-.panel .content p{font-family:'Merriweather',serif;color:#eaeaf0;line-height:1.7;font-size:16px;margin-bottom:14px}
-.panel .footer{display:flex;justify-content:center;padding-top:10px}
-.close-btn{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.04);border:0;color:var(--soft);cursor:pointer}
+/* ---------- Story panel with animated suspense background ---------- */
+.story-panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(var(--panel-w),920px);height:86vh;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 40px);background:transparent;border-radius:14px;box-shadow:0 42px 160px rgba(0,0,0,.7);display:none;z-index:2147483550;overflow:hidden}
+.story-panel.open{display:block}
+.story-bg{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;background:
+  radial-gradient(circle at 10% 12%, rgba(30,40,70,.12), transparent 12%),
+  linear-gradient(180deg, rgba(6,8,14,0.95), rgba(3,4,8,0.98));filter:contrast(1.02)}
+/* animated layered fog/lines + moon glow */
+.story-bg .fogA{position:absolute;inset:-20%;background:radial-gradient(circle at 25% 26%, rgba(120,140,190,.06), transparent 20%);filter:blur(26px);animation:fogA 30s linear infinite;opacity:.9}
+.story-bg .fogB{position:absolute;inset:-20%;background:radial-gradient(circle at 78% 66%, rgba(90,110,150,.05), transparent 22%);filter:blur(36px);animation:fogB 38s linear infinite;opacity:.85}
+.story-bg .scanlines{position:absolute;inset:0;background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.01) 0 2px, transparent 2px 8px);mix-blend-mode:overlay;opacity:.06;animation:scan 1.6s linear infinite}
+@keyframes fogA{0%{transform:translateY(0)}50%{transform:translateY(-72px)}100%{transform:translateY(0)}}
+@keyframes fogB{0%{transform:translateY(0)}50%{transform:translateY(-118px)}100%{transform:translateY(0)}}
+@keyframes scan{0%{background-position:0 0}100%{background-position:0 20px}}
 
-/* Spoiler */
-.spoiler{position:relative;display:inline-block;padding:12px 16px;border-radius:12px;background:linear-gradient(180deg,#0f1017,#07080c);cursor:pointer;overflow:visible}
+/* story content (scrollable) */
+.story-content{position:relative;z-index:6;overflow:auto;height:100%;padding:28px 28px 18px 28px;-webkit-overflow-scrolling:touch}
+.story-card{max-width:920px;margin:0 auto;background:linear-gradient(180deg, rgba(8,9,12,.28), rgba(6,6,8,.22));border-radius:12px;padding:28px;backdrop-filter: blur(6px);box-shadow:0 28px 90px rgba(0,0,0,.6);color:#eaeaf0;font-family:'Merriweather',serif;line-height:1.72;font-size:17px}
+.story-card p{margin-bottom:14px}
+
+/* close */
+.story-close{position:absolute;right:14px;top:12px;z-index:12;border:0;background:rgba(255,255,255,0.04);color:var(--soft);padding:8px 10px;border-radius:8px;cursor:pointer}
+
+/* re-style spoiler inside story-card to look more blurred & cinematic */
+.spoiler{position:relative;display:inline-block;padding:12px 16px;border-radius:12px;background:linear-gradient(180deg, rgba(10,11,12,.18), rgba(6,7,9,.3));cursor:pointer;overflow:visible}
 .spoiler .line{position:relative;z-index:6;color:transparent;transition:color .45s ease,text-shadow .45s ease}
 .spoiler .beer-btn{position:relative;z-index:7;background:transparent;border:0;padding:0;margin:0;color:transparent;font:inherit;font-weight:700;cursor:pointer}
-.spoiler .veil{position:absolute;inset:-8px;z-index:5;border-radius:12px;background:linear-gradient(120deg, rgba(16,18,22,0.96), rgba(6,7,9,0.99));backdrop-filter: blur(14px);transition:transform .58s cubic-bezier(.2,.9,.3,1),opacity .58s;pointer-events:none;box-shadow:inset 0 8px 40px rgba(255,255,255,0.02)}
-.spoiler.open .veil{transform:translateY(-140%);opacity:0}
-.spoiler.open .line{color:#fff;text-shadow:0 8px 22px rgba(0,0,0,.54)}
+.spoiler .veil{position:absolute;inset:-8px;z-index:5;border-radius:12px;background:linear-gradient(120deg, rgba(15,17,22,0.96), rgba(6,7,9,0.99));backdrop-filter: blur(18px) saturate(.95);transition:transform .58s cubic-bezier(.2,.9,.3,1),opacity .58s;pointer-events:none;box-shadow:inset 0 8px 40px rgba(255,255,255,0.02)}
+.spoiler.open .veil{transform:translateY(-160%);opacity:0}
+.spoiler.open .line{color:#fff;text-shadow:0 10px 28px rgba(0,0,0,.58)}
 .spoiler.open .beer-btn{color:#ffd166;text-decoration:underline}
 
-/* Beer visuals */
+/* ---------- Meme & Beer layers (unchanged) ---------- */
 #beerLayer{position:fixed;inset:0;z-index:2147483400;pointer-events:none}
 #beerSprite{position:absolute;width:min(34vw,160px);transform:translate(-50%,0) rotate(0deg);display:none;will-change:left,top,transform}
 .puddle{position:absolute;left:50%;bottom:12vh;transform:translateX(-50%) scale(.2);width:26px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff3c7 0%, #ffd98a 28%, #b96820 78%);filter:blur(1.4px);box-shadow:0 12px 36px rgba(0,0,0,.45),inset 0 -6px 14px rgba(100,60,20,.44)}
 .ripple{position:absolute;left:50%;bottom:12vh;transform:translateX(-50%) scale(.2);width:24px;height:10px;border-radius:50%;border:2px solid rgba(255,220,130,.86);opacity:0}
 .splash{position:absolute;border-radius:50%;pointer-events:none;will-change:transform,opacity}
 
-/* Meme layer */
 #memeLayer{position:fixed;inset:0;z-index:2147483450;pointer-events:none}
 .meme-frame{position:absolute;padding:8px;border-radius:12px;background:linear-gradient(180deg,#24181f,#12070b);border:6px solid rgba(255,95,155,0.12);box-shadow:0 30px 110px rgba(0,0,0,.5);overflow:hidden;cursor:pointer;pointer-events:auto;transform-origin:center;will-change:transform;transition:opacity .36s ease}
 .meme-frame img{width:100%;height:100%;object-fit:cover;display:block}
 .fade-out{opacity:0 !important;transform:scale(.93) !important;transition:.42s ease}
 
-/* Confession */
-#confessionPanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(96vw,920px);height:82vh;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 40px);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));border-radius:18px;box-shadow:0 42px 160px rgba(0,0,0,.6);display:none;flex-direction:column;z-index:2147483500;padding:22px;overflow:hidden}
+/* ---------- Confession panel ---------- */
+#confessionPanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(var(--panel-w),920px);height:82vh;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 40px);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));border-radius:18px;box-shadow:0 42px 160px rgba(0,0,0,.6);display:none;flex-direction:column;z-index:2147483500;padding:22px;overflow:hidden}
 #confessionPanel.open{display:flex}
 #confessionInner{overflow:auto;padding:12px;-webkit-overflow-scrolling:touch}
 #confessionText{font-family:'Marck Script',cursive;font-size:clamp(28px,6.2vw,44px);text-align:center;color:#ffeaf2;text-shadow:0 10px 30px rgba(120,30,60,0.18)}
 .confession-char{display:inline-block;white-space:pre;transform-origin:center bottom;animation:charFloat 3.6s ease-in-out infinite}
 @keyframes charFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 
-/* Heart button */
+/* heart button */
 .heart-wrap{display:flex;flex-direction:column;align-items:center;margin-top:16px}
 .heart-btn{font-size:62px;cursor:pointer;color:var(--accent);text-shadow:0 12px 30px rgba(255,79,125,.36);animation:heartPulse 1.8s ease-in-out infinite}
 @keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 .heart-caption{font-size:13px;color:#ffd8e6;margin-top:8px}
 
-/* Video overlay */
+/* video overlay */
 #videoOverlay{position:fixed;inset:0;z-index:2147483602;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;padding:max(12px,var(--safe-top))}
 #videoOverlay video{width:94vw;max-width:900px;max-height:78vh;border-radius:12px;background:#000;box-shadow:0 22px 70px rgba(0,0,0,.6)}
 .video-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));color:var(--soft)}
 
-/* Responsive */
+/* responsive tweaks */
 @media (max-width:430px){
   #cat{width:min(88vw,420px)}
-  .panel{width:94vw;height:86vh}
-  #confessionPanel{width:94vw;height:84vh}
+  .story-card{padding:20px;font-size:16px}
   #confessionText{font-size:clamp(26px,7.3vw,40px)}
 }
 
-/* HARD FIX (extra layer): defensive pointer-events disabling for decorative layers */
+/* Defensive: ensure decorative layers can't block the cat */
 .bg-mystic, .bg-romantic, .vignette, #beerLayer, #memeLayer { pointer-events: none !important; }
 .cat-frame, #cat { position: relative; z-index:2147483601 !important; pointer-events: auto !important; }
 
 </style>
 </head>
 <body>
-<div id="app">
+  <!-- decorative global backgrounds (do not block events) -->
+  <div class="bg-mystic" id="bgMystic"><div class="mist1"></div><div class="mist2"></div></div>
 
-  <!-- Backgrounds -->
-  <div class="bg-mystic" id="bgMystic"><div class="mist"></div></div>
-  <div class="bg-romantic" id="bgRomantic"></div>
-  <div class="vignette"></div>
-
-  <!-- Intro - cat -->
+  <!-- Intro / cat -->
   <div class="intro-panel" id="introPanel" aria-label="Начало">
     <div class="cat-frame tap" id="catFrame" role="button" tabindex="0" aria-label="Нажми на котика">
       <img id="cat" class="cat-pulse" src="cat.jpg" alt="кот Буся — нажми" />
@@ -123,57 +129,56 @@ html,body{overflow:hidden}
     </div>
   </div>
 
-  <!-- Beer layer -->
+  <!-- Story panel (hidden until cat click) -->
+  <div class="story-panel" id="storyPanel" role="dialog" aria-label="Рассказ">
+    <div class="story-bg" id="storyBg">
+      <div class="fogA"></div><div class="fogB"></div><div class="scanlines"></div>
+    </div>
+
+    <button class="story-close" id="closeStory" aria-label="Закрыть рассказ">✕</button>
+
+    <div class="story-content">
+      <div class="story-card" id="storyCard">
+        <!-- ПОЛНЫЙ РАССКАЗ (буква в букву) -->
+        <p>Однажды я сидел как ни в чём не бывало дома, слушал грустную музыку, смотрел в окно, думал о своём тленном будущем, как вдруг… звонок в дверь. Я опешил, ведь было 3 часа ночи, и я никого не ждал. В тот день ощущения поистине были странные. На дворе стояла лёгкая дымка, а на небе отчётливо виднелась яркая полная луна, прямо как с картинки — мрачная и загадочная. Погода за окном лишь добавляла таинственности и неопределённости данному событию.</p>
+
+        <p>«У соседа, наверное, что-то стряслось», — почесав репу, подумал я. Но чувство тревоги затмило мой рассудок, и я медленно, тихим шагом подошёл к входной двери. Стояла полнейшая тишина. Я пытался прислушаться к звукам по ту сторону двери, но их не было. Я стоял так где-то минуту, но по ощущениям она длилась целую вечность. В голове была лишь растерянность и смятение.</p>
+
+        <p>Как вдруг я услышал странный металлический скрип, будто кто-то медленно, но уверенно водил ногтем по стальному листу. Я сильно напрягся, всё тело с головы до ног пробрало мурашками, я почувствовал резкий скачок адреналина — разум явно чувствовал, что что-то тут не так. Я набрался смелости и, сцепив зубы, выдавил из себя: „Wer ist da?“ Но, как я и ожидал, ответа не поступило. Лишь этот до дрожи противный металлический звук, который проникал в каждую клеточку мозга… Ощущалось, будто это происходит прямо у меня в голове, будто кто-то с издёвкой водит по нему скрипучей железякой.</p>
+
+        <p>И вдруг — тишина. Снова. Я понимал, что кто бы то ни был за дверью, вероятно, тоже услышал, как я стою и молча слушаю, внимая этот психоделический ужас. Где-то спустя секунд 20 раздался громкий железный звук — звук падения прямо перед моей грёбанной дверью. Я набрался смелости и прислонил ухо к двери, чтобы попытаться идентифицировать, что же упало... и что, чёрт возьми, тут вообще происходит.</p>
+
+        <p>Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
+
+        <div class="spoiler tap" id="finalSpoiler" role="button" tabindex="0" aria-pressed="false" aria-label="Открыть панчлайн">
+          <div class="veil" aria-hidden="true"></div>
+          <div class="line">— Ой, извини, у меня <button class="beer-btn tap" id="beerWord" type="button" aria-label="Запустить падение пива">пиво</button> упало.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Meme & Beer layers -->
   <div id="beerLayer" aria-hidden="true">
     <img id="beerSprite" src="beer.png" alt="банка Desperados" />
     <div class="puddle" id="puddle"></div>
     <div class="ripple" id="ripple"></div>
   </div>
 
-  <!-- Story panel -->
-  <div class="panel" id="storyPanel" role="dialog" aria-label="Рассказ">
-    <div class="content" id="storyContent" tabindex="0" aria-live="polite">
-      <!-- ПОЛНЫЙ РАССКАЗ -->
-      <p>Однажды я сидел как ни в чём не бывало дома, слушал грустную музыку, смотрел в окно, думал о своём тленном будущем, как вдруг… звонок в дверь. Я опешил, ведь было 3 часа ночи, и я никого не ждал. В тот день ощущения поистине были странные. На дворе стояла лёгкая дымка, а на небе отчётливо виднелась яркая полная луна, прямо как с картинки — мрачная и загадочная. Погода за окном лишь добавляла таинственности и неопределённости данному событию.</p>
-
-      <p>«У соседа, наверное, что-то стряслось», — почесав репу, подумал я. Но чувство тревоги затмило мой рассудок, и я медленно, тихим шагом подошёл к входной двери. Стояла полнейшая тишина. Я пытался прислушаться к звукам по ту сторону двери, но их не было. Я стоял так где-то минуту, но по ощущениям она длилась целую вечность. В голове была лишь растерянность и смятение.</p>
-
-      <p>Как вдруг я услышал странный металлический скрип, будто кто-то медленно, но уверенно водил ногтем по стальному листу. Я сильно напрягся, всё тело с головы до ног пробрало мурашками, я почувствовал резкий скачок адреналина — разум явно чувствовал, что что-то тут не так. Я набрался смелости и, сцепив зубы, выдавил из себя: „Wer ist da?“ Но, как я и ожидал, ответа не поступило. Лишь этот до дрожи противный металлический звук, который проникал в каждую клеточку мозга… Ощущалось, будто это происходит прямо у меня в голове, будто кто-то с издёвкой водит по нему скрипучей железякой.</p>
-
-      <p>И вдруг — тишина. Снова. Я понимал, что кто бы то ни был за дверью, вероятно, тоже услышал, как я стою и молча слушаю, внимая этот психоделический ужас. Где-то спустя секунд 20 раздался громкий железный звук — звук падения прямо перед моей грёбанной дверью. Я набрался смелости и прислонил ухо к двери, чтобы попытаться идентифицировать, что же упало... и что, чёрт возьми, тут вообще происходит.</p>
-
-      <p>Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
-
-      <div class="spoiler tap" id="finalSpoiler" role="button" tabindex="0" aria-pressed="false" aria-label="Открыть панчлайн">
-        <div class="veil" aria-hidden="true"></div>
-        <div class="line">— Ой, извини, у меня <button class="beer-btn tap" id="beerWord" type="button" aria-label="Запустить падение пива">пиво</button> упало.</div>
-      </div>
-
-      <div style="height:18px"></div>
-    </div>
-
-    <div class="footer">
-      <button id="closeStory" class="close-btn tap">Закрыть</button>
-    </div>
-  </div>
-
-  <!-- Meme layer -->
   <div id="memeLayer" aria-hidden="true"></div>
 
-  <!-- Confession panel -->
+  <!-- Confession (unchanged) -->
   <div id="confessionPanel" role="dialog" aria-label="Признание">
     <div id="confessionInner">
       <div id="confessionText" aria-live="polite">
-        <!-- ПОЛНОЕ ПРИЗНАНИЕ -->
         буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было. и не будет. ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было. полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя. очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни
       </div>
-
       <div class="heart-wrap">
         <div class="heart-btn tap" id="heartBtn" role="button" tabindex="0">💘</div>
         <div class="heart-caption">сердечко тык</div>
       </div>
     </div>
-
     <button id="closeConfession" class="close-btn tap" style="position:absolute;right:12px;top:12px">✕</button>
   </div>
 
@@ -191,29 +196,18 @@ html,body{overflow:hidden}
   <audio id="darkMusic" src="dark.mp3" preload="auto"></audio>
   <audio id="loveMusic" src="love.mp3" preload="auto"></audio>
 
-  <!-- Optional hearts video -->
-  <video id="heartsVideo" src="hearts.mp4" muted loop autoplay playsinline style="display:none;position:fixed;inset:0;z-index:-20;object-fit:cover;pointer-events:none"></video>
-
-</div>
-
 <script>
-/* Robust pointer-capture fallback:
-   - If any overlay blocks pointer events, we still detect pointer coordinates
-     and trigger the cat action when the pointer is inside the cat frame rect.
-   - Works for mouse, touch, stylus (pointer events), plus keyboard/click handlers remain.
-*/
-
-/* Short helpers */
+/* === Handlers: open story by removing intro and activating animated background === */
 const $ = s => document.querySelector(s)
 const $$ = s => Array.from(document.querySelectorAll(s))
 function clamp(v,a,b){ return Math.max(a, Math.min(b, v)) }
-function rectContainsPoint(rect, x, y){
-  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
-}
+function rectContainsPoint(rect, x, y){ return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom }
+function getCenter(el){ const r = el.getBoundingClientRect(); return {x: r.left + r.width/2, y: r.top + r.height/2} }
 
-/* Elements */
+const introPanel = $('#introPanel')
 const catFrame = $('#catFrame')
 const storyPanel = $('#storyPanel')
+const storyBg = $('#storyBg')
 const closeStory = $('#closeStory')
 const finalSpoiler = $('#finalSpoiler')
 const beerWord = $('#beerWord')
@@ -228,41 +222,57 @@ const heartBtn = $('#heartBtn')
 const videoOverlay = $('#videoOverlay')
 const secretVideo = $('#secretVideo')
 const videoPlaceholder = $('#videoPlaceholder')
-const bgRomantic = $('#bgRomantic')
-const heartsVideo = $('#heartsVideo')
+const bgMystic = $('#bgMystic')
 const darkMusic = $('#darkMusic')
 const loveMusic = $('#loveMusic')
 
-let beerStarted = false
-let romanceStarted = false
-let audioUnlocked = false
-let puddleTimer = null
+let beerStarted=false, romanceStarted=false, audioUnlocked=false, puddleTimer=null
 
-/* Defensive: ensure decorative layers don't block events */
+/* Defensive: decorative layers not catching events */
 ;['.bg-mystic','.bg-romantic','.vignette','#beerLayer','#memeLayer'].forEach(sel=>{
-  const el = document.querySelector(sel)
-  if(el) el.style.pointerEvents = 'none'
+  const el = document.querySelector(sel); if(el) el.style.pointerEvents='none'
 })
 
 /* audio unlock */
-function unlockAudio(){
-  if(audioUnlocked) return
-  audioUnlocked = true
-  try{ darkMusic.volume = 0; loveMusic.volume = 0; darkMusic.play().then(()=>darkMusic.pause()).catch(()=>{}); loveMusic.play().then(()=>loveMusic.pause()).catch(()=>{}); }catch(e){}
-}
-window.addEventListener('click', unlockAudio, {once:true})
-window.addEventListener('touchstart', unlockAudio, {once:true, passive:true})
+function unlockAudio(){ if(audioUnlocked) return; audioUnlocked=true; try{ darkMusic.volume=0; loveMusic.volume=0; darkMusic.play().then(()=>darkMusic.pause()).catch(()=>{}); loveMusic.play().then(()=>loveMusic.pause()).catch(()=>{}); }catch(e){} }
+window.addEventListener('click', unlockAudio, {once:true}); window.addEventListener('touchstart', unlockAudio, {once:true, passive:true})
 
-/* Primary openStory (used everywhere) */
+/* Smooth hide intro and show story with background activation */
 function openStory(){
-  storyPanel.classList.add('open')
-  try{ darkMusic.currentTime = 0; darkMusic.volume = 0; darkMusic.play().catch(()=>{}); fadeAudio(darkMusic, 0.16, 900) }catch(e){}
+  // fade out intro
+  introPanel.classList.add('hidden')
+  // after fade, hide completely and show story
+  setTimeout(()=>{
+    try{ introPanel.style.display='none' }catch(e){}
+    storyPanel.classList.add('open')
+    // activate story-bg animations (CSS already animating); optionally kick small vignette pulse
+    bgMystic.style.opacity = '0.08'
+    // play dark music softly
+    try{ darkMusic.currentTime=0; darkMusic.volume=0; darkMusic.play().catch(()=>{}); fadeAudio(darkMusic, 0.16, 900)}catch(e){}
+  }, 420)
 }
 
-/* Simple fade helper */
+/* ensure cat reacts on direct click and on pointer capture even if overlays exist */
+catFrame.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); openStory() })
+catFrame.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openStory() } })
+
+// pointer-capture fallback: if some overlay intercepts, still open when pointer inside cat rect
+function pointerCaptureHandler(e){
+  try{
+    const r = catFrame.getBoundingClientRect()
+    const x = (typeof e.clientX === 'number') ? e.clientX : (e.touches && e.touches[0] && e.touches[0].clientX) || -1
+    const y = (typeof e.clientY === 'number') ? e.clientY : (e.touches && e.touches[0] && e.touches[0].clientY) || -1
+    if(rectContainsPoint(r, x, y)){ e.preventDefault && e.preventDefault(); e.stopPropagation && e.stopPropagation(); openStory() }
+  }catch(_){}
+}
+document.addEventListener('pointerdown', pointerCaptureHandler, {capture:true, passive:false})
+document.addEventListener('touchstart', pointerCaptureHandler, {capture:true, passive:false})
+
+closeStory.addEventListener('click', ()=>{ storyPanel.classList.remove('open'); /* optionally restore intro */ })
+
+/* fade audio helper */
 function fadeAudio(audio, target=0.2, ms=900){
-  const start = audio.volume || 0
-  const t0 = performance.now()
+  const start = audio.volume || 0; const t0 = performance.now()
   function step(now){
     const k = Math.min(1,(now - t0)/ms)
     audio.volume = start + (target - start) * k
@@ -271,45 +281,11 @@ function fadeAudio(audio, target=0.2, ms=900){
   requestAnimationFrame(step)
 }
 
-/* Try direct click handlers (normal path) */
-catFrame.addEventListener('click', function(e){
-  e.preventDefault(); e.stopPropagation(); openStory()
-})
-catFrame.addEventListener('keydown', function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openStory() }})
-closeStory.addEventListener('click', ()=> storyPanel.classList.remove('open'))
-
-/* POINTER/CAPTURE fallback:
-   If an overlay intercepts clicks, this will still respond when pointer is inside cat frame.
-   We listen in capture phase and respond immediately.
-*/
-function pointerCaptureHandler(e){
-  // Only respond to primary pointers (left mouse, primary touch)
-  if(e.type === 'pointerdown' && e.isPrimary === false) return
-  try{
-    const r = catFrame.getBoundingClientRect()
-    const x = (typeof e.clientX === 'number') ? e.clientX : (e.touches && e.touches[0] && e.touches[0].clientX) || -1
-    const y = (typeof e.clientY === 'number') ? e.clientY : (e.touches && e.touches[0] && e.touches[0].clientY) || -1
-    if(rectContainsPoint(r, x, y)){
-      // prevent default only when inside cat - avoids swallowing unrelated gestures
-      e.preventDefault && e.preventDefault()
-      e.stopPropagation && e.stopPropagation()
-      openStory()
-    }
-  }catch(_){}
-}
-// Capture phase listeners
-document.addEventListener('pointerdown', pointerCaptureHandler, {capture:true, passive:false})
-document.addEventListener('touchstart', pointerCaptureHandler, {capture:true, passive:false})
-
-/* SPOILER reveal */
-finalSpoiler.addEventListener('click', (e)=>{
-  if(e.target && e.target.closest && e.target.closest('.beer-btn')) return
-  finalSpoiler.classList.add('open')
-  finalSpoiler.setAttribute('aria-pressed','true')
-})
+/* spoiler reveal */
+finalSpoiler.addEventListener('click', (e)=>{ if(e.target && e.target.closest && e.target.closest('.beer-btn')) return; finalSpoiler.classList.add('open'); finalSpoiler.setAttribute('aria-pressed','true') })
 finalSpoiler.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); finalSpoiler.click() } })
 
-/* --- Beer physics & effects (same as earlier, robust) --- */
+/* Beer physics / splashes (same implementation) */
 function spawnSplashes(cx, cy){
   const count = 28
   for(let i=0;i<count;i++){
@@ -340,35 +316,24 @@ function spawnFoam(cx, cy){
     setTimeout(()=>f.remove(), dur+80)
   }
 }
-function cleanupPuddleLater(){
-  if(puddleTimer) clearTimeout(puddleTimer)
-  puddleTimer = setTimeout(()=>{
-    puddle.animate([{opacity:1, transform:'translateX(-50%) scale(1,.76) rotateX(16deg)'},{opacity:0, transform:'translateX(-50%) scale(.62,.2) translateY(6px) rotateX(16deg)'}], {duration:1050, easing:'ease-in-out', fill:'forwards'})
-    setTimeout(()=>{ puddle.style.display = 'none' }, 1120)
-  }, 3800 + Math.random()*800)
-}
-
-function getCenter(el){ const r = el.getBoundingClientRect(); return {x: r.left + r.width/2, y: r.top + r.height/2} }
+function cleanupPuddleLater(){ if(puddleTimer) clearTimeout(puddleTimer); puddleTimer = setTimeout(()=>{ puddle.animate([{opacity:1, transform:'translateX(-50%) scale(1,.76) rotateX(16deg)'},{opacity:0, transform:'translateX(-50%) scale(.62,.2) translateY(6px) rotateX(16deg)'}], {duration:1050, easing:'ease-in-out', fill:'forwards'}); setTimeout(()=>{ puddle.style.display='none' }, 1120) }, 3800 + Math.random()*800) }
 
 function beerFallFrom(x0, y0){
   if(beerStarted) return
-  beerStarted = true
-  beerSprite.style.display = 'block'
-  beerSprite.style.zIndex = 2147483401
-  const startX = x0
-  const startY = y0 - 220
+  beerStarted=true
+  beerSprite.style.display='block'
+  beerSprite.style.zIndex=2147483401
+  const startX=x0, startY=y0-220
   beerSprite.style.left = startX + 'px'
   beerSprite.style.top = startY + 'px'
   beerSprite.style.transform = 'translate(-50%,0) rotate(' + (Math.random()*18 - 9) + 'deg)'
 
-  let state = { x: startX, y: startY, vx: (Math.random()*380 - 190), vy: 0, angle: Math.random()*38 - 19, av: Math.random()*560 - 280 }
-  const gravity = 3200, drag = 0.997
-  const floorY = Math.round(window.innerHeight * 0.69)
-  const fixedDt = 1/120
-  let prev = performance.now(), acc = 0, bounces = 0
+  let state = { x:startX, y:startY, vx:(Math.random()*380 - 190), vy:0, angle:Math.random()*38 - 19, av:Math.random()*560 - 280 }
+  const gravity=3200, drag=0.997, floorY=Math.round(window.innerHeight * 0.69), fixedDt=1/120
+  let prev=performance.now(), acc=0, bounces=0
 
   function step(){
-    state.vy += gravity * fixedDt
+    state.vy += gravity*fixedDt
     state.vx *= drag
     state.x += state.vx * fixedDt
     state.y += state.vy * fixedDt
@@ -389,24 +354,19 @@ function beerFallFrom(x0, y0){
       }
     }
   }
-  function render(){
-    beerSprite.style.left = state.x + 'px'
-    beerSprite.style.top = state.y + 'px'
-    beerSprite.style.transform = 'translate(-50%,0) rotate(' + state.angle + 'deg)'
-  }
+  function render(){ beerSprite.style.left = state.x + 'px'; beerSprite.style.top = state.y + 'px'; beerSprite.style.transform = 'translate(-50%,0) rotate(' + state.angle + 'deg)' }
   function loop(now){
-    let dt = (now - prev)/1000; if(dt > .05) dt = .05; prev = now; acc += dt
+    let dt=(now-prev)/1000; if(dt>.05) dt=.05; prev = now; acc += dt
     while(acc >= fixedDt){ step(); acc -= fixedDt }
     render()
-    if(!(bounces >= 2 && Math.abs(state.vy) < 18 && state.y >= floorY)){
+    if(!(bounces >=2 && Math.abs(state.vy) < 18 && state.y >= floorY)){
       requestAnimationFrame(loop)
     } else {
       try{ navigator.vibrate && navigator.vibrate([80,40,70]) }catch(e){}
-      spawnSplashes(state.x, floorY + 26)
-      spawnFoam(state.x, floorY + 20)
+      spawnSplashes(state.x, floorY + 26); spawnFoam(state.x, floorY + 20)
       const maxW = Math.max(320, Math.min(window.innerWidth * 0.72, 900))
       const maxH = Math.max(64, Math.min(window.innerWidth * 0.14, 100))
-      puddle.style.display = 'block'
+      puddle.style.display='block'
       puddle.animate([{opacity:0, width:'26px', height:'10px', transform:'translateX(-50%) scale(.22,.24) rotateX(16deg)'},{opacity:1, width: maxW + 'px', height: maxH + 'px', transform:'translateX(-50%) scale(1,.78) rotateX(16deg)'}], {duration:980, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
       ripple.animate([{opacity:.9, width:'26px', height:'10px', transform:'translateX(-50%) scale(.2)'},{opacity:0, width:'420px', height:'110px', transform:'translateX(-50%) scale(1)'}], {duration:940, easing:'ease-out', fill:'forwards'})
       cleanupPuddleLater()
@@ -415,20 +375,17 @@ function beerFallFrom(x0, y0){
   }
   requestAnimationFrame(loop)
 }
-
-/* Attach beerWord */
 beerWord.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); finalSpoiler.classList.add('open'); finalSpoiler.setAttribute('aria-pressed','true'); const c=getCenter(beerWord); beerFallFrom(c.x,c.y) })
 beerWord.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); beerWord.click() } })
 
-/* start romance + memes */
+/* Memes, confession and heart -> video (kept same) */
 function crossFadeToLove(){
   try{
     const from = darkMusic, to = loveMusic
-    to.currentTime = 0; to.volume = 0; to.play().catch(()=>{})
-    const fromStart = from.volume || 0.16
-    const t0 = performance.now(), ms = 1400
+    to.currentTime=0; to.volume=0; to.play().catch(()=>{})
+    const fromStart = from.volume || 0.16; const t0 = performance.now(), ms=1400
     function step(now){
-      const k = Math.min(1, (now - t0)/ms)
+      const k = Math.min(1,(now - t0)/ms)
       from.volume = fromStart * (1 - k)
       to.volume = 0.22 * k
       if(k < 1) requestAnimationFrame(step)
@@ -437,126 +394,98 @@ function crossFadeToLove(){
     requestAnimationFrame(step)
   }catch(e){}
 }
-
 function startRomance(){
   if(romanceStarted) return
   romanceStarted = true
   try{ document.getElementById('bgMystic').style.opacity = '0.06' }catch(e){}
-  bgRomantic.classList.add('active')
-  if(heartsVideo && heartsVideo.play) { heartsVideo.style.display = 'block'; heartsVideo.play().catch(()=>{}) }
+  document.querySelector('.bg-romantic')?.classList.add('active')
   crossFadeToLove()
   spawnMemes(20)
 }
-
-function spawnMemes(count = 18){
-  memeLayer.innerHTML = ''
-  memeLayer.style.pointerEvents = 'auto'
-  const items = []
+function spawnMemes(count=18){
+  memeLayer.innerHTML=''; memeLayer.style.pointerEvents='auto'
+  const items=[]
   for(let i=0;i<count;i++){
-    const frame = document.createElement('div'); frame.className='meme-frame'
-    const size = 80 + Math.random()*260
-    frame.style.width = size + 'px'; frame.style.height = size + 'px'
-    const left = clamp(3 + Math.random()*86, 2, 92)
-    const top = clamp(6 + Math.random()*80, 4, 92)
-    frame.style.left = left + '%'; frame.style.top = top + '%'
-    const img = document.createElement('img'); img.src = 'meme.png'; img.alt='мем'
-    frame.appendChild(img)
+    const frame=document.createElement('div'); frame.className='meme-frame'
+    const size=80+Math.random()*260; frame.style.width=size+'px'; frame.style.height=size+'px'
+    const left=clamp(3 + Math.random()*86, 2, 92), top=clamp(6 + Math.random()*80, 4, 92)
+    frame.style.left=left+'%'; frame.style.top=top+'%'
+    const img=document.createElement('img'); img.src='meme.png'; img.alt='мем'; frame.appendChild(img)
     memeLayer.appendChild(frame)
     items.push({el:frame,left,top,w:size,h:size,vx:(Math.random()*240-120),vy:(Math.random()*240-120)})
   }
-
   function resolve(){
     for(let iter=0; iter<5; iter++){
       for(let a=0;a<items.length;a++){
         for(let b=a+1;b<items.length;b++){
-          const A = items[a], B = items[b]
-          const rectA = A.el.getBoundingClientRect(), rectB = B.el.getBoundingClientRect()
-          const ax = rectA.left + rectA.width/2, ay = rectA.top + rectA.height/2
-          const bx = rectB.left + rectB.width/2, by = rectB.top + rectB.height/2
-          const dx = ax - bx, dy = ay - by
-          const dist = Math.sqrt(dx*dx + dy*dy) || 1
-          const min = (rectA.width + rectB.width) * 0.5 * 0.85
+          const A=items[a], B=items[b]
+          const rectA=A.el.getBoundingClientRect(), rectB=B.el.getBoundingClientRect()
+          const ax=rectA.left + rectA.width/2, ay=rectA.top + rectA.height/2
+          const bx=rectB.left + rectB.width/2, by=rectB.top + rectB.height/2
+          const dx=ax-bx, dy=ay-by, dist=Math.sqrt(dx*dx+dy*dy)||1
+          const min=(rectA.width + rectB.width) * 0.5 * 0.85
           if(dist < min){
-            const push = (min - dist) * 0.5
-            const nx = dx/dist, ny = dy/dist
-            const pushXper = (nx * push) / window.innerWidth * 100
-            const pushYper = (ny * push) / window.innerHeight * 100
-            A.left = clamp(A.left + pushXper, 2, 92)
-            A.top = clamp(A.top + pushYper, 2, 92)
-            B.left = clamp(B.left - pushXper, 2, 92)
-            B.top = clamp(B.top - pushYper, 2, 92)
+            const push=(min - dist)*0.5, nx=dx/dist, ny=dy/dist
+            const pushXper=(nx*push)/window.innerWidth*100, pushYper=(ny*push)/window.innerHeight*100
+            A.left = clamp(A.left + pushXper, 2, 92); A.top = clamp(A.top + pushYper, 2, 92)
+            B.left = clamp(B.left - pushXper, 2, 92); B.top = clamp(B.top - pushYper, 2, 92)
           }
         }
       }
     }
     items.forEach(it=>{
       it.el.style.left = it.left + '%'; it.el.style.top = it.top + '%'
-      const dur = 2000 + Math.random()*5200
-      const rx = (Math.random()*50-25), ry = (Math.random()*50-25), rz = (Math.random()*100-50)
+      const dur=2000 + Math.random()*5200, rx=(Math.random()*50-25), ry=(Math.random()*50-25), rz=(Math.random()*100-50)
       it.el.animate([
         { transform: `translate3d(0,0,0) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)` },
         { transform: `translate3d(${(it.vx*0.04).toFixed(1)}px,${(it.vy*0.03 - 22).toFixed(1)}px,0) rotateX(${(rx*1.05).toFixed(1)}deg) rotateY(${(ry*1.05).toFixed(1)}deg) rotateZ(${(rz+12).toFixed(1)}deg)` },
         { transform: `translate3d(${(-it.vx*0.03).toFixed(1)}px,${(-it.vy*0.02).toFixed(1)}px,0) rotateX(${(rx*0.8).toFixed(1)}deg) rotateY(${(ry*0.8).toFixed(1)}deg) rotateZ(${(rz-9).toFixed(1)}deg)` },
         { transform: `translate3d(0,0,0) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)` }
       ], { duration: dur, iterations: Infinity, easing: 'ease-in-out' })
-
-      it.el.addEventListener('click', ()=>{
-        $$('.meme-frame').forEach(m=> m.classList.add('fade-out'))
-        setTimeout(()=>{ memeLayer.innerHTML = ''; showConfession() }, 420)
-      }, {once:true})
+      it.el.addEventListener('click', ()=>{ $$('.meme-frame').forEach(m=> m.classList.add('fade-out')); setTimeout(()=>{ memeLayer.innerHTML=''; showConfession() }, 420) }, {once:true})
     })
   }
-
   setTimeout(resolve, 40)
 }
 
-/* Confession text animation */
+/* confession animation */
 function animateConfessionText(){
   const raw = confessionText.textContent.trim()
   const segments = raw.match(/[^.!?]+[.!?]?/g)?.map(s=>s.trim()).filter(Boolean) || [raw]
-  confessionText.innerHTML = ''
+  confessionText.innerHTML=''
   segments.forEach((seg, si)=>{
-    const p = document.createElement('p')
+    const p=document.createElement('p')
     for(let i=0;i<seg.length;i++){
-      const ch = seg[i]
-      const span = document.createElement('span'); span.className = 'confession-char'
+      const ch=seg[i]; const span=document.createElement('span'); span.className='confession-char'
       span.textContent = (ch === ' ') ? '\u00A0' : ch
       const delay = (si*0.22) + (i*0.014) + Math.random()*0.03
       span.style.animationDelay = delay + 's'
       p.appendChild(span)
     }
     confessionText.appendChild(p)
-    setTimeout(()=>{ p.style.opacity = 1; p.style.transform = 'translateY(0)' }, 280 + si*240)
+    setTimeout(()=>{ p.style.opacity=1; p.style.transform='translateY(0)' }, 280 + si*240)
   })
 }
 function showConfession(){
-  bgRomantic.classList.add('active')
+  document.querySelector('.bg-romantic')?.classList.add('active')
   animateConfessionText()
   confessionPanel.classList.add('open')
 }
 
-/* Heart -> video */
+/* heart -> video */
 heartBtn.addEventListener('click', ()=>{
-  videoOverlay.style.display = 'flex'
-  videoOverlay.setAttribute('aria-hidden','false')
-  videoPlaceholder.style.display = 'none'
-  secretVideo.style.display = 'block'
-  secretVideo.play().catch(()=>{ secretVideo.style.display = 'none'; videoPlaceholder.style.display = 'flex' })
+  videoOverlay.style.display='flex'; videoOverlay.setAttribute('aria-hidden','false'); videoPlaceholder.style.display='none'; secretVideo.style.display='block'; secretVideo.play().catch(()=>{ secretVideo.style.display='none'; videoPlaceholder.style.display='flex' })
 })
-heartBtn.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); heartBtn.click() } })
-
-videoOverlay.addEventListener('click', (e)=>{ if(e.target === videoOverlay){ videoOverlay.style.display = 'none'; try{ secretVideo.pause() }catch(_){} } })
-secretVideo.addEventListener('error', ()=>{ secretVideo.style.display = 'none'; videoPlaceholder.style.display = 'flex' })
-
-/* close confession */
+heartBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); heartBtn.click() } })
+videoOverlay.addEventListener('click', (e)=>{ if(e.target === videoOverlay){ videoOverlay.style.display='none'; try{ secretVideo.pause() }catch(_){} } })
+secretVideo.addEventListener('error', ()=>{ secretVideo.style.display='none'; videoPlaceholder.style.display='flex' })
 closeConfession.addEventListener('click', ()=> confessionPanel.classList.remove('open'))
 
-/* ESC closes modals */
+/* ESC closes */
 document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ if(storyPanel.classList.contains('open')) storyPanel.classList.remove('open'); if(confessionPanel.classList.contains('open')) confessionPanel.classList.remove('open'); if(videoOverlay.style.display === 'flex') videoOverlay.style.display = 'none' } })
 
-/* Expose small debug API */
-window._gift = { beerFallFrom, spawnMemes, showConfession }
-
+/* expose debug */
+window._gift = { openStory, beerFallFrom, spawnMemes, showConfession }
 </script>
 </body>
 </html>
