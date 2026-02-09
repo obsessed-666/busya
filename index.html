@@ -15,7 +15,7 @@
   --panel-max:900px;
   --panel-pad:clamp(16px,4vw,28px);
 }
-html,body{width:100%;height:100%;background:#04070f;color:#fff;font-family:Montserrat,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;text-size-adjust:100%}
+html,body{width:100%;height:100%;background:#04070f;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;text-size-adjust:100%}
 body{overflow:hidden}
 img,video{display:block;max-width:100%}
 button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
@@ -82,17 +82,26 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   border:1px solid rgba(255,255,255,.08);
   box-shadow:0 25px 80px rgba(0,0,0,.6);
   overflow:hidden;
+  position:relative;
 }
-#storyHeader{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(0,0,0,.35);font-size:14px}
-#storyClose{border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;padding:6px 12px;border-radius:999px;cursor:pointer}
+#storyFog{
+  position:absolute;inset:-20%;
+  background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.08),transparent 40%),radial-gradient(circle at 80% 70%,rgba(200,220,255,.06),transparent 45%);
+  filter:blur(18px);
+  animation:storyFog 20s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes storyFog{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
+#storyClose{border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;padding:6px 12px;border-radius:999px;cursor:pointer;margin:12px 16px 0 auto;display:block}
 #storyScroll{
   max-height:calc(100dvh - 160px);
   overflow:auto;
   padding:18px 18px 22px;
   line-height:1.72;
-  font-family:'Merriweather',serif;
+  font-family:Georgia,"Times New Roman",serif;
   font-size:clamp(16px,4vw,18px);
   color:#e6e6ea;
+  -webkit-overflow-scrolling:touch;
 }
 
 /* Spoiler */
@@ -158,11 +167,12 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   color:#ffe4ec;
   overflow:auto;
 }
-#confessionText{font-family:'Marck Script','Merriweather',serif;font-size:clamp(28px,6vw,40px);line-height:1.8}
+#confessionText{font-family:"Marck Script","Brush Script MT","Segoe Script","Comic Sans MS",cursive;font-size:clamp(28px,6vw,40px);line-height:1.8}
 #confessionText p{opacity:0;transform:translateY(8px);transition:.5s ease;margin:10px 0}
 .confession-char{display:inline-block;transform-origin:center bottom;animation:charBounce 1.6s ease-in-out infinite}
 @keyframes charBounce{0%{transform:translateY(0)}50%{transform:translateY(-3px)}100%{transform:translateY(0)}}
-#heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45)}
+#heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite}
+@keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 #heartCaption{font-size:13px;opacity:.85}
 
 /* Video overlay */
@@ -192,10 +202,8 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 
   <section id="storyScene" aria-label="Рассказ">
     <div id="storyCard">
-      <div id="storyHeader">
-        <div>ночной рассказ</div>
-        <button id="storyClose" type="button">назад</button>
-      </div>
+      <div id="storyFog" aria-hidden="true"></div>
+      <button id="storyClose" type="button">назад</button>
       <div id="storyScroll" tabindex="0" aria-label="История">
         <p>Однажды я сидел как ни в чём не бывало дома, слушал грустную музыку, смотрел в окно, думал о своём тленном будущем, как вдруг… звонок в дверь. Я опешил, ведь было 3 часа ночи, и я никого не ждал. В тот день ощущения поистине были странные. На дворе стояла лёгкая дымка, а на небе отчётливо виднелась яркая полная луна, прямо как с картинки — мрачная и загадочная. Погода за окном лишь добавляла таинственности и неопределённости данному событию.</p>
         <p>«У соседа, наверное, что-то стряслось», — почесав репу, подумал я. Но чувство тревоги затмило мой рассудок, и я медленно, тихим шагом подошёл к входной двери. Стояла полнейшая тишина. Я пытался прислушаться к звукам по ту сторону двери, но их не было. Я стоял так где-то минуту, но по ощущениям она длилась целую вечность. В голове была лишь растерянность и смятение.</p>
@@ -252,6 +260,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 -->
 
 <script>
+/* Параметры для настройки */
 const BEER_BASE_DURATION_MS = 1450
 const MEME_COUNT = 20
 const VOLUME_DARK = 0.18
@@ -345,8 +354,8 @@ function revealSpoiler(){
   spoiler.classList.add('open')
   spoiler.setAttribute('aria-pressed','true')
 }
-spoiler.addEventListener('click', (e)=>{ if(e.target.closest('#beerWord')) return; revealSpoiler() })
-spoiler.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); revealSpoiler() }})
+spoiler.addEventListener('click', (e)=>{ if(e.target.closest('#beerWord')) return; revealSpoiler(); beerAnimation() })
+spoiler.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); revealSpoiler(); beerAnimation() }})
 
 function spawnSplash(x, y){
   for(let i=0;i<28;i++){
@@ -563,12 +572,11 @@ function showConfession(){
   const lines = [
     'буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было.',
     'и не будет.',
-    'ты каждый день даришь мне ту самую радость и улыбку, которых у меня оень давно не было.',
+    'ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было.',
     'полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя.',
     'очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни'
   ]
   if(raw !== lines.join(' ')){
-    // safeguard: keep original text if changed
     confessionText.textContent = raw
     return
   }
