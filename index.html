@@ -4,6 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Подарок для Буси</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -98,11 +101,13 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   overflow:auto;
   padding:18px 18px 22px;
   line-height:1.72;
-  font-family:Georgia,"Times New Roman",serif;
+  font-family:'Merriweather',serif;
   font-size:clamp(16px,4vw,18px);
   color:#e6e6ea;
   -webkit-overflow-scrolling:touch;
+  animation:storyBreath 8s ease-in-out infinite;
 }
+@keyframes storyBreath{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 
 /* Spoiler */
 .spoiler{position:relative;display:inline-block;padding:10px 12px;border-radius:12px;background:rgba(5,6,10,.8);cursor:pointer;overflow:hidden}
@@ -111,18 +116,19 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .spoiler.open .line{color:#fff;text-shadow:0 6px 18px rgba(0,0,0,.5)}
 .spoiler.open .beer-word{color:#ffd166;text-decoration:underline}
 .spoiler .veil{
-  position:absolute;inset:0;z-index:1;
+  position:absolute;inset:-8px;z-index:1;
   background:linear-gradient(120deg,rgba(14,15,22,.95),rgba(7,8,12,.99));
-  backdrop-filter:blur(14px) saturate(.9);
+  backdrop-filter:blur(16px) saturate(.9);
+  border-radius:16px;
   transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .6s;
 }
 .spoiler .veil::before{
   content:"";position:absolute;inset:0;
-  background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 4px);
+  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.06),transparent 60%);
 }
 .spoiler .veil::after{
   content:"";position:absolute;inset:-30%;
-  background:linear-gradient(120deg,transparent,rgba(255,255,255,.1),transparent);
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.12),transparent);
   animation:shimmer 2.6s linear infinite;
 }
 @keyframes shimmer{0%{transform:translateX(-40%)}100%{transform:translateX(40%)}}
@@ -169,8 +175,9 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 }
 #confessionText{font-family:"Marck Script","Brush Script MT","Segoe Script","Comic Sans MS",cursive;font-size:clamp(28px,6vw,40px);line-height:1.8}
 #confessionText p{opacity:0;transform:translateY(8px);transition:.5s ease;margin:10px 0}
-.confession-char{display:inline-block;transform-origin:center bottom;animation:charBounce 1.6s ease-in-out infinite}
-@keyframes charBounce{0%{transform:translateY(0)}50%{transform:translateY(-3px)}100%{transform:translateY(0)}}
+.word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .4s ease,transform .4s ease}
+.char{display:inline-block;transform-origin:center bottom;animation:charJitter 2.2s ease-in-out infinite}
+@keyframes charJitter{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 #heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite}
 @keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 #heartCaption{font-size:13px;opacity:.85}
@@ -266,6 +273,7 @@ const MEME_COUNT = 20
 const VOLUME_DARK = 0.18
 const VOLUME_LOVE = 0.22
 const SFX_VOLUME = 0.6
+const WORD_DELAY_MS = 90
 
 const $ = (s) => document.querySelector(s)
 const $$ = (s) => Array.from(document.querySelectorAll(s))
@@ -354,8 +362,6 @@ function revealSpoiler(){
   spoiler.classList.add('open')
   spoiler.setAttribute('aria-pressed','true')
 }
-spoiler.addEventListener('click', (e)=>{ if(e.target.closest('#beerWord')) return; revealSpoiler(); beerAnimation() })
-spoiler.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); revealSpoiler(); beerAnimation() }})
 
 function spawnSplash(x, y){
   for(let i=0;i<28;i++){
@@ -469,6 +475,8 @@ function beerAnimation(){
   requestAnimationFrame(animate)
 }
 
+spoiler.addEventListener('click', (e)=>{ if(e.target.closest('#beerWord')) return; revealSpoiler(); beerAnimation() })
+spoiler.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); revealSpoiler(); beerAnimation() }})
 beerWord.addEventListener('click', (e)=>{ e.stopPropagation(); beerAnimation() })
 beerWord.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); beerAnimation() }})
 
@@ -582,17 +590,34 @@ function showConfession(){
   }
 
   confessionText.innerHTML = ''
+  let wordIndex = 0
   lines.forEach((line, li)=>{
     const p = document.createElement('p')
-    for(let i=0;i<line.length;i++){
-      const span = document.createElement('span')
-      span.className = 'confession-char'
-      span.textContent = line[i]
-      span.style.animationDelay = `${(li*0.2)+(i*0.015)}s`
-      p.appendChild(span)
-    }
+    const words = line.split(' ')
+    words.forEach((word, wi)=>{
+      const wordSpan = document.createElement('span')
+      wordSpan.className = 'word'
+      const chars = word.split('')
+      chars.forEach((ch, ci)=>{
+        const charSpan = document.createElement('span')
+        charSpan.className = 'char'
+        charSpan.style.animationDelay = `${(ci*0.03)}s`
+        charSpan.textContent = ch
+        wordSpan.appendChild(charSpan)
+      })
+      p.appendChild(wordSpan)
+      if(wi < words.length - 1){
+        p.appendChild(document.createTextNode(' '))
+      }
+      wordIndex++
+    })
     confessionText.appendChild(p)
-    setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 240 + li*220)
+    setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*400)
+  })
+
+  const wordSpans = $$('#confessionText .word')
+  wordSpans.forEach((w, i)=>{
+    setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)' }, i * WORD_DELAY_MS)
   })
 }
 
