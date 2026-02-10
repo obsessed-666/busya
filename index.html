@@ -6,8 +6,8 @@
 <title>Подарок для Буси</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Используйте subset=cyrillic при настройке шрифта -->
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Marck+Script&family=PT+Serif:wght@400;700&family=Cormorant+Garamond:wght@400;600&family=Playfair+Display:wght@400;600&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<!-- subset=cyrillic -->
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Marck+Script&family=PT+Serif:wght@400;700&family=Cormorant+Garamond:wght@400;600&family=Playfair+Display:wght@400;600&family=Cinzel:wght@400;600&display=swap&subset=cyrillic" rel="stylesheet">
 <style>
 @font-face{
   font-family:"Mazut SP Demo";
@@ -138,7 +138,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .spoiler .veil{
   position:absolute;inset:-8px;z-index:2;
   background:linear-gradient(120deg,rgba(10,10,12,0.9),rgba(20,18,22,0.95));
-  backdrop-filter:blur(18px) saturate(0.7) contrast(0.95);
+  backdrop-filter:blur(18px) saturate(0.7) contrast(0.9);
   filter:blur(6px);
   border-radius:22px;
   box-shadow:inset 0 0 18px rgba(255,255,255,.08),0 20px 60px rgba(0,0,0,.6);
@@ -243,10 +243,10 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
       <div id="storyFog" aria-hidden="true"></div>
       <button id="storyClose" type="button">назад</button>
       <div id="storyScroll" tabindex="0" aria-label="История">
-        <p>Однажды я сидел как ни в чём не бывало дома, слушал грустную музыку, смотрел в окно, думал о своём тленном будущем, как вдруг… звонок в дверь. Я опешил, ведь было 3 часа ноч, и я никого не ждал. В тот день ощущения поистине были странные. На дворе стояла лёгкая дымка, а на небе отчётливо виднелась яркая полная луна, прямо как с картинки — мрачная и загадочная. Погода за окном лишь добавляла таинственности и неопределённости данному событию.</p>
+        <p>Однажды я сидел как ни в чём не бывало дома, слушал грустную музыку, смотрел в окно, думал о своём тленном будущем, как вдруг… звонок в дверь. Я опешил, ведь было 3 часа ночи, и я никого не ждал. В тот день ощущения поистине были странные. На дворе стояла лёгкая дымка, а на небе отчётливо виднелась яркая полная луна, прямо как с картинки — мрачная и загадочная. Погода за окном лишь добавляла таинственности и неопределённости данному событию.</p>
         <p>«У соседа, наверное, что-то стряслось», — почесав репу, подумал я. Но чувство тревоги затмило мой рассудок, и я медленно, тихим шагом подошёл к входной двери. Стояла полнейшая тишина. Я пытался прислушаться к звукам по ту сторону двери, но их не было. Я стоял так где-то минуту, но по ощущениям она длилась целую вечность. В голове была лишь растерянность и смятение.</p>
         <p>Как вдруг я услышал странный металлический скрип, будто кто-то медленно, но уверенно водил ногтем по стальному листу. Я сильно напрягся, всё тело с головы до ног пробрало мурашками, я почувствовал резкий скачок адреналина — разум явно чувствовал, что что-то тут не так. Я набрался смелости и, сцепив зубы, выдавил из себя: „Wer ist da?“ Но, как я и ожидал, ответа не поступило. Лишь этот до дрожи противный металлический звук, который проникал в каждую клеточку мозга… Ощущалось, будто это происходит прямо у меня в голове, будто кто-то с издёвкой водит по нему скрипучей железякой.</p>
-        <p>И вдруг — тишина. Снова. Я понимал, что кто бы то ни был за дверью, вероятно, тоже услышал, как я стою и молча слушаю, внимая этот психоделический ужас. Где-то спустя секунд 20 раздался громкий железный звук — звук падения прямо перед моей грёбанной дверью. Я набрался смелости и прислонил ухо к двери, чтобы попытаться идентифицировать, что же упало... и что, чёрт возьми, тут вообще просходит.</p>
+        <p>И вдруг — тишина. Снова. Я понимал, что кто бы то ни был за дверью, вероятно, тоже услышал, как я стою и молча слушаю, внимая этот психоделический ужас. Где-то спустя секунд 20 раздался громкий железный звук — звук падения прямо перед моей грёбанной дверью. Я набрался смелости и прислонил ухо к двери, чтобы попытаться идентифицировать, что же упало... и что, чёрт возьми, тут вообще происходит.</p>
         <p>Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
         <div class="spoiler tap-target" id="spoiler" role="button" tabindex="0" aria-pressed="false" aria-label="Открыть панчлайн">
           <div class="veil" aria-hidden="true"></div>
@@ -288,24 +288,24 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 </div>
 
 <!--
-Тест-чеклист:
-1) Открыть страницу.
-2) Нажать на котика — dark.mp3 должен начать плавно.
-3) Прокрутить рассказ внутри карточки (скролл работает, текст читаем).
-4) Нажать на спойлер / на слово «пиво» — veil растворяется, фраза раскрыта, банка падает, SFX играет, dark затухает, romance.mp4 и love.mp3 стартуют.
-5) Мемы появляются и дрейфуют; нажать мем — мемы исчезают, появляется признание word-by-word.
-6) Нажать сердечко — открывается video overlay или заглушка.
+Клик по коту: dark.mp3 стартует немедленно и плавно (fade-in).
+Текст рассказа открылся и слова появляются по одному, абзацы сохранены.
+Спойлер выглядит как сильный размытый amorphous veil (никаких читаемых букв) и анимированно растворяется при клике; после раскрытия слово «пиво» визуально больше и ярче.
+Банка падает сверху вниз через весь экран, переворачиваясь; на ударе — SFX, dark.mp3 затухает, romance.mp4 и love.mp3 запускаются.
+Мемы разбегаются/столкновения; клик по мему запускает признание.
+Признание появляется слово-за-словом; буквы заметно «трясутся».
+Сердечко открывает overlay с видео.
 -->
 
 <script>
 /* Параметры для настройки */
-const BEER_BASE_DURATION_MS = 1450
-const MEME_COUNT = 20
-const VOLUME_DARK = 0.18
-const VOLUME_LOVE = 0.22
-const SFX_VOLUME = 0.6
-const WORD_DELAY_MS = 90
-const STORY_WORD_DELAY_MS = 60
+const BEER_BASE_DURATION_MS = 1400;
+const MEME_COUNT = 20;
+const VOLUME_DARK = 0.18;
+const VOLUME_LOVE = 0.22;
+const SFX_VOLUME = 0.9;
+const WORD_DELAY_MS = 90;
+const STORY_WORD_DELAY_MS = 60;
 
 const $ = (s) => document.querySelector(s)
 const $$ = (s) => Array.from(document.querySelectorAll(s))
@@ -406,9 +406,9 @@ function showStory(){
   intro.classList.add('fade-out')
   setTimeout(()=>{ intro.classList.add('hidden') }, 520)
   storyScene.classList.add('active')
-  darkMusic.currentTime = 0
-  darkMusic.muted = false
-  darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=> fadeAudio(darkMusic, VOLUME_DARK, 900))
+  darkMusic.currentTime = 0;
+  darkMusic.muted = false;
+  darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=> fadeAudio(darkMusic, VOLUME_DARK, 900));
   prepareStoryWords()
   revealStoryWords()
 }
@@ -541,7 +541,7 @@ function beerAnimation(){
         {opacity:0, width:'240px', height:'60px', transform:'translateX(-50%) scale(1)'}
       ], {duration:700, easing:'ease-out', fill:'forwards'})
       cleanupPuddle()
-      setTimeout(startRomance, 800)
+      setTimeout(startRomance, 700)
     }
   }
   requestAnimationFrame(animate)
@@ -598,11 +598,11 @@ function createMemes(){
     memesScene.appendChild(el)
 
     const b = bounds()
-    const size = 110 + Math.random()*100
+    const size = 100 + Math.random()*120
     el.style.width = `${size}px`
     const x = Math.random()*(b.w - size)
     const y = Math.random()*(b.h - size)
-    memes.push({el, x, y, vx:(Math.random()*0.9+0.3)*(Math.random()>0.5?1:-1), vy:(Math.random()*0.9+0.3)*(Math.random()>0.5?1:-1), size})
+    memes.push({el, x, y, vx:(Math.random()*1.0+0.35)*(Math.random()>0.5?1:-1), vy:(Math.random()*1.0+0.35)*(Math.random()>0.5?1:-1), size})
 
     const onClick = () => revealConfession()
     el.addEventListener('click', onClick, {once:true})
@@ -627,10 +627,10 @@ function createMemes(){
         if(dist < minDist){
           const nx = dx / (dist || 1)
           const ny = dy / (dist || 1)
-          a.vx += nx * 0.1
-          a.vy += ny * 0.1
-          c.vx -= nx * 0.1
-          c.vy -= ny * 0.1
+          a.vx += nx * 0.12
+          a.vy += ny * 0.12
+          c.vx -= nx * 0.12
+          c.vy -= ny * 0.12
         }
       }
       a.el.style.transform = `translate3d(${a.x}px,${a.y}px,0) rotateZ(${(a.vx+a.vy)*6}deg)`
@@ -652,30 +652,27 @@ function showConfession(){
   if(!raw) return
 
   confessionText.innerHTML = ''
-  const lineParts = raw.split(/(?<=\.)\s+|(?<=!)\s+|(?<=\?)\s+/g)
-  lineParts.forEach((line, li)=>{
-    const p = document.createElement('p')
-    const parts = line.match(/\S+|\s+/g) || [line]
-    parts.forEach((part)=>{
-      if(/\s+/.test(part)){
-        p.appendChild(document.createTextNode(part))
-        return
-      }
-      const wordSpan = document.createElement('span')
-      wordSpan.className = 'word'
-      const chars = part.split('')
-      chars.forEach((ch, ci)=>{
-        const charSpan = document.createElement('span')
-        charSpan.className = 'char'
-        charSpan.style.animationDelay = `${(ci*0.03)}s`
-        charSpan.textContent = ch
-        wordSpan.appendChild(charSpan)
-      })
-      p.appendChild(wordSpan)
+  const parts = raw.match(/\S+|\s+/g) || [raw]
+  const p = document.createElement('p')
+  parts.forEach((part)=>{
+    if(/\s+/.test(part)){
+      p.appendChild(document.createTextNode(part))
+      return
+    }
+    const wordSpan = document.createElement('span')
+    wordSpan.className = 'word'
+    const chars = part.split('')
+    chars.forEach((ch, ci)=>{
+      const charSpan = document.createElement('span')
+      charSpan.className = 'char'
+      charSpan.style.animationDelay = `${(ci*0.03)}s`
+      charSpan.textContent = ch
+      wordSpan.appendChild(charSpan)
     })
-    confessionText.appendChild(p)
-    setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*400)
+    p.appendChild(wordSpan)
   })
+  confessionText.appendChild(p)
+  setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200)
 
   const wordSpans = $$('#confessionText .word')
   wordSpans.forEach((w, i)=>{
