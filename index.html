@@ -6,8 +6,15 @@
 <title>Подарок для Буси</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Marck+Script&display=swap" rel="stylesheet">
 <style>
+@font-face{
+  font-family:"Mazut SP Demo";
+  src:local("Mazut SP Demo Regular"),local("Mazut SP Demo"),url("MazutSPDemo-Regular.woff2") format("woff2");
+  font-weight:400;
+  font-style:normal;
+  font-display:swap;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --vh:1vh;
@@ -17,6 +24,7 @@
   --safe-left:env(safe-area-inset-left,0px);
   --panel-max:900px;
   --panel-pad:clamp(16px,4vw,28px);
+  --mist-opacity:.35;
 }
 html,body{width:100%;height:100%;background:#04070f;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;text-size-adjust:100%}
 body{overflow:hidden}
@@ -29,7 +37,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .fade-out{opacity:0 !important;transform:scale(.96) !important;transition:opacity .5s ease,transform .5s ease}
 
 /* Backgrounds */
-.bg-mist{position:absolute;inset:0;background:radial-gradient(circle at 18% 16%,rgba(120,150,200,.25),transparent 40%),radial-gradient(circle at 80% 76%,rgba(80,120,170,.15),transparent 45%);filter:blur(22px);opacity:.5;animation:mistMove 18s ease-in-out infinite}
+.bg-mist{position:absolute;inset:0;background:radial-gradient(circle at 18% 16%,rgba(120,150,200,var(--mist-opacity)),transparent 45%),radial-gradient(circle at 80% 76%,rgba(80,120,170,.22),transparent 45%);filter:blur(22px);opacity:.5;animation:mistMove 18s ease-in-out infinite}
 @keyframes mistMove{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
 
 #forestBg{
@@ -40,12 +48,13 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 }
 #forestOverlay{
   position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(5,8,14,.8),rgba(2,5,10,.65));
+  background:linear-gradient(180deg,rgba(5,8,14,.85),rgba(2,5,10,.7));
 }
 #romanceVideo{
   position:absolute;inset:0;
   width:100%;height:100%;object-fit:cover;
-  opacity:0;transition:opacity 1.5s ease;
+  opacity:0;transition:opacity 1.5s ease,filter 1.5s ease;
+  filter:saturate(1.08) contrast(1.05);
 }
 #romanceFallback{
   position:absolute;inset:0;
@@ -80,7 +89,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #storyCard{
   width:min(92vw,var(--panel-max));
   max-height:calc(100dvh - 2*var(--panel-pad) - var(--safe-top) - var(--safe-bottom));
-  background:rgba(10,12,18,.8);
+  background:rgba(10,12,18,.82);
   border-radius:18px;
   border:1px solid rgba(255,255,255,.08);
   box-shadow:0 25px 80px rgba(0,0,0,.6);
@@ -88,48 +97,58 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   position:relative;
 }
 #storyFog{
-  position:absolute;inset:-20%;
-  background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.08),transparent 40%),radial-gradient(circle at 80% 70%,rgba(200,220,255,.06),transparent 45%);
+  position:absolute;inset:-30%;
+  background:radial-gradient(circle at 20% 30%,rgba(180,200,240,.2),transparent 45%),radial-gradient(circle at 80% 70%,rgba(120,160,210,.18),transparent 50%);
   filter:blur(18px);
   animation:storyFog 20s ease-in-out infinite;
   pointer-events:none;
 }
+#storyFog::after{
+  content:"";position:absolute;inset:-20%;
+  background:radial-gradient(circle at 30% 80%,rgba(150,190,240,.15),transparent 55%);
+  animation:storyFogB 26s ease-in-out infinite;
+}
 @keyframes storyFog{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
+@keyframes storyFogB{0%,100%{transform:translateY(10px)}50%{transform:translateY(-20px)}}
 #storyClose{border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;padding:6px 12px;border-radius:999px;cursor:pointer;margin:12px 16px 0 auto;display:block}
 #storyScroll{
   max-height:calc(100dvh - 160px);
   overflow:auto;
   padding:18px 18px 22px;
   line-height:1.72;
-  font-family:'Merriweather',serif;
+  font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;
   font-size:clamp(16px,4vw,18px);
   color:#e6e6ea;
   -webkit-overflow-scrolling:touch;
   animation:storyBreath 8s ease-in-out infinite;
 }
-@keyframes storyBreath{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes storyBreath{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.004)}}
 
 /* Spoiler */
-.spoiler{position:relative;display:inline-block;padding:10px 12px;border-radius:12px;background:rgba(5,6,10,.8);cursor:pointer;overflow:hidden}
-.spoiler .line{position:relative;z-index:2;color:transparent;transition:color .45s ease}
-.spoiler .beer-word{position:relative;z-index:3;color:transparent;font-weight:700;border:0;background:transparent;cursor:pointer}
+.spoiler{position:relative;display:inline-block;padding:10px 12px;border-radius:16px;background:rgba(5,6,10,.8);cursor:pointer;overflow:hidden}
+.spoiler .line{position:relative;z-index:3;color:transparent;transition:color .45s ease}
+.spoiler .beer-word{position:relative;z-index:4;color:transparent;font-weight:700;border:0;background:transparent;cursor:pointer}
 .spoiler.open .line{color:#fff;text-shadow:0 6px 18px rgba(0,0,0,.5)}
 .spoiler.open .beer-word{color:#ffd166;text-decoration:underline}
 .spoiler .veil{
-  position:absolute;inset:-8px;z-index:1;
-  background:linear-gradient(120deg,rgba(14,15,22,.95),rgba(7,8,12,.99));
-  backdrop-filter:blur(16px) saturate(.9);
-  border-radius:16px;
+  position:absolute;inset:-8px;z-index:2;
+  background:linear-gradient(120deg,rgba(12,14,20,.95),rgba(7,8,12,.99));
+  backdrop-filter:blur(14px);
+  filter:blur(6px);
+  border-radius:20px;
+  box-shadow:inset 0 0 18px rgba(255,255,255,.08),0 0 22px rgba(0,0,0,.35);
   transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .6s;
+  animation:veilFloat 4.6s ease-in-out infinite;
 }
+@keyframes veilFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 .spoiler .veil::before{
-  content:"";position:absolute;inset:0;
-  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.06),transparent 60%);
+  content:"";position:absolute;inset:6px;border-radius:16px;
+  background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.08),transparent 60%);
 }
 .spoiler .veil::after{
   content:"";position:absolute;inset:-30%;
   background:linear-gradient(120deg,transparent,rgba(255,255,255,.12),transparent);
-  animation:shimmer 2.6s linear infinite;
+  animation:shimmer 2.8s linear infinite;
 }
 @keyframes shimmer{0%{transform:translateX(-40%)}100%{transform:translateX(40%)}}
 .spoiler.open .veil{transform:translateY(-120%);opacity:0}
@@ -196,7 +215,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 <div id="app">
   <div id="forestBg" class="layer" aria-hidden="true"></div>
   <div id="forestOverlay" class="layer" aria-hidden="true"></div>
-  <video id="romanceVideo" class="layer" src="romance.mp4" muted playsinline loop preload="metadata" aria-hidden="true"></video>
+  <video id="romanceVideo" class="layer" src="romance.mp4" muted playsinline webkit-playsinline loop preload="metadata" aria-hidden="true"></video>
   <div id="romanceFallback" class="layer" aria-hidden="true"></div>
   <div class="layer bg-mist" aria-hidden="true"></div>
 
@@ -243,7 +262,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 
   <div id="videoOverlay" aria-hidden="true">
     <div>
-      <video id="finalVideo" src="video.mp4" controls playsinline preload="metadata"></video>
+      <video id="finalVideo" src="video.mp4" controls playsinline webkit-playsinline preload="metadata"></video>
       <div id="videoPlaceholder">
         <div style="font-size:46px">🎬</div>
         <div>Видео скоро будет здесь</div>
@@ -259,11 +278,11 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 <!--
 Тест-чеклист:
 1) Открыть страницу.
-2) Нажать на котика.
-3) Прокрутить рассказ внутри карточки.
-4) Нажать слово «пиво».
-5) Нажать на мем.
-6) Нажать на сердечко.
+2) Нажать на котика — dark.mp3 должен начать плавно.
+3) Прокрутить рассказ внутри карточки (скролл работает, текст читаем).
+4) Нажать на спойлер / на слово «пиво» — veil растворяется, фраза раскрыта, банка падает, SFX играет, dark затухает, romance.mp4 и love.mp3 стартуют.
+5) Мемы появляются и дрейфуют; нажать мем — мемы исчезают, появляется признание word-by-word.
+6) Нажать сердечко — открывается video overlay или заглушка.
 -->
 
 <script>
@@ -282,6 +301,8 @@ const intro = $('#intro')
 const introCard = $('#introCard')
 const storyScene = $('#storyScene')
 const storyClose = $('#storyClose')
+const storyScroll = $('#storyScroll')
+const storyFog = $('#storyFog')
 const spoiler = $('#spoiler')
 const beerWord = $('#beerWord')
 const beerLayer = $('#beerLayer')
@@ -346,7 +367,7 @@ function showStory(){
   intro.classList.add('fade-out')
   setTimeout(()=>{ intro.classList.add('hidden') }, 520)
   storyScene.classList.add('active')
-  if(audioUnlocked) playWithFade(darkMusic, VOLUME_DARK, 1200)
+  playWithFade(darkMusic, VOLUME_DARK, 1200)
 }
 introCard.addEventListener('click', showStory)
 introCard.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showStory() }})
@@ -355,6 +376,11 @@ storyClose.addEventListener('click', ()=>{
   storyScene.classList.remove('active')
   intro.classList.remove('hidden')
   setTimeout(()=>{ intro.classList.remove('fade-out') }, 10)
+})
+
+storyScroll.addEventListener('scroll', ()=>{
+  const ratio = storyScroll.scrollTop / Math.max(1, (storyScroll.scrollHeight - storyScroll.clientHeight))
+  storyFog.style.transform = `translateY(${ratio * -12}px)`
 })
 
 function revealSpoiler(){
@@ -452,7 +478,7 @@ function beerAnimation(){
       requestAnimationFrame(animate)
     } else {
       shakePage()
-      darkMusic && fadeAudio(darkMusic, 0, 600)
+      fadeAudio(darkMusic, 0, 600)
       beerSfx.volume = SFX_VOLUME
       beerSfx.currentTime = 0
       beerSfx.play().catch(()=>{})
@@ -462,11 +488,11 @@ function beerAnimation(){
       puddle.style.display = 'block'
       puddle.animate([
         {opacity:0, width:'20px', height:'8px', transform:'translateX(-50%) scale(.2,.2)'},
-        {opacity:1, width:'160px', height:'38px', transform:'translateX(-50%) scale(1,.6)'}
+        {opacity:1, width:'140px', height:'32px', transform:'translateX(-50%) scale(1,.6)'}
       ], {duration:700, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
       ripple.animate([
         {opacity:.8, width:'20px', height:'8px', transform:'translateX(-50%) scale(.2)'},
-        {opacity:0, width:'260px', height:'70px', transform:'translateX(-50%) scale(1)'}
+        {opacity:0, width:'240px', height:'60px', transform:'translateX(-50%) scale(1)'}
       ], {duration:700, easing:'ease-out', fill:'forwards'})
       cleanupPuddle()
       setTimeout(startRomance, 800)
@@ -526,11 +552,11 @@ function createMemes(){
     memesScene.appendChild(el)
 
     const b = bounds()
-    const size = 120 + Math.random()*80
+    const size = 110 + Math.random()*100
     el.style.width = `${size}px`
     const x = Math.random()*(b.w - size)
     const y = Math.random()*(b.h - size)
-    memes.push({el, x, y, vx:(Math.random()*0.6+0.2)*(Math.random()>0.5?1:-1), vy:(Math.random()*0.6+0.2)*(Math.random()>0.5?1:-1), size})
+    memes.push({el, x, y, vx:(Math.random()*0.9+0.3)*(Math.random()>0.5?1:-1), vy:(Math.random()*0.9+0.3)*(Math.random()>0.5?1:-1), size})
 
     const onClick = () => revealConfession()
     el.addEventListener('click', onClick, {once:true})
@@ -555,10 +581,10 @@ function createMemes(){
         if(dist < minDist){
           const nx = dx / (dist || 1)
           const ny = dy / (dist || 1)
-          a.vx += nx * 0.08
-          a.vy += ny * 0.08
-          c.vx -= nx * 0.08
-          c.vy -= ny * 0.08
+          a.vx += nx * 0.1
+          a.vy += ny * 0.1
+          c.vx -= nx * 0.1
+          c.vy -= ny * 0.1
         }
       }
       a.el.style.transform = `translate3d(${a.x}px,${a.y}px,0) rotateZ(${(a.vx+a.vy)*6}deg)`
@@ -593,11 +619,15 @@ function showConfession(){
   let wordIndex = 0
   lines.forEach((line, li)=>{
     const p = document.createElement('p')
-    const words = line.split(' ')
-    words.forEach((word, wi)=>{
+    const parts = line.match(/\S+|\s+/g) || [line]
+    parts.forEach((part)=>{
+      if(/\s+/.test(part)){
+        p.appendChild(document.createTextNode(part))
+        return
+      }
       const wordSpan = document.createElement('span')
       wordSpan.className = 'word'
-      const chars = word.split('')
+      const chars = part.split('')
       chars.forEach((ch, ci)=>{
         const charSpan = document.createElement('span')
         charSpan.className = 'char'
@@ -606,9 +636,6 @@ function showConfession(){
         wordSpan.appendChild(charSpan)
       })
       p.appendChild(wordSpan)
-      if(wi < words.length - 1){
-        p.appendChild(document.createTextNode(' '))
-      }
       wordIndex++
     })
     confessionText.appendChild(p)
