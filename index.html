@@ -76,16 +76,16 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .story-word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .28s ease,transform .28s ease}
 .story-word.revealed{opacity:1;transform:translateY(0)}
 
-/* Spoiler - rebuilt */
+/* Spoiler rebuilt (no sharp edges, strong blur) */
 .spoiler{position:relative;display:inline-flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;cursor:pointer;background:transparent;overflow:visible}
-.spoiler .line{position:relative;z-index:5;color:transparent;transition:color .42s ease}
-.spoiler .beer-word{font-weight:700;color:transparent;transition:transform .34s ease;font-size:1em}
-.spoiler .veil{position:absolute;inset:0;z-index:10;border-radius:999px;background:rgba(8,10,12,0.62);box-shadow:0 12px 40px rgba(2,5,10,0.6), inset 0 0 30px rgba(255,255,255,0.02);backdrop-filter:blur(18px) saturate(.8);-webkit-backdrop-filter:blur(18px) saturate(.8);transition:opacity .48s ease, transform .52s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0) scale(1);pointer-events:none;animation:veilFloat 6.2s ease-in-out infinite}
+.spoiler .line{position:relative;z-index:3;color:rgba(255,255,255,0.06);filter:blur(6px);transition:filter .42s ease,color .42s ease,opacity .42s ease}
+.spoiler .beer-word{font-weight:700;color:rgba(255,230,180,0.06);filter:blur(6px);-webkit-text-stroke:0;transition:filter .42s ease,color .42s ease,transform .34s ease}
+.spoiler .veil{position:absolute;inset:0;z-index:6;border-radius:999px;background:linear-gradient(180deg, rgba(10,12,14,0.55), rgba(6,7,9,0.5));box-shadow:0 18px 60px rgba(0,0,0,.7), inset 0 0 40px rgba(255,255,255,0.02);backdrop-filter:blur(18px) saturate(.85);-webkit-backdrop-filter:blur(18px) saturate(.85);transition:opacity .48s ease, transform .52s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0);pointer-events:none;mix-blend-mode:normal;animation:veilFloat 6.2s ease-in-out infinite}
 @keyframes veilFloat{0%{transform:translateY(0)}50%{transform:translateY(-3px)}100%{transform:translateY(0)}}
 .spoiler.open .veil{opacity:0;transform:translateY(-60px)}
-/* after reveal */
-.spoiler.open .line{color:rgba(255,255,255,0.96)}
-.spoiler.open .beer-word{color:#ffd166; transform:scale(1.06); text-shadow:0 6px 10px rgba(0,0,0,.38)}
+/* Reveal: remove blur and set colors */
+.spoiler.open .line{color:rgba(255,255,255,0.96);filter:blur(0)}
+.spoiler.open .beer-word{color:#ffd166;filter:blur(0);transform:scale(1.06);text-shadow:0 6px 10px rgba(0,0,0,.38);-webkit-text-stroke:0}
 
 /* Beer/puddle */
 #beerLayer{position:absolute;inset:0;pointer-events:none;z-index:15}
@@ -96,7 +96,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .page-shake{animation:pageShake .6s linear}
 @keyframes pageShake{0%{transform:translate(0)}20%{transform:translate(-4px,3px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-2px)}100%{transform:translate(0)}}
 
-/* Memes */
+/* Memes optimized for iPhone 14 Plus */
 #memesScene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .6s ease}
 #memesScene.active{opacity:1;pointer-events:auto}
 .meme{position:absolute;left:0;top:0;width:clamp(72px,18vw,120px);padding:6px;border-radius:12px;background:linear-gradient(180deg,rgba(255,210,225,.12),rgba(120,80,120,.06));border:1px solid rgba(255,210,230,.06);box-shadow:0 14px 40px rgba(0,0,0,.45);overflow:hidden;cursor:pointer;backdrop-filter:blur(3px)}
@@ -149,8 +149,6 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
         <p>Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
         <div class="spoiler tap-target" id="spoiler" role="button" tabindex="0" aria-pressed="false" aria-label="Открыть панчлайн">
           <div class="veil" aria-hidden="true"></div>
-          <!-- Initially aria-hidden true so text is not visible; veil blurs it.
-               After opening JS will remove aria-hidden to reveal text -->
           <div class="line" aria-hidden="true">— Ой, извини, у меня <button class="beer-word tap-target" id="beerWord" type="button" aria-label="Запустить падение пива">пиво</button> упало.</div>
         </div>
       </div>
@@ -200,7 +198,7 @@ const VOLUME_LOVE = 0.22
 const SFX_VOLUME = 0.6
 const WORD_DELAY_MS = 90
 const STORY_WORD_DELAY_MS = 56
-const MEME_EXTRA_FILENAME = 'memes_extra.png' // upload this file to repo to be used for 50% of memes
+const MEME_EXTRA_FILENAME = 'memes_extra.png' // upload to repo
 
 /* DOM helpers */
 const $ = (s)=>document.querySelector(s)
@@ -265,7 +263,6 @@ function tryPlayImmediate(audio, targetVolume=0.2, fadeMs=900){
     const p = audio.play()
     if(p && typeof p.then === 'function'){
       p.then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{
-        // blocked -> wait for next user gesture
         const resume = ()=>{
           audio.play().then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{})
           window.removeEventListener('touchstart', resume)
@@ -278,7 +275,6 @@ function tryPlayImmediate(audio, targetVolume=0.2, fadeMs=900){
       fadeAudio(audio, targetVolume, fadeMs)
     }
   }catch(e){
-    // fallback: attach resume on next gesture
     const resume = ()=>{
       audio.play().then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{})
       window.removeEventListener('touchstart', resume)
@@ -316,22 +312,33 @@ function revealStoryWords(){
 
 /* show story: called on direct click of intro card -> reliable user gesture */
 function showStory(e){
-  // split & reveal
   prepareStoryWords()
-  // hide intro
   intro.classList.add('fade-out')
   setTimeout(()=> intro.classList.add('hidden'), 520)
   storyScene.classList.add('active')
 
-  // try to play dark music immediately (this is inside user's click handler -> should not be blocked)
+  // try to play dark music immediately (user gesture)
   tryPlayImmediate(darkMusic, VOLUME_DARK, 900)
-  audioPrimed = true
 
-  // reveal story words after a slight delay
+  // prime loveMusic (play & pause during user gesture) so it can start later without new gesture
+  try{
+    loveMusic.volume = 0
+    const p = loveMusic.play()
+    if(p && typeof p.then === 'function'){
+      p.then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0 }).catch(()=>{})
+    } else {
+      loveMusic.pause(); loveMusic.currentTime = 0
+    }
+  }catch(e){
+    // ignore - we'll attempt resume later if needed
+  }
+
+  // reveal story words
   setTimeout(revealStoryWords, 120)
+  audioPrimed = true
 }
 
-/* prepare handlers */
+/* handlers */
 introCard.addEventListener('click', showStory)
 introCard.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); showStory(e) }})
 
@@ -355,12 +362,11 @@ function revealSpoiler(){
   spoiler.setAttribute('aria-pressed','true')
   const line = spoiler.querySelector('.line')
   if(line) line.removeAttribute('aria-hidden')
-  // make sure beer word doesn't get white artifacts: remove inherited shadow/white styles
   const bw = spoiler.querySelector('.beer-word')
   if(bw){
-    bw.style.color = '' // controlled by CSS when open
+    // ensure no white halo artifacts
+    bw.style.webkitTextStroke = '0'
     bw.style.textShadow = '0 6px 10px rgba(0,0,0,.38)'
-    bw.style.fontWeight = '700'
   }
 }
 
@@ -428,7 +434,6 @@ function beerAnimation(){
     beerSprite.style.transform = `translateX(-50%) rotateZ(${rot}deg) rotateX(${flip}deg)`
     if(t < 1) requestAnimationFrame(step)
     else {
-      // landed: place puddle under the can (slightly closer than before)
       shakePage()
       fadeAudio(darkMusic, 0, 600)
       beerSfx.volume = SFX_VOLUME; beerSfx.currentTime = 0; beerSfx.play().catch(()=>{})
@@ -437,16 +442,15 @@ function beerAnimation(){
       const rect = beerSprite.getBoundingClientRect()
       const centerX = rect.left + rect.width/2 + window.scrollX
       const bottomY = rect.bottom + window.scrollY
-      // move puddle slightly up so it sits immediately under can (not too low)
-      const puddleTop = bottomY - Math.max(6, rect.height * 0.06)
+      const puddleTop = bottomY - Math.max(8, rect.height * 0.06) // slightly higher so puddle sits under can
 
       puddle.style.display = 'block'; ripple.style.display = 'block'
       puddle.style.left = `${centerX}px`; puddle.style.top = `${puddleTop}px`
       ripple.style.left = `${centerX}px`; ripple.style.top = `${puddleTop}px`
-      // animate to a slightly longer puddle for realism
+
       puddle.animate([
         {opacity:0, width:'22px', height:'8px', transform:'translate(-50%,0) scale(.2)'},
-        {opacity:1, width:'180px', height:'36px', transform:'translate(-50%,0) scale(1)'}
+        {opacity:1, width:'200px', height:'40px', transform:'translate(-50%,0) scale(1)'}
       ], {duration:780, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
       ripple.animate([
         {opacity:.8, width:'24px', height:'8px', transform:'translate(-50%,0) scale(.2)'},
@@ -466,7 +470,7 @@ spoiler.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.p
 beerWord.addEventListener('click', (e)=>{ e.stopPropagation(); beerAnimation() })
 beerWord.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); beerAnimation() }})
 
-/* romance: show memes + start love music */
+/* romance: show memes + start love music reliably */
 function startRomance(){
   if(romanceStarted) return
   romanceStarted = true
@@ -479,27 +483,47 @@ function startRomance(){
   romanceVideo.style.opacity = '0.6'
   romanceVideo.play().catch(()=>{})
 
-  // start love music (attempt immediate, otherwise resume on next gesture)
-  tryPlayImmediate(loveMusic, VOLUME_LOVE, 1200)
-  romanceAudioStarted = true
+  // loveMusic was primed on initial click; now start it reliably
+  try{
+    loveMusic.currentTime = 0
+    loveMusic.volume = 0
+    loveMusic.play().then(()=> {
+      fadeAudio(loveMusic, VOLUME_LOVE, 900)
+    }).catch(()=>{
+      // fallback: attempt to resume on next user gesture
+      const resume = ()=>{
+        loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
+        window.removeEventListener('touchstart', resume)
+        window.removeEventListener('click', resume)
+      }
+      window.addEventListener('touchstart', resume, {once:true,passive:true})
+      window.addEventListener('click', resume, {once:true})
+    })
+  }catch(e){
+    // ensure we at least schedule resume
+    const resume = ()=>{
+      loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
+      window.removeEventListener('touchstart', resume)
+      window.removeEventListener('click', resume)
+    }
+    window.addEventListener('touchstart', resume, {once:true,passive:true})
+    window.addEventListener('click', resume, {once:true})
+  }
 
   createMemes()
   memesScene.classList.add('active')
 }
 
-/* create memes: half from meme.png half from memes_extra.png (if it exists)
-   images smaller for iPhone 14 Plus */
+/* create memes: alternate filenames; increase extra images by +10% */
 function createMemes(){
   fadeAudio(darkMusic, 0, 800)
   if(!romanceAudioStarted){
-    tryPlayImmediate(loveMusic, VOLUME_LOVE, 1200)
     romanceAudioStarted = true
   }
 
   memesScene.innerHTML = ''
   const memes = []
   const bounds = ()=>({w:window.innerWidth,h:window.innerHeight})
-  // prepare to alternate between two filenames
   const filenames = []
   for(let i=0;i<MEME_COUNT;i++){
     filenames.push(i % 2 === 0 ? 'meme.png' : MEME_EXTRA_FILENAME)
@@ -512,8 +536,12 @@ function createMemes(){
     img.onerror = ()=> { if(img.src.endsWith(MEME_EXTRA_FILENAME)) { img.src='meme.png' } else { img.style.display='none' } }
     el.appendChild(img); memesScene.appendChild(el)
 
-    const b = bounds(); const size = 70 + Math.random()*60
-    el.style.width = `${size}px`; const x = Math.random()*(b.w - size); const y = Math.random()*(b.h - size)
+    const b = bounds()
+    let size = 70 + Math.random()*60
+    if(filenames[i] === MEME_EXTRA_FILENAME) size = Math.round(size * 1.10) // +10% for extra image
+    el.style.width = `${size}px`
+    const x = Math.random()*(b.w - size)
+    const y = Math.random()*(b.h - size)
     memes.push({el,x,y,vx:(Math.random()*0.9+0.2)*(Math.random()>0.5?1:-1),vy:(Math.random()*0.9+0.2)*(Math.random()>0.5?1:-1), size})
 
     const onClick = ()=> revealConfession()
@@ -571,22 +599,30 @@ function showConfession(){
   lines.forEach((line, li)=>{
     const p = document.createElement('p')
     const parts = line.match(/\S+|\s+/g) || [line]
-    parts.forEach(part=>{
+    parts.forEach((part)=>{
       if(/\s+/.test(part)){
-        p.appendChild(document.createTextNode(part)); return
+        p.appendChild(document.createTextNode(part))
+        return
       }
-      const w = document.createElement('span'); w.className='word'
-      part.split('').forEach((ch,ci)=>{
-        const c = document.createElement('span'); c.className='char'; c.style.animationDelay = `${ci*0.03}s`; c.textContent = ch; w.appendChild(c)
+      const wordSpan = document.createElement('span')
+      wordSpan.className = 'word'
+      const chars = part.split('')
+      chars.forEach((ch, ci)=>{
+        const charSpan = document.createElement('span')
+        charSpan.className = 'char'
+        charSpan.style.animationDelay = `${(ci*0.03)}s`
+        charSpan.textContent = ch
+        wordSpan.appendChild(charSpan)
       })
-      p.appendChild(w); wordIndex++
+      p.appendChild(wordSpan)
+      wordIndex++
     })
     confessionText.appendChild(p)
     setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*420)
   })
 
   const wordSpans = $$('#confessionText .word')
-  wordSpans.forEach((w,i)=> setTimeout(()=>{ w.style.opacity='1'; w.style.transform='translateY(0)' }, i * WORD_DELAY_MS))
+  wordSpans.forEach((w, i)=> setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)' }, i * WORD_DELAY_MS))
 }
 
 /* video overlay open */
@@ -602,11 +638,10 @@ document.getElementById('videoOverlay').addEventListener('click', (e)=>{
   }
 })
 
-/* small safety: ensure beerSfx/loveMusic/darkMusic volumes set */
+/* volumes default */
 darkMusic.volume = 0
 loveMusic.volume = 0
 beerSfx.volume = SFX_VOLUME
-
 </script>
 </body>
 </html>
