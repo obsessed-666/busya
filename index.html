@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Marck+Script&display=swap" rel="stylesheet">
 <style>
+/* Optional custom face (if you add woff2) */
 @font-face{
   font-family:"Mazut SP Demo";
   src:local("Mazut SP Demo Regular"),local("Mazut SP Demo"),url("MazutSPDemo-Regular.woff2") format("woff2");
@@ -16,32 +17,41 @@
   font-display:swap;
 }
 
-/* --- Reset & vars --- */
+/* Reset + vars */
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --vh:1vh;
   --safe-top:env(safe-area-inset-top,0px);
   --panel-pad:clamp(16px,4vw,28px);
-  --mist-opacity:.35;
+  --mist:.36;
   --goth-border:rgba(25,10,10,.62);
 }
 html,body{width:100%;height:100%;background:#04070f;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;text-size-adjust:100%}
-body{overflow:hidden; -webkit-font-smoothing:antialiased}
+body{overflow:hidden}
 img,video{display:block;max-width:100%}
 button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 
-/* --- layers + stacking --- */
-.layer{position:absolute;inset:0;z-index:0;pointer-events:none}
-#intro{z-index:60; pointer-events:auto}
-#storyScene{z-index:70}
-#beerLayer{z-index:75;pointer-events:none} /* default, we'll raise when needed */
-#memesScene{z-index:80}
-#confessionScene{z-index:90}
-#videoOverlay{z-index:200}
+/* container */
+#app{position:relative;width:100%;height:100%;overflow:hidden}
+.layer{position:absolute;inset:0}
 
-/* --- backgrounds --- */
+/* IMPORTANT: stacking & pointer-events fixes so background layers DO NOT intercept clicks */
+.layer{z-index:0}
+#forestBg,#forestOverlay,#romanceVideo,#romanceFallback,.bg-mist{pointer-events:none; z-index:0}
+#beerLayer{z-index:65; pointer-events:none} /* <- changed to be above story */
+#memesScene{z-index:40}
+#intro{z-index:50; pointer-events:auto}
+#storyScene{z-index:60}
+#confessionScene{z-index:70}
+#videoOverlay{z-index:100}
+
+/* keep existing utility classes */
+.hidden{display:none !important}
+.fade-out{opacity:0 !important;transform:scale(.96) !important;transition:opacity .45s ease,transform .45s ease}
+
+/* Backgrounds */
 .bg-mist{position:absolute;inset:0;background:
-  radial-gradient(circle at 18% 16%,rgba(120,150,200,var(--mist-opacity)),transparent 45%),
+  radial-gradient(circle at 18% 16%,rgba(120,150,200,var(--mist)),transparent 45%),
   radial-gradient(circle at 80% 76%,rgba(80,120,170,.22),transparent 45%);
   filter:blur(22px);opacity:.5;animation:mistMove 18s ease-in-out infinite;pointer-events:none}
 @keyframes mistMove{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
@@ -57,53 +67,70 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #forestOverlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,4,8,.76),rgba(2,3,6,.86));pointer-events:none}
 #romanceVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease;filter:saturate(1.03) contrast(1.04);pointer-events:none}
 #romanceFallback{position:absolute;inset:0;background:linear-gradient(135deg,#2a0e4a,#5b2c8c,#ff8dbb);opacity:0;transition:opacity 1.2s ease;pointer-events:none}
-
 @keyframes forestDrift{0%,100%{background-position:50% 50%}50%{background-position:55% 45%}}
 @keyframes forestPulse{0%{transform:scale(1);filter:blur(0) brightness(1)}50%{transform:scale(1.02);filter:blur(1.6px) brightness(.92)}100%{transform:scale(1);filter:blur(0) brightness(1)}}
 
-/* --- intro (gothic frame) --- */
+/* Intro - gothic frame for the cat photo */
 #intro{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:var(--panel-pad);background:radial-gradient(circle at 50% 30%,rgba(100,140,200,.04),rgba(5,7,15,.96))}
 #introCard{
   width:min(88vw,520px);
   text-align:center;
-  padding:12px;border-radius:18px;
+  padding:12px;
+  border-radius:18px;
   background:linear-gradient(180deg,#060405,#0b0b0b 60%);
   box-shadow:0 30px 80px rgba(0,0,0,.8), inset 0 2px 0 rgba(255,255,255,.02);
-  border:6px double var(--goth-border); cursor:pointer; position:relative; transition:transform .28s ease;
+  border:6px double var(--goth-border); /* gothic double border */
+  cursor:pointer;
+  position:relative;
+  transition:transform .28s ease, box-shadow .28s ease;
+  outline:0;
+  -webkit-tap-highlight-color: transparent;
 }
-#introCard:active{transform:translateY(-2px)}
+#introCard:hover{transform:translateY(-4px);box-shadow:0 36px 100px rgba(0,0,0,.9)}
 #introCard img{width:100%;border-radius:12px;display:block;animation:catPulse 3.4s ease-in-out infinite}
 #introHint{margin-top:10px;font-size:14px;opacity:.9}
+@keyframes catPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.01)}}
 
-/* --- story --- */
+/* Story */
 #storyScene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:var(--panel-pad);opacity:0;pointer-events:none;transition:opacity .6s ease}
 #storyScene.active{opacity:1;pointer-events:auto}
 #storyCard{
   width:min(92vw,900px);
   max-height:calc(100dvh - 2*var(--panel-pad) - var(--safe-top));
   background:linear-gradient(180deg, rgba(6,7,10,0.95), rgba(8,9,12,0.94));
-  border-radius:18px;border:1px solid rgba(255,255,255,.03);box-shadow:0 30px 90px rgba(0,0,0,.82);overflow:hidden;position:relative;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.03);
+  box-shadow:0 30px 90px rgba(0,0,0,.82);
+  overflow:hidden;position:relative;
 }
-#storyFog{position:absolute;inset:-30%;background:radial-gradient(circle at 20% 30%,rgba(160,180,220,.12),transparent 45%),radial-gradient(circle at 80% 70%,rgba(120,150,200,.1),transparent 50%);filter:blur(18px);animation:storyFog 22s ease-in-out infinite;pointer-events:none}
+#storyFog{
+  position:absolute;inset:-30%;
+  background:
+    radial-gradient(circle at 20% 30%,rgba(160,180,220,.12),transparent 45%),
+    radial-gradient(circle at 80% 70%,rgba(120,150,200,.1),transparent 50%);
+  filter:blur(18px);
+  animation:storyFog 22s ease-in-out infinite;
+  pointer-events:none;
+}
 @keyframes storyFog{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
 #storyClose{border:1px solid rgba(255,255,255,.08);background:transparent;color:#fff;padding:6px 12px;border-radius:999px;cursor:pointer;margin:12px 16px 0 auto;display:block}
-#storyScroll{max-height:calc(100dvh - 160px);overflow:auto;padding:22px 20px;line-height:1.72;font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;font-size:clamp(16px,4vw,18px);color:#e6e6ea; -webkit-overflow-scrolling:touch}
+#storyScroll{max-height:calc(100dvh - 160px);overflow:auto;padding:22px 20px;line-height:1.72;font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;font-size:clamp(16px,4vw,18px);color:#e6e6ea;-webkit-overflow-scrolling:touch}
 
-/* each story word is revealed word-by-word */
+/* word-by-word show */
 .story-word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .28s ease,transform .28s ease}
 .story-word.revealed{opacity:1;transform:translateY(0)}
 
-/* --- spoiler rebuilt (single font, blurred veil) --- */
-.spoiler{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;cursor:default;background:transparent;overflow:visible;pointer-events:none}
+/* Spoiler rebuilt: single-font phrase, blurred veil, no sharp edges */
+.spoiler{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;cursor:default;background:transparent;overflow:visible;pointer-events:none;opacity:.98}
 .spoiler.ready{cursor:pointer;pointer-events:auto}
-.spoiler .veil{position:absolute;inset:0;border-radius:999px;background:linear-gradient(180deg, rgba(12,12,14,0.65), rgba(8,8,10,0.55));box-shadow:0 18px 80px rgba(0,0,0,.8), inset 0 0 50px rgba(255,255,255,0.01);backdrop-filter:blur(24px) saturate(.85);-webkit-backdrop-filter:blur(24px) saturate(.85);transition:opacity .45s ease, transform .55s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0);pointer-events:none;animation:veilFloat 6.2s ease-in-out infinite}
+.spoiler .veil{position:absolute;inset:0;border-radius:999px;background:linear-gradient(180deg, rgba(12,12,14,0.65), rgba(8,8,10,0.55));box-shadow:0 16px 60px rgba(0,0,0,.7), inset 0 0 40px rgba(255,255,255,0.01);backdrop-filter:blur(22px) saturate(.85);-webkit-backdrop-filter:blur(22px) saturate(.85);transition:opacity .48s ease, transform .52s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0);pointer-events:none;mix-blend-mode:normal;animation:veilFloat 6.2s ease-in-out infinite}
 @keyframes veilFloat{0%{transform:translateY(0)}50%{transform:translateY(-2.6px)}100%{transform:translateY(0)}}
 .spoiler .line{position:relative;z-index:3;font-family:"Mazut SP Demo","Merriweather",serif;font-size:clamp(16px,3.6vw,17px);color:rgba(255,255,255,0.03);filter:blur(6px);transition:filter .42s ease,color .42s ease,opacity .42s ease}
 .spoiler.open .veil{opacity:0;transform:translateY(-60px)}
 .spoiler.open .line{color:#fff;filter:blur(0)}
 
-/* --- beer/puddle --- */
-#beerLayer{position:absolute;inset:0;pointer-events:none;z-index:75}
+/* Beer/puddle */
+#beerLayer{position:absolute;inset:0;pointer-events:none;z-index:65}
 #beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center}
 #puddle{position:absolute;left:0;top:0;display:none;width:28px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0)}
 .ripple{position:absolute;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0)}
@@ -111,13 +138,14 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .page-shake{animation:pageShake .6s linear}
 @keyframes pageShake{0%{transform:translate(0)}20%{transform:translate(-4px,3px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-2px)}100%{transform:translate(0)}}
 
-/* --- memes (smaller for iPhone 14 Plus) --- */
+/* Memes tuned for iPhone 14 Plus */
 #memesScene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .6s ease}
 #memesScene.active{opacity:1;pointer-events:auto}
 .meme{position:absolute;left:0;top:0;width:clamp(72px,18vw,120px);padding:6px;border-radius:12px;background:linear-gradient(180deg,rgba(255,210,225,.12),rgba(120,80,120,.06));border:1px solid rgba(255,210,230,.06);box-shadow:0 14px 40px rgba(0,0,0,.45);overflow:hidden;cursor:pointer;backdrop-filter:blur(3px)}
 .meme img{width:100%;height:100%;object-fit:cover;filter:contrast(1.03) saturate(1.02)}
+.meme::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 30px rgba(0,0,0,.28)}
 
-/* --- confession --- */
+/* Confession */
 #confessionScene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:var(--panel-pad);opacity:0;pointer-events:none;transition:opacity .6s ease}
 #confessionScene.active{opacity:1;pointer-events:auto}
 #confessionBox{width:min(92vw,900px);max-height:calc(100dvh - 2*var(--panel-pad));background:rgba(255,255,255,.06);border-radius:18px;border:1px solid rgba(255,255,255,.08);box-shadow:0 30px 100px rgba(0,0,0,.45);padding:clamp(18px,4vw,28px);text-align:center;color:#ffe4ec;overflow:auto}
@@ -126,10 +154,14 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .36s ease,transform .36s ease}
 .char{display:inline-block;transform-origin:center bottom;animation:charShake 1.7s ease-in-out infinite}
 @keyframes charShake{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-2px,1px) rotate(-2deg)}50%{transform:translate(2px,-1px) rotate(2deg)}75%{transform:translate(-1px,-1px) rotate(-1deg)}100%{transform:translate(0,0) rotate(0)}}
+#heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite}
+@keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 
-/* --- punchline isolated stage (created dynamically), minimal base here --- */
-.punchline-stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:150;pointer-events:none;background:rgba(0,0,0,0.92)}
-.punchline-text{font-family:"Mazut SP Demo","Merriweather",serif;font-weight:700;color:#fff;font-size:clamp(22px,6.6vw,36px);text-align:center;padding:12px 20px;line-height:1.2;pointer-events:none;text-shadow:0 6px 28px rgba(0,0,0,.6)}
+/* video overlay */
+#videoOverlay{position:absolute;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease;padding:var(--panel-pad)}
+#videoOverlay.active{opacity:1;pointer-events:auto}
+#finalVideo{width:min(92vw,900px);max-height:78vh;border-radius:12px;background:#000;box-shadow:0 20px 70px rgba(0,0,0,.6)}
+#videoPlaceholder{display:none;color:#ffe4ec;text-align:center}
 </style>
 </head>
 <body>
@@ -158,7 +190,8 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
         <p>И вдруг — тишина. Снова. Я понимал, что кто бы то ни был за дверью, вероятно, тоже услышал, как я стою и молча слушаю, внимая этот психоделический ужас. Где-то спустя секунд 20 раздался громкий железный звук — звук падения прямо перед моей грёбанной дверью. Я набрался смелости и прислонил ухо к двери, чтобы попытаться идентифицировать, что же упало... и что, чёрт возьми, тут вообще происходит.</p>
         <p>Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
 
-        <div class="spoiler" id="spoiler" role="button" tabindex="-1" aria-pressed="false" aria-disabled="true">
+        <!-- SPOILER: single font phrase, blurred until reveal. Initially pointer-events disabled -->
+        <div class="spoiler" id="spoiler" role="button" aria-pressed="false" aria-disabled="true" tabindex="-1">
           <div class="veil" aria-hidden="true"></div>
           <div class="line" aria-hidden="true">— Ой, извини, у меня пиво упало.</div>
         </div>
@@ -193,14 +226,16 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
     </div>
   </div>
 
+  <!-- audios -->
   <audio id="darkMusic" src="dark.mp3" preload="auto" loop></audio>
   <audio id="loveMusic" src="love.mp3" preload="auto" loop></audio>
   <audio id="beerSfx" src="beer-sfx.mp3" preload="auto"></audio>
 </div>
 
-<!-- NOTE: to have 50% of memes be the extra image, upload file named memes_extra.png to repo -->
+<!-- NOTE: upload second meme image with exact filename: memes_extra.png (50% of memes attempt to use it) -->
+
 <script>
-/* --- config --- */
+/* Settings */
 const BEER_BASE_DURATION_MS = 1450
 const MEME_COUNT = 18
 const VOLUME_DARK = 0.18
@@ -208,13 +243,13 @@ const VOLUME_LOVE = 0.22
 const SFX_VOLUME = 0.6
 const STORY_WORD_DELAY_MS = 56
 const WORD_DELAY_MS = 90
-const MEME_EXTRA_FILENAME = 'memes_extra.png'
+const MEME_EXTRA_FILENAME = 'memes_extra.png' // upload to repo
 
-/* --- helpers --- */
+/* helpers */
 const $ = s => document.querySelector(s)
 const $$ = s => Array.from(document.querySelectorAll(s))
 
-/* --- elements --- */
+/* elements */
 const introCard = $('#introCard')
 const intro = $('#intro')
 const storyScene = $('#storyScene')
@@ -236,31 +271,35 @@ const loveMusic = $('#loveMusic')
 const beerSfx = $('#beerSfx')
 const romanceVideo = $('#romanceVideo')
 
-/* --- state --- */
 let audioPrimed = false
 let beerStarted = false
 let romanceStarted = false
+let romanceAudioStarted = false
 let memeAnimationId = null
 let puddleTimer = null
 
-/* viewport fix for mobile */
-function syncVH(){ const vh = (window.visualViewport?.height || window.innerHeight) * 0.01; document.documentElement.style.setProperty('--vh', `${vh}px`) }
-syncVH(); window.addEventListener('resize', syncVH, {passive:true})
+/* viewport for mobile */
+function syncVH(){
+  const vh = (window.visualViewport?.height || window.innerHeight) * 0.01
+  document.documentElement.style.setProperty('--vh', `${vh}px`)
+}
+syncVH()
+window.addEventListener('resize', syncVH, {passive:true})
 
-/* fade audio helper */
+/* fade helper */
 function fadeAudio(audio, target, duration){
   const start = audio.volume || 0
   const diff = target - start
   const t0 = performance.now()
   function step(now){
-    const p = Math.min((now - t0)/duration, 1)
+    const p = Math.min((now - t0) / duration, 1)
     audio.volume = start + diff * p
     if(p < 1) requestAnimationFrame(step)
   }
   requestAnimationFrame(step)
 }
 
-/* robust play attempt inside user gesture; if blocked, schedule resume on next gesture */
+/* robust play within user gesture; if blocked, schedule resume on next user gesture */
 function tryPlayImmediate(audio, targetVolume=0.2, fadeMs=900){
   try{
     audio.volume = 0
@@ -269,9 +308,11 @@ function tryPlayImmediate(audio, targetVolume=0.2, fadeMs=900){
       p.then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{
         const resume = ()=>{
           audio.play().then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{})
-          window.removeEventListener('touchstart', resume); window.removeEventListener('click', resume)
+          window.removeEventListener('touchstart', resume)
+          window.removeEventListener('click', resume)
         }
-        window.addEventListener('touchstart', resume, {once:true,passive:true}); window.addEventListener('click', resume, {once:true})
+        window.addEventListener('touchstart', resume, {once:true,passive:true})
+        window.addEventListener('click', resume, {once:true})
       })
     } else {
       fadeAudio(audio, targetVolume, fadeMs)
@@ -279,13 +320,15 @@ function tryPlayImmediate(audio, targetVolume=0.2, fadeMs=900){
   }catch(e){
     const resume = ()=>{
       audio.play().then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{})
-      window.removeEventListener('touchstart', resume); window.removeEventListener('click', resume)
+      window.removeEventListener('touchstart', resume)
+      window.removeEventListener('click', resume)
     }
-    window.addEventListener('touchstart', resume, {once:true,passive:true}); window.addEventListener('click', resume, {once:true})
+    window.addEventListener('touchstart', resume, {once:true,passive:true})
+    window.addEventListener('click', resume, {once:true})
   }
 }
 
-/* --- prepare story words (called on showStory) --- */
+/* prepare story words */
 function prepareStoryWords(){
   const ps = $$('#storyScroll p')
   ps.forEach(p=>{
@@ -306,121 +349,70 @@ function prepareStoryWords(){
   })
 }
 
-/* reveal story word-by-word; returns total duration in ms */
+/* reveal words one-by-one; return total duration (ms) */
 function revealStoryWords(){
   const words = $$('#storyScroll .story-word')
   words.forEach((w,i)=> setTimeout(()=> w.classList.add('revealed'), i * STORY_WORD_DELAY_MS))
   return words.length * STORY_WORD_DELAY_MS
 }
 
-/* enable spoiler only after story fully revealed */
+/* enable spoiler after story finished */
 function enableSpoiler(){
   spoiler.classList.add('ready')
   spoiler.setAttribute('aria-disabled','false')
   spoiler.tabIndex = 0
+  // make it clickable and keyboard-focusable
 }
 
-/* show story (on cat click) */
+/* show story on first click (user gesture) */
 function showStory(){
   if(!audioPrimed){
-    // prime dark music
+    // prime audios on first gesture
     tryPlayImmediate(darkMusic, VOLUME_DARK, 900)
-    // prime loveMusic to allow later autoplay
+    // prime loveMusic (play & pause) so it can start later without a gesture
     try{
       loveMusic.volume = 0
       loveMusic.play().then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0 }).catch(()=>{})
     }catch(e){}
     audioPrimed = true
   }
+
   prepareStoryWords()
   intro.classList.add('fade-out')
   setTimeout(()=> intro.classList.add('hidden'), 520)
   storyScene.classList.add('active')
-  const total = revealStoryWords()
-  setTimeout(()=> enableSpoiler(), total + 420)
+
+  // reveal words and enable spoiler when done
+  const totalMs = revealStoryWords()
+  const safety = 420 // small buffer
+  setTimeout(()=> enableSpoiler(), totalMs + safety)
 }
 
-/* Intro click handlers */
+/* events */
 introCard.addEventListener('click', showStory)
-introCard.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); showStory() }})
+introCard.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); showStory() }})
 
 /* story close */
-storyClose.addEventListener('click', ()=>{
-  storyScene.classList.remove('active')
-  intro.classList.remove('hidden')
-  setTimeout(()=> intro.classList.remove('fade-out'), 10)
-})
+storyClose.addEventListener('click', ()=>{ storyScene.classList.remove('active'); intro.classList.remove('hidden'); setTimeout(()=> intro.classList.remove('fade-out'), 10) })
 
 /* scroll fog parallax */
 storyScroll.addEventListener('scroll', ()=>{ const ratio = storyScroll.scrollTop / Math.max(1, (storyScroll.scrollHeight - storyScroll.clientHeight)); storyFog.style.transform = `translateY(${ratio * -12}px)` })
 
-/* create punchline isolated stage (centered phrase) */
-function createPunchlineStage(text){
-  // remove if already exists
-  const existing = document.querySelector('.punchline-stage')
-  if(existing) existing.remove()
-  const stage = document.createElement('div')
-  stage.className = 'punchline-stage'
-  stage.style.opacity = '0'
-  stage.style.transition = 'opacity .36s ease'
-  const t = document.createElement('div')
-  t.className = 'punchline-text'
-  t.textContent = text
-  stage.appendChild(t)
-  document.body.appendChild(stage)
-  // small fade-in
-  requestAnimationFrame(()=> stage.style.opacity = '1')
-  return stage
-}
-function removePunchlineStage(){
-  const stage = document.querySelector('.punchline-stage')
-  if(!stage) return
-  stage.style.opacity = '0'
-  setTimeout(()=> stage.remove(), 420)
-}
-
-/* reveal spoiler: create punchline stage, raise beerLayer z-index so can be visible,
-   and start beer animation. (spoiler ready only after story reveal) */
+/* reveal spoiler (after it's enabled) */
 function revealSpoiler(){
-  if(!spoiler.classList.contains('ready')) return
+  if(!spoiler.classList.contains('ready')) return // prevent early clicks
   if(spoiler.classList.contains('open')) return
   spoiler.classList.add('open')
-  spoiler.setAttribute('aria-pressed','true')
-
-  // create isolated stage with phrase (single font)
-  const phrase = spoiler.querySelector('.line').textContent.trim()
-  // hide the story inner content to avoid overlap (we'll show separate stage)
-  document.getElementById('storyCard').style.visibility = 'hidden'
-
-  // create stage and ensure beer is above it
-  const stage = createPunchlineStage(phrase)
-  stage.style.pointerEvents = 'none' // no interaction
-
-  // bring beerLayer above stage so beer + puddle are visible
-  beerLayer.style.zIndex = 220
-  // ensure stage sits below beer but above everything else
-  stage.style.zIndex = 200
-
-  // start beer animation (will call continueSequence after)
-  beerAnimation(()=> {
-    // after beer drop finishes and small pause, remove isolated stage and continue
-    setTimeout(()=>{
-      removePunchlineStage()
-      // restore story card visibility
-      document.getElementById('storyCard').style.visibility = ''
-      // reset beerLayer z-index back to default (so memes / confession layers keep working)
-      beerLayer.style.zIndex = 75
-      // now transition to memes and romance music
-      startRomance()
-    }, 900) // short pause so user has time to see puddle + phrase
-  })
+  spoiler.querySelector('.line').removeAttribute('aria-hidden')
+  // start can drop animation
+  beerAnimation()
 }
 
-/* bind spoiler click/keydown */
+/* click handlers for spoiler */
 spoiler.addEventListener('click', (e)=>{ e.stopPropagation(); revealSpoiler() })
 spoiler.addEventListener('keydown', (e)=>{ if((e.key==='Enter'||e.key===' ') && spoiler.classList.contains('ready')){ e.preventDefault(); revealSpoiler() }})
 
-/* spawn visual splashes / foam */
+/* splash/foam helpers */
 function spawnSplash(cx, cy){
   for(let i=0;i<22;i++){
     const d = document.createElement('div'); d.className='splash'
@@ -451,20 +443,13 @@ function shakePage(){ document.body.classList.add('page-shake'); if(navigator.vi
 /* puddle cleanup */
 function cleanupPuddle(){
   if(puddleTimer) clearTimeout(puddleTimer)
-  puddleTimer = setTimeout(()=>{
-    puddle.animate([{opacity:1, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(.6)'}], {duration:900, easing:'ease-in-out', fill:'forwards'})
-    ripple.animate([{opacity:.6, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(1.8)'}], {duration:900, easing:'ease-out', fill:'forwards'})
-  }, 3000)
+  puddleTimer = setTimeout(()=>{ puddle.animate([{opacity:1, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(.6)'}], {duration:900, easing:'ease-in-out', fill:'forwards'}); ripple.animate([{opacity:.6, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(1.8)'}], {duration:900, easing:'ease-out', fill:'forwards'}) }, 3000)
 }
 
-/* beerAnimation(callbackOnComplete)
-   runs the drop animation and calls callback when finished */
-function beerAnimation(callback){
+/* beer drop animation (puddle sits directly under can) */
+function beerAnimation(){
   if(beerStarted) return
   beerStarted = true
-
-  // ensure audio is unlocked
-  tryPlayImmediate(darkMusic, VOLUME_DARK, 600)
 
   beerSprite.style.display = 'block'
   const startX = window.innerWidth * (0.48 + Math.random()*0.06)
@@ -488,17 +473,14 @@ function beerAnimation(callback){
     if(t < 1) requestAnimationFrame(step)
     else {
       shakePage()
-      fadeAudio(darkMusic, 0, 600) // fade out scary music
+      fadeAudio(darkMusic, 0, 600)
       beerSfx.volume = SFX_VOLUME; beerSfx.currentTime = 0; beerSfx.play().catch(()=>{})
+      spawnSplash(startX, endY + 18); spawnFoam(startX, endY + 20)
 
-      // spawn effects and place puddle directly under can
       const rect = beerSprite.getBoundingClientRect()
       const centerX = rect.left + rect.width/2 + window.scrollX
       const bottomY = rect.bottom + window.scrollY
-      const puddleTop = bottomY - Math.max(8, rect.height * 0.06) // just under can
-
-      spawnSplash(centerX, bottomY + 18)
-      spawnFoam(centerX, bottomY + 20)
+      const puddleTop = bottomY - Math.max(8, rect.height * 0.06) // puddle immediately under can
 
       puddle.style.display = 'block'; ripple.style.display = 'block'
       puddle.style.left = `${centerX}px`; puddle.style.top = `${puddleTop}px`
@@ -508,28 +490,28 @@ function beerAnimation(callback){
       ripple.animate([{opacity:.8, width:'24px', height:'8px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'260px', height:'60px', transform:'translate(-50%,0) scale(1)'}], {duration:780, easing:'ease-out', fill:'forwards'})
 
       cleanupPuddle()
-
-      // call the callback when finished (so calling code handles transition)
-      if(typeof callback === 'function') callback()
+      setTimeout(startRomance, 760)
     }
   }
   requestAnimationFrame(step)
 }
 
-/* startRomance: fade dark, play love music reliably, create memes */
+/* spoiler already wired to call revealSpoiler above */
+
+/* start romance: fade dark, start loveMusic reliably and show memes */
 function startRomance(){
   if(romanceStarted) return
   romanceStarted = true
 
-  // hide story scene if visible
   storyScene.classList.remove('active')
+  beerLayer.classList.add('fade-out')
+  setTimeout(()=> beerLayer.classList.add('hidden'), 600)
 
-  // set forest dim & start romance video if available
   document.getElementById('forestBg').style.opacity = '0.36'
   romanceVideo.style.opacity = '0.6'
   romanceVideo.play().catch(()=>{})
 
-  // try to play loveMusic robustly
+  // attempt to play loveMusic (should be primed). If blocked, schedule resume on next gesture.
   try{
     loveMusic.currentTime = 0
     loveMusic.volume = 0
@@ -538,9 +520,11 @@ function startRomance(){
       p.then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{
         const resume = ()=>{
           loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
-          window.removeEventListener('touchstart', resume); window.removeEventListener('click', resume)
+          window.removeEventListener('touchstart', resume)
+          window.removeEventListener('click', resume)
         }
-        window.addEventListener('touchstart', resume, {once:true,passive:true}); window.addEventListener('click', resume, {once:true})
+        window.addEventListener('touchstart', resume, {once:true,passive:true})
+        window.addEventListener('click', resume, {once:true})
       })
     } else {
       fadeAudio(loveMusic, VOLUME_LOVE, 900)
@@ -548,27 +532,28 @@ function startRomance(){
   }catch(e){
     const resume = ()=>{
       loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
-      window.removeEventListener('touchstart', resume); window.removeEventListener('click', resume)
+      window.removeEventListener('touchstart', resume)
+      window.removeEventListener('click', resume)
     }
-    window.addEventListener('touchstart', resume, {once:true,passive:true}); window.addEventListener('click', resume, {once:true})
+    window.addEventListener('touchstart', resume, {once:true,passive:true})
+    window.addEventListener('click', resume, {once:true})
   }
 
-  // create memes
   createMemes()
   memesScene.classList.add('active')
 }
 
-/* createMemes: alternates files with memes_extra.png; extra image approx +10% */
+/* create memes; alternate between meme.png and memes_extra.png; extra image +10% size */
 function createMemes(){
   fadeAudio(darkMusic, 0, 800)
   memesScene.innerHTML = ''
   const memes = []
-  const bounds = ()=> ({w:window.innerWidth,h:window.innerHeight})
+  const bounds = ()=>({w:window.innerWidth,h:window.innerHeight})
   const filenames = []
   for(let i=0;i<MEME_COUNT;i++) filenames.push(i % 2 === 0 ? 'meme.png' : MEME_EXTRA_FILENAME)
 
   for(let i=0;i<MEME_COUNT;i++){
-    const el = document.createElement('div'); el.className='meme tap-target'
+    const el = document.createElement('div'); el.className = 'meme tap-target'
     el.setAttribute('role','button'); el.setAttribute('tabindex','0')
     const img = document.createElement('img'); img.src = filenames[i]; img.alt = 'мем-картинка'
     img.onerror = ()=> { if(img.src.endsWith(MEME_EXTRA_FILENAME)) img.src = 'meme.png'; else img.style.display='none' }
@@ -576,11 +561,12 @@ function createMemes(){
 
     const b = bounds()
     let size = 70 + Math.random()*60
-    if(filenames[i]===MEME_EXTRA_FILENAME) size = Math.round(size * 1.10)
+    if(filenames[i]===MEME_EXTRA_FILENAME) size = Math.round(size * 1.10) // +10%
     el.style.width = `${size}px`
     const x = Math.random()*(b.w - size)
     const y = Math.random()*(b.h - size)
     memes.push({el,x,y,vx:(Math.random()*0.9+0.2)*(Math.random()>0.5?1:-1),vy:(Math.random()*0.9+0.2)*(Math.random()>0.5?1:-1),size})
+
     const onClick = ()=> revealConfession()
     el.addEventListener('click', onClick, {once:true})
     el.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onClick() }}, {once:true})
@@ -609,12 +595,13 @@ function createMemes(){
   loop()
 }
 
-/* reveal confession word-by-word */
+/* reveal confessions word-by-word */
 function revealConfession(){
   if(memeAnimationId) cancelAnimationFrame(memeAnimationId)
   $$('.meme').forEach(m=> m.classList.add('fade-out'))
-  setTimeout(()=> { memesScene.classList.remove('active'); memesScene.innerHTML=''; showConfession() }, 520)
+  setTimeout(()=>{ memesScene.classList.remove('active'); memesScene.innerHTML=''; showConfession() }, 520)
 }
+
 function showConfession(){
   confessionScene.classList.add('active')
   const raw = confessionText.textContent
@@ -625,36 +612,59 @@ function showConfession(){
     'полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя.',
     'очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни'
   ]
-  if(raw !== lines.join(' ')){ confessionText.textContent = raw; return }
+  if(raw !== lines.join(' ')){
+    confessionText.textContent = raw
+    return
+  }
+
   confessionText.innerHTML = ''
   let wordIndex = 0
   lines.forEach((line, li)=>{
     const p = document.createElement('p')
     const parts = line.match(/\S+|\s+/g) || [line]
     parts.forEach((part)=>{
-      if(/\s+/.test(part)){ p.appendChild(document.createTextNode(part)); return }
-      const wordSpan = document.createElement('span'); wordSpan.className='word'
+      if(/\s+/.test(part)){
+        p.appendChild(document.createTextNode(part))
+        return
+      }
+      const wordSpan = document.createElement('span')
+      wordSpan.className = 'word'
       const chars = part.split('')
       chars.forEach((ch, ci)=>{
-        const charSpan = document.createElement('span'); charSpan.className='char'; charSpan.style.animationDelay = `${(ci*0.03)}s`; charSpan.textContent = ch
+        const charSpan = document.createElement('span')
+        charSpan.className = 'char'
+        charSpan.style.animationDelay = `${(ci*0.03)}s`
+        charSpan.textContent = ch
         wordSpan.appendChild(charSpan)
       })
-      p.appendChild(wordSpan); wordIndex++
+      p.appendChild(wordSpan)
+      wordIndex++
     })
-    confessionText.appendChild(p); setTimeout(()=>{ p.style.opacity='1'; p.style.transform='translateY(0)' }, 200 + li*420)
+    confessionText.appendChild(p)
+    setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*420)
   })
+
   const wordSpans = $$('#confessionText .word')
-  wordSpans.forEach((w,i)=> setTimeout(()=>{ w.style.opacity='1'; w.style.transform='translateY(0)' }, i * WORD_DELAY_MS))
+  wordSpans.forEach((w, i)=> setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)' }, i * WORD_DELAY_MS))
 }
 
 /* video overlay */
 function openVideo(){ document.getElementById('videoOverlay').classList.add('active'); document.getElementById('videoOverlay').setAttribute('aria-hidden','false'); document.getElementById('finalVideo').style.display='block'; document.getElementById('videoPlaceholder').style.display='none' }
-heartBtn.addEventListener('click', openVideo)
-heartBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openVideo() }})
-document.getElementById('videoOverlay').addEventListener('click', (e)=>{ if(e.target === document.getElementById('videoOverlay')){ document.getElementById('videoOverlay').classList.remove('active'); document.getElementById('videoOverlay').setAttribute('aria-hidden','true'); try{ document.getElementById('finalVideo').pause() }catch(e){} } })
 
-/* ensure defaults */
-darkMusic.volume = 0; loveMusic.volume = 0; beerSfx.volume = SFX_VOLUME
+document.getElementById('heartBtn').addEventListener('click', openVideo)
+document.getElementById('heartBtn').addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openVideo() }})
+
+document.getElementById('videoOverlay').addEventListener('click', (e)=>{
+  if(e.target === document.getElementById('videoOverlay')){
+    document.getElementById('videoOverlay').classList.remove('active'); document.getElementById('videoOverlay').setAttribute('aria-hidden','true')
+    try{ document.getElementById('finalVideo').pause() }catch(e){}
+  }
+})
+
+/* volumes default */
+darkMusic.volume = 0
+loveMusic.volume = 0
+beerSfx.volume = SFX_VOLUME
 </script>
 </body>
 </html>
