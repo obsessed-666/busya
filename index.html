@@ -34,6 +34,18 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 /* container */
 #app{position:relative;width:100%;height:100%;overflow:hidden}
 .layer{position:absolute;inset:0}
+
+/* IMPORTANT: stacking & pointer-events fixes so background layers DO NOT intercept clicks */
+.layer{z-index:0}
+#forestBg,#forestOverlay,#romanceVideo,#romanceFallback,.bg-mist{pointer-events:none; z-index:0}
+#beerLayer{z-index:30; pointer-events:none}
+#memesScene{z-index:40}
+#intro{z-index:50; pointer-events:auto}
+#storyScene{z-index:60}
+#confessionScene{z-index:70}
+#videoOverlay{z-index:100}
+
+/* keep existing utility classes */
 .hidden{display:none !important}
 .fade-out{opacity:0 !important;transform:scale(.96) !important;transition:opacity .45s ease,transform .45s ease}
 
@@ -53,8 +65,8 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   will-change:transform,filter;
 }
 #forestOverlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,4,8,.76),rgba(2,3,6,.86));pointer-events:none}
-#romanceVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease;filter:saturate(1.03) contrast(1.04)}
-#romanceFallback{position:absolute;inset:0;background:linear-gradient(135deg,#2a0e4a,#5b2c8c,#ff8dbb);opacity:0;transition:opacity 1.2s ease}
+#romanceVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease;filter:saturate(1.03) contrast(1.04);pointer-events:none}
+#romanceFallback{position:absolute;inset:0;background:linear-gradient(135deg,#2a0e4a,#5b2c8c,#ff8dbb);opacity:0;transition:opacity 1.2s ease;pointer-events:none}
 @keyframes forestDrift{0%,100%{background-position:50% 50%}50%{background-position:55% 45%}}
 @keyframes forestPulse{0%{transform:scale(1);filter:blur(0) brightness(1)}50%{transform:scale(1.02);filter:blur(1.6px) brightness(.92)}100%{transform:scale(1);filter:blur(0) brightness(1)}}
 
@@ -72,6 +84,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   position:relative;
   transition:transform .28s ease, box-shadow .28s ease;
   outline:0;
+  -webkit-tap-highlight-color: transparent;
 }
 #introCard:hover{transform:translateY(-4px);box-shadow:0 36px 100px rgba(0,0,0,.9)}
 #introCard img{width:100%;border-radius:12px;display:block;animation:catPulse 3.4s ease-in-out infinite}
@@ -117,7 +130,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .spoiler.open .line{color:#fff;filter:blur(0)}
 
 /* Beer/puddle */
-#beerLayer{position:absolute;inset:0;pointer-events:none;z-index:15}
+#beerLayer{position:absolute;inset:0;pointer-events:none;z-index:30}
 #beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center}
 #puddle{position:absolute;left:0;top:0;display:none;width:28px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0)}
 .ripple{position:absolute;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0)}
@@ -493,8 +506,6 @@ function beerAnimation(){
   requestAnimationFrame(step)
 }
 
-/* starter handlers already prevent early reveal; spoiler clicks call beerAnimation */
-beerSprite.addEventListener('error', ()=>{})
 /* spoiler already wired to call revealSpoiler above */
 
 /* start romance: fade dark, start loveMusic reliably and show memes */
@@ -612,5 +623,58 @@ function showConfession(){
     'очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни'
   ]
   if(raw !== lines.join(' ')){
-    confessionText.
-::contentReference[oaicite:0]{index=0}
+    confessionText.textContent = raw
+    return
+  }
+
+  confessionText.innerHTML = ''
+  let wordIndex = 0
+  lines.forEach((line, li)=>{
+    const p = document.createElement('p')
+    const parts = line.match(/\S+|\s+/g) || [line]
+    parts.forEach((part)=>{
+      if(/\s+/.test(part)){
+        p.appendChild(document.createTextNode(part))
+        return
+      }
+      const wordSpan = document.createElement('span')
+      wordSpan.className = 'word'
+      const chars = part.split('')
+      chars.forEach((ch, ci)=>{
+        const charSpan = document.createElement('span')
+        charSpan.className = 'char'
+        charSpan.style.animationDelay = `${(ci*0.03)}s`
+        charSpan.textContent = ch
+        wordSpan.appendChild(charSpan)
+      })
+      p.appendChild(wordSpan)
+      wordIndex++
+    })
+    confessionText.appendChild(p)
+    setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*420)
+  })
+
+  const wordSpans = $$('#confessionText .word')
+  wordSpans.forEach((w, i)=> setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)' }, i * WORD_DELAY_MS))
+}
+
+/* video overlay */
+function openVideo(){ document.getElementById('videoOverlay').classList.add('active'); document.getElementById('videoOverlay').setAttribute('aria-hidden','false'); document.getElementById('finalVideo').style.display='block'; document.getElementById('videoPlaceholder').style.display='none' }
+
+document.getElementById('heartBtn').addEventListener('click', openVideo)
+document.getElementById('heartBtn').addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openVideo() }})
+
+document.getElementById('videoOverlay').addEventListener('click', (e)=>{
+  if(e.target === document.getElementById('videoOverlay')){
+    document.getElementById('videoOverlay').classList.remove('active'); document.getElementById('videoOverlay').setAttribute('aria-hidden','true')
+    try{ document.getElementById('finalVideo').pause() }catch(e){}
+  }
+})
+
+/* volumes default */
+darkMusic.volume = 0
+loveMusic.volume = 0
+beerSfx.volume = SFX_VOLUME
+</script>
+</body>
+</html>
