@@ -24,7 +24,7 @@
   --safe-left:env(safe-area-inset-left,0px);
   --panel-max:900px;
   --panel-pad:clamp(16px,4vw,28px);
-  --mist-opacity:.35;
+  --mist-opacity:.36;
 }
 html,body{width:100%;height:100%;background:#04070f;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;text-size-adjust:100%}
 body{overflow:hidden}
@@ -37,51 +37,60 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .fade-out{opacity:0 !important;transform:scale(.96) !important;transition:opacity .5s ease,transform .5s ease}
 
 /* Backgrounds */
-.bg-mist{position:absolute;inset:0;background:radial-gradient(circle at 18% 16%,rgba(120,150,200,var(--mist-opacity)),transparent 45%),radial-gradient(circle at 80% 76%,rgba(80,120,170,.22),transparent 45%);filter:blur(22px);opacity:.5;animation:mistMove 18s ease-in-out infinite}
+.bg-mist{position:absolute;inset:0;background:radial-gradient(circle at 18% 16%,rgba(120,150,200,var(--mist-opacity)),transparent 45%),radial-gradient(circle at 80% 76%,rgba(80,120,170,.22),transparent 45%);filter:blur(22px);opacity:.5;animation:mistMove 18s ease-in-out infinite;pointer-events:none}
 @keyframes mistMove{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
 
 #forestBg{
   position:absolute;inset:0;
   background:#0b0f1a url('forest.jpg') center/cover no-repeat;
-  animation:forestDrift 22s ease-in-out infinite;
+  background-size:cover;
+  animation:forestDrift 22s ease-in-out infinite, forestPulse 10s ease-in-out infinite;
   transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;
+  will-change:transform,filter;
+  filter: blur(0px) brightness(1);
 }
 #forestOverlay{
   position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(5,8,14,.85),rgba(2,5,10,.7));
+  background:linear-gradient(180deg,rgba(2,4,8,.75),rgba(2,3,6,.85));
+  pointer-events:none;
 }
 #romanceVideo{
   position:absolute;inset:0;
   width:100%;height:100%;object-fit:cover;
-  opacity:0;transition:opacity 1.5s ease,filter 1.5s ease;
-  filter:saturate(1.08) contrast(1.05);
+  opacity:0;transition:opacity 1.2s ease,filter 1.2s ease;
+  filter:saturate(1.03) contrast(1.04);
 }
 #romanceFallback{
   position:absolute;inset:0;
   background:linear-gradient(135deg,#2a0e4a,#5b2c8c,#ff8dbb);
-  opacity:0;transition:opacity 1.5s ease;
+  opacity:0;transition:opacity 1.2s ease;
 }
 @keyframes forestDrift{0%,100%{background-position:50% 50%}50%{background-position:55% 45%}}
+@keyframes forestPulse{
+  0%{ transform:scale(1); filter: blur(0px) brightness(1); }
+  50%{ transform:scale(1.02); filter: blur(1.6px) brightness(.92); }
+  100%{ transform:scale(1); filter: blur(0px) brightness(1); }
+}
 
 /* Intro */
 #intro{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   padding:var(--panel-pad);
-  background:radial-gradient(circle at 50% 30%,rgba(100,140,200,.2),rgba(5,7,15,.9));
+  background:radial-gradient(circle at 50% 30%,rgba(100,140,200,.06),rgba(5,7,15,.95));
 }
 #introCard{
   width:min(88vw,520px);text-align:center;
   padding:14px;border-radius:22px;
-  background:linear-gradient(180deg,rgba(30,25,18,.85),rgba(10,8,6,.85));
+  background:linear-gradient(180deg,rgba(30,25,18,.9),rgba(8,7,6,.95));
   box-shadow:0 30px 90px rgba(0,0,0,.6);
-  border:4px solid rgba(255,255,255,.08);
+  border:3px solid rgba(255,255,255,.04);
   cursor:pointer;
   animation:introFloat 5s ease-in-out infinite;
 }
 #introCard img{width:100%;border-radius:16px;display:block;animation:catPulse 3.4s ease-in-out infinite}
-#introHint{margin-top:10px;font-size:14px;opacity:.85}
-@keyframes introFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes catPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.015)}}
+#introHint{margin-top:10px;font-size:14px;opacity:.9}
+@keyframes introFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes catPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
 
 /* Story */
 #storyScene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:var(--panel-pad);opacity:0;pointer-events:none;transition:opacity .6s ease}
@@ -89,93 +98,110 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #storyCard{
   width:min(92vw,var(--panel-max));
   max-height:calc(100dvh - 2*var(--panel-pad) - var(--safe-top) - var(--safe-bottom));
-  background:rgba(10,12,18,.82);
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.08);
-  box-shadow:0 25px 80px rgba(0,0,0,.6);
+  background:linear-gradient(180deg, rgba(6,7,10,0.9), rgba(8,9,12,0.85));
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.04);
+  box-shadow:0 30px 90px rgba(0,0,0,.75);
   overflow:hidden;
   position:relative;
 }
 #storyFog{
   position:absolute;inset:-30%;
-  background:radial-gradient(circle at 20% 30%,rgba(180,200,240,.2),transparent 45%),radial-gradient(circle at 80% 70%,rgba(120,160,210,.18),transparent 50%);
+  background:radial-gradient(circle at 20% 30%,rgba(160,180,220,.14),transparent 45%),radial-gradient(circle at 80% 70%,rgba(120,150,200,.12),transparent 50%);
   filter:blur(18px);
-  animation:storyFog 20s ease-in-out infinite;
+  animation:storyFog 22s ease-in-out infinite;
   pointer-events:none;
+  mix-blend-mode:screen;
 }
 #storyFog::after{
   content:"";position:absolute;inset:-20%;
-  background:radial-gradient(circle at 30% 80%,rgba(150,190,240,.15),transparent 55%);
-  animation:storyFogB 26s ease-in-out infinite;
+  background:radial-gradient(circle at 30% 80%,rgba(120,150,200,.12),transparent 55%);
+  animation:storyFogB 28s ease-in-out infinite;
 }
 @keyframes storyFog{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
-@keyframes storyFogB{0%,100%{transform:translateY(10px)}50%{transform:translateY(-20px)}}
-#storyClose{border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;padding:6px 12px;border-radius:999px;cursor:pointer;margin:12px 16px 0 auto;display:block}
+@keyframes storyFogB{0%,100%{transform:translateY(12px)}50%{transform:translateY(-24px)}}
+#storyClose{border:1px solid rgba(255,255,255,.12);background:transparent;color:#fff;padding:6px 12px;border-radius:999px;cursor:pointer;margin:12px 16px 0 auto;display:block}
 #storyScroll{
   max-height:calc(100dvh - 160px);
   overflow:auto;
-  padding:18px 18px 22px;
+  padding:22px 20px;
   line-height:1.72;
   font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;
   font-size:clamp(16px,4vw,18px);
   color:#e6e6ea;
   -webkit-overflow-scrolling:touch;
-  animation:storyBreath 8s ease-in-out infinite;
 }
-@keyframes storyBreath{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.004)}}
 
-/* Spoiler */
-.spoiler{position:relative;display:inline-block;padding:10px 12px;border-radius:16px;background:rgba(5,6,10,.8);cursor:pointer;overflow:hidden}
-.spoiler .line{position:relative;z-index:3;color:transparent;transition:color .45s ease}
-.spoiler .beer-word{position:relative;z-index:4;color:transparent;font-weight:700;border:0;background:transparent;cursor:pointer}
-.spoiler.open .line{color:#fff;text-shadow:0 6px 18px rgba(0,0,0,.5)}
-.spoiler.open .beer-word{color:#ffd166;text-decoration:underline}
+/* story word styling */
+.story-word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .28s ease,transform .28s ease}
+.story-word.revealed{opacity:1;transform:translateY(0)}
+
+/* Spoiler rebuilt (soft, foggy blur) */
+.spoiler{
+  position:relative;
+  display:inline-block;
+  padding:8px 12px;
+  border-radius:40px; /* very soft */
+  cursor:pointer;
+  overflow:visible;
+  -webkit-tap-highlight-color:transparent;
+}
+.spoiler .line{position:relative;z-index:5;color:transparent;transition:color .42s ease,letter-spacing .32s ease}
+.spoiler .beer-word{font-weight:700;color:transparent;transition:transform .34s ease}
 .spoiler .veil{
-  position:absolute;inset:-8px;z-index:2;
-  background:linear-gradient(120deg,rgba(12,14,20,.95),rgba(7,8,12,.99));
-  backdrop-filter:blur(14px);
-  filter:blur(6px);
-  border-radius:20px;
-  box-shadow:inset 0 0 18px rgba(255,255,255,.08),0 0 22px rgba(0,0,0,.35);
-  transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .6s;
-  animation:veilFloat 4.6s ease-in-out infinite;
+  position:absolute;
+  inset: -18px;
+  z-index:10;
+  border-radius:48px;
+  background: rgba(12,14,18,0.65); /* low opacity base */
+  box-shadow: 0 18px 80px rgba(2,5,10,0.85), inset 0 0 40px rgba(255,255,255,0.02);
+  backdrop-filter: blur(18px) saturate(.8);
+  -webkit-backdrop-filter: blur(18px) saturate(.8);
+  transition:opacity .48s ease, transform .6s cubic-bezier(.2,.8,.2,1);
+  opacity:1;
+  transform: translateY(0) scale(1);
+  pointer-events:none;
 }
-@keyframes veilFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
-.spoiler .veil::before{
-  content:"";position:absolute;inset:6px;border-radius:16px;
-  background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.08),transparent 60%);
-}
+/* subtle slow float to veil */
 .spoiler .veil::after{
-  content:"";position:absolute;inset:-30%;
-  background:linear-gradient(120deg,transparent,rgba(255,255,255,.12),transparent);
-  animation:shimmer 2.8s linear infinite;
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:48px;
+  background: radial-gradient(ellipse at 20% 20%, rgba(255,255,255,.02), transparent 30%);
+  mix-blend-mode:screen;
+  opacity:.8;
 }
-@keyframes shimmer{0%{transform:translateX(-40%)}100%{transform:translateX(40%)}}
-.spoiler.open .veil{transform:translateY(-120%);opacity:0}
+@keyframes veilFloat{0%{transform:translateY(0)}50%{transform:translateY(-3px)}100%{transform:translateY(0)}}
+.spoiler .veil{animation:veilFloat 6.2s ease-in-out infinite}
+.spoiler.open .veil{opacity:0;transform:translateY(-80px)}
+/* revealed state */
+.spoiler.open .line{color:#fff}
+.spoiler.open .beer-word{color:#ffd166; transform:scale(1.12); text-shadow:0 6px 20px rgba(0,0,0,.6)}
 
-/* Beer */
+/* Beer / puddle */
 #beerLayer{position:absolute;inset:0;pointer-events:none;z-index:15}
-#beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,180px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6))}
-#puddle{position:absolute;left:50%;bottom:14%;transform:translateX(-50%) scale(.2,.25);width:24px;height:10px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px)}
-.ripple{position:absolute;left:50%;bottom:14%;transform:translateX(-50%) scale(.2);width:22px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0}
+#beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6))}
+#puddle{position:absolute;left:0;top:0;display:none;width:24px;height:10px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0)}
+.ripple{position:absolute;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0)}
 .splash,.foam{position:absolute;border-radius:50%;pointer-events:none}
 .page-shake{animation:pageShake .6s linear}
 @keyframes pageShake{0%{transform:translate(0)}20%{transform:translate(-4px,3px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-2px)}100%{transform:translate(0)}}
 
-/* Memes */
+/* Memes (smaller for iPhone 14 Plus) */
 #memesScene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .6s ease}
 #memesScene.active{opacity:1;pointer-events:auto}
 .meme{
   position:absolute;left:0;top:0;
-  width:clamp(120px,20vw,210px);
-  padding:8px;border-radius:14px;
-  background:linear-gradient(180deg,rgba(255,210,225,.25),rgba(120,80,120,.2));
-  border:2px solid rgba(255,210,230,.4);
-  box-shadow:0 20px 60px rgba(0,0,0,.4);
-  overflow:hidden;cursor:pointer;backdrop-filter:blur(4px);
+  width:clamp(72px,20vw,130px); /* smaller */
+  padding:6px;border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,210,225,.12),rgba(120,80,120,.06));
+  border:1px solid rgba(255,210,230,.06);
+  box-shadow:0 14px 40px rgba(0,0,0,.45);
+  overflow:hidden;cursor:pointer;backdrop-filter:blur(3px);
 }
-.meme img{width:100%;height:100%;object-fit:cover;filter:contrast(1.05) saturate(1.05)}
-.meme::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 45px rgba(0,0,0,.35)}
+.meme img{width:100%;height:100%;object-fit:cover;filter:contrast(1.03) saturate(1.02)}
+.meme::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 30px rgba(0,0,0,.28)}
 
 /* Confession */
 #confessionScene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:var(--panel-pad);opacity:0;pointer-events:none;transition:opacity .6s ease}
@@ -183,20 +209,26 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #confessionBox{
   width:min(92vw,var(--panel-max));
   max-height:calc(100dvh - 2*var(--panel-pad));
-  background:rgba(255,255,255,.08);
+  background:rgba(255,255,255,.06);
   border-radius:18px;
-  border:1px solid rgba(255,255,255,.12);
-  box-shadow:0 30px 100px rgba(0,0,0,.5);
-  padding:clamp(20px,4vw,32px);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 30px 100px rgba(0,0,0,.45);
+  padding:clamp(18px,4vw,28px);
   text-align:center;
   color:#ffe4ec;
   overflow:auto;
 }
-#confessionText{font-family:"Marck Script","Brush Script MT","Segoe Script","Comic Sans MS",cursive;font-size:clamp(28px,6vw,40px);line-height:1.8}
+#confessionText{font-family:"Marck Script","Brush Script MT","Segoe Script","Comic Sans MS",cursive;font-size:clamp(26px,6vw,36px);line-height:1.8}
 #confessionText p{opacity:0;transform:translateY(8px);transition:.5s ease;margin:10px 0}
-.word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .4s ease,transform .4s ease}
-.char{display:inline-block;transform-origin:center bottom;animation:charJitter 2.2s ease-in-out infinite}
-@keyframes charJitter{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .36s ease,transform .36s ease}
+.char{display:inline-block;transform-origin:center bottom;animation:charShake 1.7s ease-in-out infinite}
+@keyframes charShake{
+  0%{transform:translate(0,0) rotate(0)}
+  25%{transform:translate(-2px,1px) rotate(-2deg)}
+  50%{transform:translate(2px,-1px) rotate(2deg)}
+  75%{transform:translate(-1px,-1px) rotate(-1deg)}
+  100%{transform:translate(0,0) rotate(0)}
+}
 #heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite}
 @keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 #heartCaption{font-size:13px;opacity:.85}
@@ -238,7 +270,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
         <p>Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
         <div class="spoiler tap-target" id="spoiler" role="button" tabindex="0" aria-pressed="false" aria-label="Открыть панчлайн">
           <div class="veil" aria-hidden="true"></div>
-          <div class="line">— Ой, извини, у меня <button class="beer-word tap-target" id="beerWord" type="button" aria-label="Запустить падение пива">пиво</button> упало.</div>
+          <div class="line" aria-hidden="true">— Ой, извини, у меня <button class="beer-word tap-target" id="beerWord" type="button" aria-label="Запустить падение пива">пиво</button> упало.</div>
         </div>
       </div>
     </div>
@@ -275,24 +307,15 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   <audio id="beerSfx" src="beer-sfx.mp3" preload="auto"></audio>
 </div>
 
-<!--
-Тест-чеклист:
-1) Открыть страницу.
-2) Нажать на котика — dark.mp3 должен начать плавно.
-3) Прокрутить рассказ внутри карточки (скролл работает, текст читаем).
-4) Нажать на спойлер / на слово «пиво» — veil растворяется, фраза раскрыта, банка падает, SFX играет, dark затухает, romance.mp4 и love.mp3 стартуют.
-5) Мемы появляются и дрейфуют; нажать мем — мемы исчезают, появляется признание word-by-word.
-6) Нажать сердечко — открывается video overlay или заглушка.
--->
-
 <script>
 /* Параметры для настройки */
 const BEER_BASE_DURATION_MS = 1450
-const MEME_COUNT = 20
+const MEME_COUNT = 18
 const VOLUME_DARK = 0.18
 const VOLUME_LOVE = 0.22
 const SFX_VOLUME = 0.6
 const WORD_DELAY_MS = 90
+const STORY_WORD_DELAY_MS = 56
 
 const $ = (s) => document.querySelector(s)
 const $$ = (s) => Array.from(document.querySelectorAll(s))
@@ -356,7 +379,6 @@ function playWithFade(audio, target, ms){
   fadeAudio(audio, target, ms)
 }
 
-/* unlockAudio kept for compatibility, but dark music is attempted to play directly in showStory */
 function unlockAudio(){
   if(audioUnlocked) return
   audioUnlocked = true
@@ -365,39 +387,66 @@ function unlockAudio(){
 window.addEventListener('touchstart', unlockAudio, {once:true, passive:true})
 window.addEventListener('click', unlockAudio, {once:true})
 
-/* MAIN: showStory now directly tries to play darkMusic inside the click handler (user gesture) */
-function showStory(e){
-  // ensure audio unlocked attempt
-  unlockAudio()
+/* prepare story -> split into words for incremental reveal */
+function prepareStoryWords(){
+  const paragraphs = $$('#storyScroll p')
+  paragraphs.forEach(p=>{
+    const raw = p.textContent
+    const parts = raw.match(/\S+|\s+/g) || [raw]
+    p.innerHTML = ''
+    parts.forEach(part=>{
+      if(/\s+/.test(part)){
+        p.appendChild(document.createTextNode(part))
+        return
+      }
+      const span = document.createElement('span')
+      span.className = 'story-word'
+      span.textContent = part
+      p.appendChild(span)
+      // add single space after word (keeps spacing)
+      p.appendChild(document.createTextNode(' '))
+    })
+  })
+}
 
-  // visual transition
+/* reveal words sequentially */
+function revealStoryWords(){
+  const words = $$('#storyScroll .story-word')
+  words.forEach((w, i)=>{
+    setTimeout(()=> w.classList.add('revealed'), i * STORY_WORD_DELAY_MS)
+  })
+}
+
+/* MAIN showStory: start dark music in user gesture and start word-by-word reveal */
+function showStory(e){
+  unlockAudio() // attempt unlock
   intro.classList.add('fade-out')
   setTimeout(()=>{ intro.classList.add('hidden') }, 520)
   storyScene.classList.add('active')
 
-  // Attempt to start dark music synchronously within the click handler (user gesture).
-  // We set volume to 0, start playback, then fade up — this maximizes chance iOS allows it.
-  try {
+  // try start dark music in gesture
+  try{
     darkMusic.pause()
     darkMusic.currentTime = 0
     darkMusic.volume = 0
-    // call play() directly in this user gesture
     const p = darkMusic.play()
-    if (p && typeof p.then === 'function') {
+    if(p && typeof p.then === 'function'){
       p.then(()=> {
-        // fade in to target
         fadeAudio(darkMusic, VOLUME_DARK, 900)
-      }).catch((err)=>{
-        // If play failed, log (common reasons: file missing or browser blocked)
-        console.warn('darkMusic.play() rejected:', err)
+      }).catch(err=>{
+        console.warn('darkMusic.play rejected:', err)
       })
-    } else {
-      // if play returned undefined (older browsers), just set volume
+    }else{
       fadeAudio(darkMusic, VOLUME_DARK, 900)
     }
-  } catch(err){
+  }catch(err){
     console.warn('darkMusic play error', err)
   }
+
+  // split story text into words then reveal gradually
+  prepareStoryWords()
+  // small delay to allow DOM layout
+  setTimeout(revealStoryWords, 120)
 }
 
 introCard.addEventListener('click', showStory)
@@ -414,69 +463,81 @@ storyScroll.addEventListener('scroll', ()=>{
   storyFog.style.transform = `translateY(${ratio * -12}px)`
 })
 
+/* Spoiler: reveal the text only when opened and veil hides it before */
 function revealSpoiler(){
   if(spoiler.classList.contains('open')) return
   spoiler.classList.add('open')
   spoiler.setAttribute('aria-pressed','true')
+  // reveal semantic line (remove aria-hidden)
+  const line = spoiler.querySelector('.line')
+  if(line) line.removeAttribute('aria-hidden')
 }
 
+/* visual effects for splash/foam */
 function spawnSplash(x, y){
-  for(let i=0;i<28;i++){
+  for(let i=0;i<22;i++){
     const d = document.createElement('div')
     d.className = 'splash'
-    const size = 6 + Math.random()*14
+    const size = 6 + Math.random()*12
     d.style.width = `${size}px`
     d.style.height = `${size}px`
-    d.style.left = `${x}px`
-    d.style.top = `${y}px`
+    d.style.left = `${x - size/2}px`
+    d.style.top = `${y - size/2}px`
     d.style.background = 'radial-gradient(circle, rgba(255,236,170,.95), rgba(255,170,80,0) 70%)'
-    const dx = (Math.random()*220) - 110
-    const dy = -(60 + Math.random()*140)
+    const dx = (Math.random()*180) - 90
+    const dy = -(40 + Math.random()*120)
     d.animate([
       {transform:'translate(0,0) scale(1)',opacity:1},
       {transform:`translate(${dx}px, ${dy}px) scale(.8)`,opacity:.9},
-      {transform:`translate(${dx*1.1}px, ${dy+200}px) scale(.3)`,opacity:0}
-    ], {duration:900 + Math.random()*300, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
+      {transform:`translate(${dx*1.1}px, ${dy+160}px) scale(.3)`,opacity:0}
+    ], {duration:800 + Math.random()*300, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
     document.body.appendChild(d)
-    setTimeout(()=>d.remove(), 1500)
+    setTimeout(()=>d.remove(), 1400)
   }
 }
 
-function spawnFoam(x, y){
-  for(let i=0;i<12;i++){
+function spawnFoam(x,y){
+  for(let i=0;i<10;i++){
     const f = document.createElement('div')
     f.className = 'foam'
     const size = 4 + Math.random()*8
     f.style.width = `${size}px`
     f.style.height = `${size}px`
-    f.style.left = `${x + (Math.random()*80-40)}px`
+    f.style.left = `${x + (Math.random()*60-30)}px`
     f.style.top = `${y + (Math.random()*20-10)}px`
     f.style.background = 'radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,0))'
     f.animate([
       {transform:'translateY(0) scale(1)',opacity:.85},
       {transform:`translateY(${-12 - Math.random()*20}px) scale(.5)`,opacity:0}
-    ], {duration:900 + Math.random()*500, easing:'ease-out', fill:'forwards'})
+    ], {duration:800 + Math.random()*400, easing:'ease-out', fill:'forwards'})
     document.body.appendChild(f)
-    setTimeout(()=>f.remove(), 1700)
+    setTimeout(()=>f.remove(), 1600)
   }
 }
 
+/* page shake */
 function shakePage(){
   document.body.classList.add('page-shake')
   if(navigator.vibrate) navigator.vibrate([80,30,70])
   setTimeout(()=>document.body.classList.remove('page-shake'), 600)
 }
 
+/* puddle cleanup */
 function cleanupPuddle(){
   if(puddleTimer) clearTimeout(puddleTimer)
   puddleTimer = setTimeout(()=>{
     puddle.animate([
-      {opacity:1, transform:'translateX(-50%) scale(1,.6)'},
-      {opacity:0, transform:'translateX(-50%) scale(.6,.2)'}
+      {opacity:1, transform:'translate(-50%,0) scale(1)'},
+      {opacity:0, transform:'translate(-50%,0) scale(.6)'}
     ], {duration:900, easing:'ease-in-out', fill:'forwards'})
+    ripple.animate([
+      {opacity:.6, transform:'translate(-50%,0) scale(1)'},
+      {opacity:0, transform:'translate(-50%,0) scale(1.8)'}
+    ], {duration:900, easing:'ease-out', fill:'forwards'})
   }, 3000)
 }
 
+/* beer drop animation: set puddle position under beer when it lands */
 function beerAnimation(){
   if(beerStarted) return
   beerStarted = true
@@ -508,23 +569,37 @@ function beerAnimation(){
     if(t < 1){
       requestAnimationFrame(animate)
     } else {
+      // landed: place puddle directly under the can for realism
       shakePage()
       fadeAudio(darkMusic, 0, 600)
       beerSfx.volume = SFX_VOLUME
       beerSfx.currentTime = 0
       beerSfx.play().catch(()=>{})
-      spawnSplash(startX, endY + 30)
-      spawnFoam(startX, endY + 26)
-      puddle.style.opacity = '1'
+      spawnSplash(startX, endY + 20)
+      spawnFoam(startX, endY + 22)
+
+      // position puddle & ripple exactly under can
       puddle.style.display = 'block'
+      puddle.style.left = `${startX}px`
+      puddle.style.top = `${endY + 20}px`
+      puddle.style.transform = 'translate(-50%,0) scale(.2)'
+      puddle.style.opacity = '0'
+      ripple.style.display = 'block'
+      ripple.style.left = `${startX}px`
+      ripple.style.top = `${endY + 20}px`
+      ripple.style.transform = 'translate(-50%,0) scale(.2)'
+
+      // animate puddle growing
       puddle.animate([
-        {opacity:0, width:'20px', height:'8px', transform:'translateX(-50%) scale(.2,.2)'},
-        {opacity:1, width:'140px', height:'32px', transform:'translateX(-50%) scale(1,.6)'}
+        {opacity:0, width:'20px', height:'8px', transform:'translate(-50%,0) scale(.2)'},
+        {opacity:1, width:'140px', height:'32px', transform:'translate(-50%,0) scale(1)'}
       ], {duration:700, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
+
       ripple.animate([
-        {opacity:.8, width:'20px', height:'8px', transform:'translateX(-50%) scale(.2)'},
-        {opacity:0, width:'240px', height:'60px', transform:'translateX(-50%) scale(1)'}
+        {opacity:.8, width:'20px', height:'8px', transform:'translate(-50%,0) scale(.2)'},
+        {opacity:0, width:'240px', height:'60px', transform:'translate(-50%,0) scale(1)'}
       ], {duration:700, easing:'ease-out', fill:'forwards'})
+
       cleanupPuddle()
       setTimeout(startRomance, 800)
     }
@@ -532,15 +607,15 @@ function beerAnimation(){
   requestAnimationFrame(animate)
 }
 
+/* attach spoiler handlers */
 spoiler.addEventListener('click', (e)=>{ if(e.target.closest('#beerWord')) return; revealSpoiler(); beerAnimation() })
 spoiler.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); revealSpoiler(); beerAnimation() }})
 beerWord.addEventListener('click', (e)=>{ e.stopPropagation(); beerAnimation() })
 beerWord.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); beerAnimation() }})
 
-romanceVideo.addEventListener('error', ()=>{
-  romanceFallback.style.opacity = '1'
-})
+romanceVideo.addEventListener('error', ()=>{ romanceFallback.style.opacity = '1' })
 
+/* start romance stage: show romance video & start love music and memes */
 function startRomance(){
   if(romanceStarted) return
   romanceStarted = true
@@ -549,34 +624,40 @@ function startRomance(){
   beerLayer.classList.add('fade-out')
   setTimeout(()=>{ beerLayer.classList.add('hidden') }, 600)
 
-  forestBg.style.opacity = '0.35'
-  forestBg.style.filter = 'blur(2px) brightness(0.6)'
+  forestBg.style.opacity = '0.36'
+  forestBg.style.filter = 'blur(2px) brightness(0.84)'
   romanceVideo.style.opacity = '0.6'
   romanceFallback.style.opacity = romanceVideo.readyState ? '0' : '0.6'
   romanceVideo.play().catch(()=>{ romanceFallback.style.opacity = '0.6' })
 
   setTimeout(()=>{
-    if(romanceAudioStarted) return
-    loveMusic.volume = 0
-    loveMusic.currentTime = 0
-    loveMusic.play().then(()=>{
-      fadeAudio(loveMusic, VOLUME_LOVE, 1500)
-    }).catch(()=>{})
-    romanceAudioStarted = true
-  }, 500)
+    if(!romanceAudioStarted){
+      loveMusic.pause()
+      loveMusic.currentTime = 0
+      loveMusic.volume = 0
+      loveMusic.play().then(()=> {
+        fadeAudio(loveMusic, VOLUME_LOVE, 1400)
+      }).catch(()=> {
+        // ignore play failure
+      })
+      romanceAudioStarted = true
+    }
+  }, 320)
 
   createMemes()
   memesScene.classList.add('active')
 }
 
+/* create memes with smaller sizes optimized for mobile */
 function createMemes(){
   fadeAudio(darkMusic, 0, 800)
-  loveMusic.volume = 0
-  loveMusic.currentTime = 0
-  loveMusic.play().then(()=>{
-    fadeAudio(loveMusic, 0.25, 1500)
-  }).catch(()=>{})
-  romanceAudioStarted = true
+  if(!romanceAudioStarted){
+    loveMusic.volume = 0
+    loveMusic.currentTime = 0
+    loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 1500)).catch(()=>{})
+    romanceAudioStarted = true
+  }
+
   memesScene.innerHTML = ''
   const memes = []
   const bounds = () => ({w: window.innerWidth, h: window.innerHeight})
@@ -594,11 +675,11 @@ function createMemes(){
     memesScene.appendChild(el)
 
     const b = bounds()
-    const size = 110 + Math.random()*100
+    const size = 70 + Math.random()*60  // smaller for phone
     el.style.width = `${size}px`
     const x = Math.random()*(b.w - size)
     const y = Math.random()*(b.h - size)
-    memes.push({el, x, y, vx:(Math.random()*0.9+0.3)*(Math.random()>0.5?1:-1), vy:(Math.random()*0.9+0.3)*(Math.random()>0.5?1:-1), size})
+    memes.push({el, x, y, vx:(Math.random()*0.9+0.2)*(Math.random()>0.5?1:-1), vy:(Math.random()*0.9+0.2)*(Math.random()>0.5?1:-1), size})
 
     const onClick = () => revealConfession()
     el.addEventListener('click', onClick, {once:true})
@@ -611,8 +692,8 @@ function createMemes(){
       const a = memes[i]
       a.x += a.vx
       a.y += a.vy
-      if(a.x < 0 || a.x + a.size > b.w) a.vx *= -1
-      if(a.y < 0 || a.y + a.size > b.h) a.vy *= -1
+      if(a.x < 6 || a.x + a.size > b.w - 6) a.vx *= -1
+      if(a.y < 6 || a.y + a.size > b.h - 6) a.vy *= -1
 
       for(let j=i+1;j<memes.length;j++){
         const c = memes[j]
@@ -623,10 +704,10 @@ function createMemes(){
         if(dist < minDist){
           const nx = dx / (dist || 1)
           const ny = dy / (dist || 1)
-          a.vx += nx * 0.1
-          a.vy += ny * 0.1
-          c.vx -= nx * 0.1
-          c.vy -= ny * 0.1
+          a.vx += nx * 0.08
+          a.vy += ny * 0.08
+          c.vx -= nx * 0.08
+          c.vy -= ny * 0.08
         }
       }
       a.el.style.transform = `translate3d(${a.x}px,${a.y}px,0) rotateZ(${(a.vx+a.vy)*6}deg)`
@@ -636,12 +717,14 @@ function createMemes(){
   loop()
 }
 
+/* memes -> confession */
 function revealConfession(){
   if(memeAnimationId) cancelAnimationFrame(memeAnimationId)
   $$('.meme').forEach(m => m.classList.add('fade-out'))
   setTimeout(()=>{ memesScene.classList.remove('active'); memesScene.innerHTML=''; showConfession() }, 520)
 }
 
+/* confession: word-by-word (already present) */
 function showConfession(){
   confessionScene.classList.add('active')
   const raw = confessionText.textContent
@@ -681,7 +764,7 @@ function showConfession(){
       wordIndex++
     })
     confessionText.appendChild(p)
-    setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*400)
+    setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*420)
   })
 
   const wordSpans = $$('#confessionText .word')
@@ -690,6 +773,7 @@ function showConfession(){
   })
 }
 
+/* video open */
 function openVideo(){
   videoOverlay.classList.add('active')
   videoOverlay.setAttribute('aria-hidden','false')
