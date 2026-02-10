@@ -6,8 +6,7 @@
 <title>Подарок для Буси</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- subset=cyrillic -->
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Marck+Script&family=PT+Serif:wght@400;700&family=Cormorant+Garamond:wght@400;600&family=Playfair+Display:wght@400;600&family=Cinzel:wght@400;600&display=swap&subset=cyrillic" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Marck+Script&display=swap" rel="stylesheet">
 <style>
 @font-face{
   font-family:"Mazut SP Demo";
@@ -96,7 +95,6 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   box-shadow:0 25px 80px rgba(0,0,0,.6);
   overflow:hidden;
   position:relative;
-  animation:storyBreath 8s ease-in-out infinite;
 }
 #storyFog{
   position:absolute;inset:-30%;
@@ -112,52 +110,48 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 }
 @keyframes storyFog{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
 @keyframes storyFogB{0%,100%{transform:translateY(10px)}50%{transform:translateY(-20px)}}
-@keyframes storyBreath{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.004)}}
 #storyClose{border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;padding:6px 12px;border-radius:999px;cursor:pointer;margin:12px 16px 0 auto;display:block}
 #storyScroll{
   max-height:calc(100dvh - 160px);
   overflow:auto;
   padding:18px 18px 22px;
   line-height:1.72;
-  font-family:"Mazut SP Demo","PT Serif","Cormorant Garamond","Playfair Display","Cinzel","Merriweather","Georgia",serif;
+  font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;
   font-size:clamp(16px,4vw,18px);
   color:#e6e6ea;
-  text-shadow:0 6px 18px rgba(0,0,0,0.6),0 1px 0 rgba(255,255,255,0.02);
-  letter-spacing:0.01em;
   -webkit-overflow-scrolling:touch;
+  animation:storyBreath 8s ease-in-out infinite;
 }
+@keyframes storyBreath{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.004)}}
 
 /* Spoiler */
-.spoiler{position:relative;display:inline-block;padding:10px 12px;border-radius:18px;background:rgba(5,6,10,.8);cursor:pointer;overflow:hidden}
+.spoiler{position:relative;display:inline-block;padding:10px 12px;border-radius:16px;background:rgba(5,6,10,.8);cursor:pointer;overflow:hidden}
 .spoiler .line{position:relative;z-index:3;color:transparent;transition:color .45s ease}
-.spoiler .line[aria-hidden="true"]{color:transparent}
 .spoiler .beer-word{position:relative;z-index:4;color:transparent;font-weight:700;border:0;background:transparent;cursor:pointer}
 .spoiler.open .line{color:#fff;text-shadow:0 6px 18px rgba(0,0,0,.5)}
 .spoiler.open .beer-word{color:#ffd166;text-decoration:underline}
-.spoiler.open .beer-word.revealed{font-size:1.18em;text-shadow:0 6px 18px rgba(0,0,0,.6)}
 .spoiler .veil{
   position:absolute;inset:-8px;z-index:2;
-  background:linear-gradient(120deg,rgba(10,10,12,0.9),rgba(20,18,22,0.95));
-  backdrop-filter:blur(18px) saturate(0.7) contrast(0.9);
+  background:linear-gradient(120deg,rgba(12,14,20,.95),rgba(7,8,12,.99));
+  backdrop-filter:blur(14px);
   filter:blur(6px);
-  border-radius:22px;
-  box-shadow:inset 0 0 18px rgba(255,255,255,.08),0 20px 60px rgba(0,0,0,.6);
+  border-radius:20px;
+  box-shadow:inset 0 0 18px rgba(255,255,255,.08),0 0 22px rgba(0,0,0,.35);
   transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .6s;
   animation:veilFloat 4.6s ease-in-out infinite;
 }
-@keyframes veilFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.003)}}
+@keyframes veilFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 .spoiler .veil::before{
-  content:"";position:absolute;inset:6px;border-radius:18px;
+  content:"";position:absolute;inset:6px;border-radius:16px;
   background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.08),transparent 60%);
 }
 .spoiler .veil::after{
   content:"";position:absolute;inset:-30%;
   background:linear-gradient(120deg,transparent,rgba(255,255,255,.12),transparent);
   animation:shimmer 2.8s linear infinite;
-  mix-blend-mode:screen;
 }
 @keyframes shimmer{0%{transform:translateX(-40%)}100%{transform:translateX(40%)}}
-.spoiler.open .veil{transform:translateY(-120%) scale(1.01);opacity:0}
+.spoiler.open .veil{transform:translateY(-120%);opacity:0}
 
 /* Beer */
 #beerLayer{position:absolute;inset:0;pointer-events:none;z-index:15}
@@ -201,14 +195,8 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #confessionText{font-family:"Marck Script","Brush Script MT","Segoe Script","Comic Sans MS",cursive;font-size:clamp(28px,6vw,40px);line-height:1.8}
 #confessionText p{opacity:0;transform:translateY(8px);transition:.5s ease;margin:10px 0}
 .word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .4s ease,transform .4s ease}
-.char{display:inline-block;transform-origin:center bottom;animation:charShake 1.7s ease-in-out infinite}
-@keyframes charShake{
-  0%{transform:translate(0,0) rotate(0)}
-  25%{transform:translate(-1.5px,1px) rotate(-2deg)}
-  50%{transform:translate(1.5px,-1px) rotate(2deg)}
-  75%{transform:translate(-1px,-1px) rotate(-1deg)}
-  100%{transform:translate(0,0) rotate(0)}
-}
+.char{display:inline-block;transform-origin:center bottom;animation:charJitter 2.2s ease-in-out infinite}
+@keyframes charJitter{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 #heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite}
 @keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 #heartCaption{font-size:13px;opacity:.85}
@@ -250,7 +238,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
         <p>Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
         <div class="spoiler tap-target" id="spoiler" role="button" tabindex="0" aria-pressed="false" aria-label="Открыть панчлайн">
           <div class="veil" aria-hidden="true"></div>
-          <div class="line" aria-hidden="true">— Ой, извини, у меня <button class="beer-word tap-target" id="beerWord" type="button" aria-label="Запустить падение пива">пиво</button> упало.</div>
+          <div class="line">— Ой, извини, у меня <button class="beer-word tap-target" id="beerWord" type="button" aria-label="Запустить падение пива">пиво</button> упало.</div>
         </div>
       </div>
     </div>
@@ -282,30 +270,29 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
     </div>
   </div>
 
-  <audio id="darkMusic" src="dark.mp3" preload="auto"></audio>
-  <audio id="loveMusic" src="love.mp3" preload="auto"></audio>
+  <audio id="darkMusic" src="dark.mp3" preload="auto" loop></audio>
+  <audio id="loveMusic" src="love.mp3" preload="auto" loop></audio>
   <audio id="beerSfx" src="beer-sfx.mp3" preload="auto"></audio>
 </div>
 
 <!--
-Клик по коту: dark.mp3 стартует немедленно и плавно (fade-in).
-Текст рассказа открылся и слова появляются по одному, абзацы сохранены.
-Спойлер выглядит как сильный размытый amorphous veil (никаких читаемых букв) и анимированно растворяется при клике; после раскрытия слово «пиво» визуально больше и ярче.
-Банка падает сверху вниз через весь экран, переворачиваясь; на ударе — SFX, dark.mp3 затухает, romance.mp4 и love.mp3 запускаются.
-Мемы разбегаются/столкновения; клик по мему запускает признание.
-Признание появляется слово-за-словом; буквы заметно «трясутся».
-Сердечко открывает overlay с видео.
+Тест-чеклист:
+1) Открыть страницу.
+2) Нажать на котика — dark.mp3 должен начать плавно.
+3) Прокрутить рассказ внутри карточки (скролл работает, текст читаем).
+4) Нажать на спойлер / на слово «пиво» — veil растворяется, фраза раскрыта, банка падает, SFX играет, dark затухает, romance.mp4 и love.mp3 стартуют.
+5) Мемы появляются и дрейфуют; нажать мем — мемы исчезают, появляется признание word-by-word.
+6) Нажать сердечко — открывается video overlay или заглушка.
 -->
 
 <script>
 /* Параметры для настройки */
-const BEER_BASE_DURATION_MS = 1400;
-const MEME_COUNT = 20;
-const VOLUME_DARK = 0.18;
-const VOLUME_LOVE = 0.22;
-const SFX_VOLUME = 0.9;
-const WORD_DELAY_MS = 90;
-const STORY_WORD_DELAY_MS = 60;
+const BEER_BASE_DURATION_MS = 1450
+const MEME_COUNT = 20
+const VOLUME_DARK = 0.18
+const VOLUME_LOVE = 0.22
+const SFX_VOLUME = 0.6
+const WORD_DELAY_MS = 90
 
 const $ = (s) => document.querySelector(s)
 const $$ = (s) => Array.from(document.querySelectorAll(s))
@@ -337,6 +324,7 @@ const romanceFallback = $('#romanceFallback')
 const forestBg = $('#forestBg')
 
 let audioUnlocked = false
+let romanceAudioStarted = false
 let beerStarted = false
 let romanceStarted = false
 let memeAnimationId = null
@@ -350,15 +338,22 @@ syncVH()
 window.addEventListener('resize', syncVH, {passive:true})
 window.addEventListener('orientationchange', syncVH, {passive:true})
 
-function fadeAudio(audio, target, ms){
-  const start = audio.volume || 0
-  const startAt = performance.now()
-  function tick(now){
-    const k = Math.min(1, (now - startAt) / ms)
-    audio.volume = start + (target - start) * k
-    if(k < 1) requestAnimationFrame(tick)
+function fadeAudio(audio, target, duration){
+  const start = audio.volume
+  const diff = target - start
+  const startTime = performance.now()
+  function step(now){
+    const p = Math.min((now - startTime) / duration, 1)
+    audio.volume = start + diff * p
+    if(p < 1) requestAnimationFrame(step)
   }
-  requestAnimationFrame(tick)
+  requestAnimationFrame(step)
+}
+
+function playWithFade(audio, target, ms){
+  audio.volume = 0
+  audio.play().catch(()=>{})
+  fadeAudio(audio, target, ms)
 }
 
 function unlockAudio(){
@@ -369,48 +364,16 @@ function unlockAudio(){
 window.addEventListener('touchstart', unlockAudio, {once:true, passive:true})
 window.addEventListener('click', unlockAudio, {once:true})
 
-function prepareStoryWords(){
-  const paragraphs = $$('#storyScroll p')
-  paragraphs.forEach((p)=>{
-    const raw = p.textContent
-    const parts = raw.match(/\S+|\s+/g) || [raw]
-    p.innerHTML = ''
-    parts.forEach((part)=>{
-      if(/\s+/.test(part)){
-        p.appendChild(document.createTextNode(part))
-        return
-      }
-      const wordSpan = document.createElement('span')
-      wordSpan.className = 'word'
-      const chars = part.split('')
-      chars.forEach((ch)=>{
-        const charSpan = document.createElement('span')
-        charSpan.className = 'char'
-        charSpan.textContent = ch
-        wordSpan.appendChild(charSpan)
-      })
-      p.appendChild(wordSpan)
-    })
-  })
-}
-
-function revealStoryWords(){
-  const words = $$('#storyScroll .word')
-  words.forEach((w, i)=>{
-    setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)' }, i * STORY_WORD_DELAY_MS)
-  })
-}
-
 function showStory(){
   unlockAudio()
   intro.classList.add('fade-out')
   setTimeout(()=>{ intro.classList.add('hidden') }, 520)
   storyScene.classList.add('active')
-  darkMusic.currentTime = 0;
-  darkMusic.muted = false;
-  darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=> fadeAudio(darkMusic, VOLUME_DARK, 900));
-  prepareStoryWords()
-  revealStoryWords()
+  darkMusic.volume = 0
+  darkMusic.currentTime = 0
+  darkMusic.play().then(()=>{
+    fadeAudio(darkMusic, VOLUME_DARK, 1200)
+  }).catch(()=>{})
 }
 introCard.addEventListener('click', showStory)
 introCard.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showStory() }})
@@ -430,9 +393,6 @@ function revealSpoiler(){
   if(spoiler.classList.contains('open')) return
   spoiler.classList.add('open')
   spoiler.setAttribute('aria-pressed','true')
-  const line = spoiler.querySelector('.line')
-  line.removeAttribute('aria-hidden')
-  beerWord.classList.add('revealed')
 }
 
 function spawnSplash(x, y){
@@ -541,7 +501,7 @@ function beerAnimation(){
         {opacity:0, width:'240px', height:'60px', transform:'translateX(-50%) scale(1)'}
       ], {duration:700, easing:'ease-out', fill:'forwards'})
       cleanupPuddle()
-      setTimeout(startRomance, 700)
+      setTimeout(startRomance, 800)
     }
   }
   requestAnimationFrame(animate)
@@ -571,9 +531,13 @@ function startRomance(){
   romanceVideo.play().catch(()=>{ romanceFallback.style.opacity = '0.6' })
 
   setTimeout(()=>{
+    if(romanceAudioStarted) return
     loveMusic.volume = 0
-    loveMusic.play().catch(()=>{})
-    fadeAudio(loveMusic, VOLUME_LOVE, 1200)
+    loveMusic.currentTime = 0
+    loveMusic.play().then(()=>{
+      fadeAudio(loveMusic, VOLUME_LOVE, 1500)
+    }).catch(()=>{})
+    romanceAudioStarted = true
   }, 500)
 
   createMemes()
@@ -581,6 +545,13 @@ function startRomance(){
 }
 
 function createMemes(){
+  fadeAudio(darkMusic, 0, 800)
+  loveMusic.volume = 0
+  loveMusic.currentTime = 0
+  loveMusic.play().then(()=>{
+    fadeAudio(loveMusic, 0.25, 1500)
+  }).catch(()=>{})
+  romanceAudioStarted = true
   memesScene.innerHTML = ''
   const memes = []
   const bounds = () => ({w: window.innerWidth, h: window.innerHeight})
@@ -598,11 +569,11 @@ function createMemes(){
     memesScene.appendChild(el)
 
     const b = bounds()
-    const size = 100 + Math.random()*120
+    const size = 110 + Math.random()*100
     el.style.width = `${size}px`
     const x = Math.random()*(b.w - size)
     const y = Math.random()*(b.h - size)
-    memes.push({el, x, y, vx:(Math.random()*1.0+0.35)*(Math.random()>0.5?1:-1), vy:(Math.random()*1.0+0.35)*(Math.random()>0.5?1:-1), size})
+    memes.push({el, x, y, vx:(Math.random()*0.9+0.3)*(Math.random()>0.5?1:-1), vy:(Math.random()*0.9+0.3)*(Math.random()>0.5?1:-1), size})
 
     const onClick = () => revealConfession()
     el.addEventListener('click', onClick, {once:true})
@@ -627,10 +598,10 @@ function createMemes(){
         if(dist < minDist){
           const nx = dx / (dist || 1)
           const ny = dy / (dist || 1)
-          a.vx += nx * 0.12
-          a.vy += ny * 0.12
-          c.vx -= nx * 0.12
-          c.vy -= ny * 0.12
+          a.vx += nx * 0.1
+          a.vy += ny * 0.1
+          c.vx -= nx * 0.1
+          c.vy -= ny * 0.1
         }
       }
       a.el.style.transform = `translate3d(${a.x}px,${a.y}px,0) rotateZ(${(a.vx+a.vy)*6}deg)`
@@ -649,30 +620,44 @@ function revealConfession(){
 function showConfession(){
   confessionScene.classList.add('active')
   const raw = confessionText.textContent
-  if(!raw) return
+  const lines = [
+    'буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было.',
+    'и не будет.',
+    'ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было.',
+    'полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя.',
+    'очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни'
+  ]
+  if(raw !== lines.join(' ')){
+    confessionText.textContent = raw
+    return
+  }
 
   confessionText.innerHTML = ''
-  const parts = raw.match(/\S+|\s+/g) || [raw]
-  const p = document.createElement('p')
-  parts.forEach((part)=>{
-    if(/\s+/.test(part)){
-      p.appendChild(document.createTextNode(part))
-      return
-    }
-    const wordSpan = document.createElement('span')
-    wordSpan.className = 'word'
-    const chars = part.split('')
-    chars.forEach((ch, ci)=>{
-      const charSpan = document.createElement('span')
-      charSpan.className = 'char'
-      charSpan.style.animationDelay = `${(ci*0.03)}s`
-      charSpan.textContent = ch
-      wordSpan.appendChild(charSpan)
+  let wordIndex = 0
+  lines.forEach((line, li)=>{
+    const p = document.createElement('p')
+    const parts = line.match(/\S+|\s+/g) || [line]
+    parts.forEach((part)=>{
+      if(/\s+/.test(part)){
+        p.appendChild(document.createTextNode(part))
+        return
+      }
+      const wordSpan = document.createElement('span')
+      wordSpan.className = 'word'
+      const chars = part.split('')
+      chars.forEach((ch, ci)=>{
+        const charSpan = document.createElement('span')
+        charSpan.className = 'char'
+        charSpan.style.animationDelay = `${(ci*0.03)}s`
+        charSpan.textContent = ch
+        wordSpan.appendChild(charSpan)
+      })
+      p.appendChild(wordSpan)
+      wordIndex++
     })
-    p.appendChild(wordSpan)
+    confessionText.appendChild(p)
+    setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*400)
   })
-  confessionText.appendChild(p)
-  setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200)
 
   const wordSpans = $$('#confessionText .word')
   wordSpans.forEach((w, i)=>{
