@@ -139,49 +139,43 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 /* Spoiler rebuilt (soft, foggy blur) */
 .spoiler{
   position:relative;
-  display:inline-block;
-  padding:8px 12px;
-  border-radius:40px; /* very soft */
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:4px 10px;
+  border-radius:999px; /* very soft */
   cursor:pointer;
   overflow:visible;
   -webkit-tap-highlight-color:transparent;
+  background:transparent; /* keep underlying card visible */
 }
 .spoiler .line{position:relative;z-index:5;color:transparent;transition:color .42s ease,letter-spacing .32s ease}
 .spoiler .beer-word{font-weight:700;color:transparent;transition:transform .34s ease}
 .spoiler .veil{
   position:absolute;
-  inset: -18px;
+  inset:0;
   z-index:10;
-  border-radius:48px;
-  background: rgba(12,14,18,0.65); /* low opacity base */
-  box-shadow: 0 18px 80px rgba(2,5,10,0.85), inset 0 0 40px rgba(255,255,255,0.02);
+  border-radius:999px;
+  background: rgba(8,10,12,0.58); /* low opacity base to keep it subtle */
+  box-shadow: 0 12px 40px rgba(2,5,10,0.6), inset 0 0 30px rgba(255,255,255,0.02);
   backdrop-filter: blur(18px) saturate(.8);
   -webkit-backdrop-filter: blur(18px) saturate(.8);
-  transition:opacity .48s ease, transform .6s cubic-bezier(.2,.8,.2,1);
+  transition:opacity .48s ease, transform .52s cubic-bezier(.2,.8,.2,1);
   opacity:1;
   transform: translateY(0) scale(1);
   pointer-events:none;
 }
-/* subtle slow float to veil */
-.spoiler .veil::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:48px;
-  background: radial-gradient(ellipse at 20% 20%, rgba(255,255,255,.02), transparent 30%);
-  mix-blend-mode:screen;
-  opacity:.8;
-}
+/* subtle float */
 @keyframes veilFloat{0%{transform:translateY(0)}50%{transform:translateY(-3px)}100%{transform:translateY(0)}}
 .spoiler .veil{animation:veilFloat 6.2s ease-in-out infinite}
-.spoiler.open .veil{opacity:0;transform:translateY(-80px)}
+.spoiler.open .veil{opacity:0;transform:translateY(-60px)}
 /* revealed state */
-.spoiler.open .line{color:#fff}
-.spoiler.open .beer-word{color:#ffd166; transform:scale(1.12); text-shadow:0 6px 20px rgba(0,0,0,.6)}
+.spoiler.open .line{color:rgba(255,255,255,0.96)}
+.spoiler.open .beer-word{color:#ffd166; transform:scale(1.08); text-shadow:0 6px 14px rgba(0,0,0,.45)}
 
 /* Beer / puddle */
 #beerLayer{position:absolute;inset:0;pointer-events:none;z-index:15}
-#beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6))}
+#beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center}
 #puddle{position:absolute;left:0;top:0;display:none;width:24px;height:10px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0)}
 .ripple{position:absolute;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0)}
 .splash,.foam{position:absolute;border-radius:50%;pointer-events:none}
@@ -193,7 +187,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #memesScene.active{opacity:1;pointer-events:auto}
 .meme{
   position:absolute;left:0;top:0;
-  width:clamp(72px,20vw,130px); /* smaller */
+  width:clamp(72px,18vw,120px); /* smaller */
   padding:6px;border-radius:12px;
   background:linear-gradient(180deg,rgba(255,210,225,.12),rgba(120,80,120,.06));
   border:1px solid rgba(255,210,230,.06);
@@ -379,19 +373,50 @@ function playWithFade(audio, target, ms){
   fadeAudio(audio, target, ms)
 }
 
+/* robust unlock: try to prime all audios; if play is rejected later, attach a one-time resume on next user gesture */
 function unlockAudio(){
   if(audioUnlocked) return
   audioUnlocked = true
-  ;[darkMusic,loveMusic,beerSfx].forEach(a=>{a.volume = 0; a.play().then(()=>a.pause()).catch(()=>{})})
+  // prime audios
+  ;[darkMusic,loveMusic,beerSfx].forEach(a=>{
+    try{
+      a.volume = 0
+      const p = a.play()
+      if(p && typeof p.then === 'function'){
+        p.then(()=> a.pause()).catch(()=>{})
+      }
+    }catch(e){}
+  })
 }
-window.addEventListener('touchstart', unlockAudio, {once:true, passive:true})
-window.addEventListener('click', unlockAudio, {once:true})
+
+/* helper to ensure play, with fallback to wait for next user gesture */
+function ensurePlay(audio, targetVolume=0.2, fadeMs=900){
+  function tryPlay(){
+    audio.volume = 0
+    const p = audio.play()
+    if(p && typeof p.then === 'function'){
+      p.then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{
+        // blocked — attach one-time resume listener
+        const resume = ()=>{
+          audio.play().then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{})
+          window.removeEventListener('touchstart', resume)
+          window.removeEventListener('click', resume)
+        }
+        window.addEventListener('touchstart', resume, {once:true,passive:true})
+        window.addEventListener('click', resume, {once:true})
+      })
+    } else {
+      fadeAudio(audio, targetVolume, fadeMs)
+    }
+  }
+  tryPlay()
+}
 
 /* prepare story -> split into words for incremental reveal */
 function prepareStoryWords(){
   const paragraphs = $$('#storyScroll p')
   paragraphs.forEach(p=>{
-    const raw = p.textContent
+    const raw = p.textContent.trim()
     const parts = raw.match(/\S+|\s+/g) || [raw]
     p.innerHTML = ''
     parts.forEach(part=>{
@@ -403,7 +428,6 @@ function prepareStoryWords(){
       span.className = 'story-word'
       span.textContent = part
       p.appendChild(span)
-      // add single space after word (keeps spacing)
       p.appendChild(document.createTextNode(' '))
     })
   })
@@ -419,33 +443,16 @@ function revealStoryWords(){
 
 /* MAIN showStory: start dark music in user gesture and start word-by-word reveal */
 function showStory(e){
-  unlockAudio() // attempt unlock
+  unlockAudio()
   intro.classList.add('fade-out')
   setTimeout(()=>{ intro.classList.add('hidden') }, 520)
   storyScene.classList.add('active')
 
-  // try start dark music in gesture
-  try{
-    darkMusic.pause()
-    darkMusic.currentTime = 0
-    darkMusic.volume = 0
-    const p = darkMusic.play()
-    if(p && typeof p.then === 'function'){
-      p.then(()=> {
-        fadeAudio(darkMusic, VOLUME_DARK, 900)
-      }).catch(err=>{
-        console.warn('darkMusic.play rejected:', err)
-      })
-    }else{
-      fadeAudio(darkMusic, VOLUME_DARK, 900)
-    }
-  }catch(err){
-    console.warn('darkMusic play error', err)
-  }
+  // ensure dark music plays (robust)
+  ensurePlay(darkMusic, VOLUME_DARK, 900)
 
   // split story text into words then reveal gradually
   prepareStoryWords()
-  // small delay to allow DOM layout
   setTimeout(revealStoryWords, 120)
 }
 
@@ -468,7 +475,6 @@ function revealSpoiler(){
   if(spoiler.classList.contains('open')) return
   spoiler.classList.add('open')
   spoiler.setAttribute('aria-pressed','true')
-  // reveal semantic line (remove aria-hidden)
   const line = spoiler.querySelector('.line')
   if(line) line.removeAttribute('aria-hidden')
 }
@@ -515,14 +521,12 @@ function spawnFoam(x,y){
   }
 }
 
-/* page shake */
 function shakePage(){
   document.body.classList.add('page-shake')
   if(navigator.vibrate) navigator.vibrate([80,30,70])
   setTimeout(()=>document.body.classList.remove('page-shake'), 600)
 }
 
-/* puddle cleanup */
 function cleanupPuddle(){
   if(puddleTimer) clearTimeout(puddleTimer)
   puddleTimer = setTimeout(()=>{
@@ -537,7 +541,7 @@ function cleanupPuddle(){
   }, 3000)
 }
 
-/* beer drop animation: set puddle position under beer when it lands */
+/* beer drop animation: set puddle position under beer using bounding rect */
 function beerAnimation(){
   if(beerStarted) return
   beerStarted = true
@@ -545,6 +549,7 @@ function beerAnimation(){
   unlockAudio()
 
   beerSprite.style.display = 'block'
+  beerSprite.style.transform = 'translateX(-50%) rotateX(0deg)'
   const startX = window.innerWidth * (0.48 + Math.random()*0.06)
   const startY = -window.innerHeight * 0.6
   const endY = window.innerHeight * 0.62
@@ -555,6 +560,9 @@ function beerAnimation(){
 
   const duration = BEER_BASE_DURATION_MS + Math.random()*300
   const t0 = performance.now()
+
+  beerSprite.style.left = `${startX}px`
+  beerSprite.style.top = `${startY}px`
 
   function animate(now){
     const t = Math.min(1, (now - t0) / duration)
@@ -569,7 +577,7 @@ function beerAnimation(){
     if(t < 1){
       requestAnimationFrame(animate)
     } else {
-      // landed: place puddle directly under the can for realism
+      // landed: compute bounding rect and place puddle below the can
       shakePage()
       fadeAudio(darkMusic, 0, 600)
       beerSfx.volume = SFX_VOLUME
@@ -578,18 +586,24 @@ function beerAnimation(){
       spawnSplash(startX, endY + 20)
       spawnFoam(startX, endY + 22)
 
-      // position puddle & ripple exactly under can
+      // compute rect
+      const rect = beerSprite.getBoundingClientRect()
+      const centerX = rect.left + rect.width / 2 + window.scrollX
+      const bottomY = rect.bottom + window.scrollY
+
+      // place puddle directly under can (a few px below bottom)
+      const puddleY = bottomY + Math.max(6, rect.height * 0.02)
+
       puddle.style.display = 'block'
-      puddle.style.left = `${startX}px`
-      puddle.style.top = `${endY + 20}px`
+      puddle.style.left = `${centerX}px`
+      puddle.style.top = `${puddleY}px`
       puddle.style.transform = 'translate(-50%,0) scale(.2)'
       puddle.style.opacity = '0'
       ripple.style.display = 'block'
-      ripple.style.left = `${startX}px`
-      ripple.style.top = `${endY + 20}px`
+      ripple.style.left = `${centerX}px`
+      ripple.style.top = `${puddleY}px`
       ripple.style.transform = 'translate(-50%,0) scale(.2)'
 
-      // animate puddle growing
       puddle.animate([
         {opacity:0, width:'20px', height:'8px', transform:'translate(-50%,0) scale(.2)'},
         {opacity:1, width:'140px', height:'32px', transform:'translate(-50%,0) scale(1)'}
@@ -632,14 +646,7 @@ function startRomance(){
 
   setTimeout(()=>{
     if(!romanceAudioStarted){
-      loveMusic.pause()
-      loveMusic.currentTime = 0
-      loveMusic.volume = 0
-      loveMusic.play().then(()=> {
-        fadeAudio(loveMusic, VOLUME_LOVE, 1400)
-      }).catch(()=> {
-        // ignore play failure
-      })
+      ensurePlay(loveMusic, VOLUME_LOVE, 1400)
       romanceAudioStarted = true
     }
   }, 320)
@@ -652,9 +659,7 @@ function startRomance(){
 function createMemes(){
   fadeAudio(darkMusic, 0, 800)
   if(!romanceAudioStarted){
-    loveMusic.volume = 0
-    loveMusic.currentTime = 0
-    loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 1500)).catch(()=>{})
+    ensurePlay(loveMusic, VOLUME_LOVE, 1400)
     romanceAudioStarted = true
   }
 
@@ -724,7 +729,7 @@ function revealConfession(){
   setTimeout(()=>{ memesScene.classList.remove('active'); memesScene.innerHTML=''; showConfession() }, 520)
 }
 
-/* confession: word-by-word (already present) */
+/* confession: word-by-word */
 function showConfession(){
   confessionScene.classList.add('active')
   const raw = confessionText.textContent
