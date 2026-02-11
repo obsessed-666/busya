@@ -63,6 +63,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   animation:forestDrift 22s ease-in-out infinite, forestPulse 10s ease-in-out infinite;
   transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;
   will-change:transform,filter;
+  opacity:1; /* ensure visible by default */
 }
 #forestOverlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,4,8,.76),rgba(2,3,6,.86));pointer-events:none}
 #romanceVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease;filter:saturate(1.03) contrast(1.04);pointer-events:none}
@@ -219,7 +220,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 
   <section id="confessionScene" aria-label="Признание">
     <div id="confessionBox">
-      <!-- UPDATED CONFESSION TEXT (user requested) -->
+      <!-- UPDATED CONFESSION TEXT -->
       <div id="confessionText">
         буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было. И не будет. Ты каждый день даришь мне ту самую искреннюю детскую радость и улыбку, которых у меня очень давно не было. полгода назад я и представить, что смогу полюбить кого-то так сильно как тебя. Если бы я был слепым - ты была бы моим зрением. Если бы я был глухим - ты была бы моим слухом. Если бы я был немым - ты была бы мои голосом. Если бы не было тебя - не было бы меня. Очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни.
       </div>
@@ -239,12 +240,10 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   </div>
 
   <!-- audios: use these elements (names must match files in repo) -->
-  <audio id="darkMusic" src="dark.mp3" preload="auto" loop playsinline></audio>
-  <audio id="loveMusic" src="love.mp3" preload="auto" loop playsinline></audio>
+  <audio id="darkMusic" src="dark.mp3" preload="auto" loop crossorigin="anonymous"></audio>
+  <audio id="loveMusic" src="love.mp3" preload="auto" loop crossorigin="anonymous"></audio>
   <audio id="beerSfx" src="beer-sfx.mp3" preload="auto"></audio>
 </div>
-
-<!-- NOTE: upload second meme image with exact filename: memes_extra.png (50% of memes attempt to use it) -->
 
 <script>
 /* Settings */
@@ -279,20 +278,22 @@ const confessionScene = $('#confessionScene')
 const confessionText = $('#confessionText')
 const heartBtn = $('#heartBtn')
 const heartCaption = $('#heartCaption')
-const darkMusic = $('#darkMusic')   // audio element
-const loveMusic = $('#loveMusic')   // audio element
+const darkMusic = $('#darkMusic')
+const loveMusic = $('#loveMusic')
 const beerSfx = $('#beerSfx')
 const romanceVideo = $('#romanceVideo')
 const finalVideo = $('#finalVideo')
 
+/* state */
 let audioPrimed = false
 let beerStarted = false
 let romanceStarted = false
-let romanceAudioStarted = false
 let memeAnimationId = null
 let puddleTimer = null
 let loveWasPlayingBeforeVideo = false
 let stainsCreated = []
+let audioCtx = null
+let mediaSources = []
 
 /* viewport for mobile */
 function syncVH(){
@@ -315,25 +316,53 @@ function fadeAudio(audio, target, duration){
   requestAnimationFrame(step)
 }
 
+/* Ensure AudioContext exists and resume it (improves iOS behavior) */
+function ensureAudioContextAndConnect(){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext
+    if(!AC) return
+    if(!audioCtx){
+      audioCtx = new AC()
+    }
+    if(audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(()=>{})
+    }
+    // connect media elements to audio context (best-effort)
+    ;[darkMusic, loveMusic].forEach(el=>{
+      try{
+        // avoid double-creating source for same element
+        if(!mediaSources.some(ms => ms.el === el)){
+          const src = audioCtx.createMediaElementSource(el)
+          src.connect(audioCtx.destination)
+          mediaSources.push({el, src})
+        }
+      }catch(e){
+        // some browsers disallow createMediaElementSource when audio not same-origin or already used
+      }
+    })
+  }catch(e){}
+}
+
 /* Strong unlock function:
    MUST be called inside a real user gesture (click/tap).
-   It will "prime" the audio subsystem by playing+pausing both tracks,
-   then mark audioPrimed so later play() calls won't be blocked by iOS.
+   It will "prime" the audio subsystem by creating/resuming AudioContext and play+pause both tracks.
 */
 function unlockAudioImportant(){
   if(audioPrimed) return
   audioPrimed = true
+
+  ensureAudioContextAndConnect()
 
   try {
     // tiny volume so priming is silent
     darkMusic.volume = 0.01
     loveMusic.volume = 0.01
 
-    // play & immediately pause both to unlock them in iOS
+    // play & immediately pause both to unlock them in iOS (best-effort)
     darkMusic.play().then(()=>{ darkMusic.pause(); darkMusic.currentTime = 0 }).catch(()=>{})
     loveMusic.play().then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0 }).catch(()=>{})
   } catch(e){
-    // best-effort; if play is blocked, fallback resume listeners will help later
+    // best-effort
   }
 }
 
@@ -403,12 +432,15 @@ function enableSpoiler(){
 }
 
 /* show story on first click (user gesture) */
+/* IMPORTANT: we MUST call unlockAudioImportant() and start darkMusic.play() inside this click handler
+   so iOS treats it as a user-initiated audio. */
 function showStory(){
   // this function is called inside click handler on introCard -> guaranteed user gesture
   unlockAudioImportant()
 
   // Immediately start dark music inside the same gesture so it's never blocked
   try {
+    ensureAudioContextAndConnect()
     darkMusic.currentTime = 0
     darkMusic.volume = 0
     const p = darkMusic.play()
@@ -426,6 +458,9 @@ function showStory(){
     } else {
       fadeAudio(darkMusic, VOLUME_DARK, 900)
     }
+
+    // also prime loveMusic again to increase chance it's allowed later
+    try{ loveMusic.play().then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0 }).catch(()=>{}) }catch(e){}
   } catch(e){
     // ensure future resume
     const resume = ()=>{
@@ -448,74 +483,17 @@ function showStory(){
   setTimeout(()=> enableSpoiler(), totalMs + safety)
 }
 
-/* === CRITICAL CHANGE: ensure dark music starts immediately on cat-tap ===
- We replace the simple binding with a handler that:
- 1) unlocks audio (priming)
- 2) attempts to start darkMusic right away (playWithFadeAndResume)
- 3) then shows the story
- This guarantees the play() attempt is done inside the original user gesture.
-*/
-function onIntroClickGesture(e){
-  // 1) Priming: обязательно в том же юзер-жесте
-  try {
-    // tiny priming volume so it's silent
-    darkMusic.volume = 0.01;
-    loveMusic.volume = 0.01;
-
-    // optional extra primer file (if you uploaded prime.mp3):
-    // const primer = new Audio('prime.mp3');
-    // primer.volume = 0.02;
-    // primer.play().then(()=>{ primer.pause(); primer.currentTime = 0; }).catch(()=>{});
-
-    // Play+pause both tracks to unlock iOS audio subsystem
-    darkMusic.play().then(()=>{ darkMusic.pause(); darkMusic.currentTime = 0; }).catch(()=>{});
-    loveMusic.play().then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0; }).catch(()=>{});
-  } catch(err) {
-    console.warn('Priming failed (best-effort):', err);
-  }
-
-  // 2) Try to start dark music immediately (again, inside this gesture)
-  try {
-    darkMusic.currentTime = 0;
-    darkMusic.volume = 0;
-    const promise = darkMusic.play();
-    if (promise && typeof promise.then === 'function') {
-      promise.then(()=>{
-        // fade to desired volume
-        fadeAudio(darkMusic, VOLUME_DARK, 900);
-        console.log('darkMusic.started');
-      }).catch((err)=>{
-        console.warn('darkMusic.play() blocked, will attach resume listeners:', err);
-        // Attach resume listeners for the next user gesture(s)
-        const resume = ()=>{
-          darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{});
-          window.removeEventListener('touchstart', resume);
-          window.removeEventListener('click', resume);
-        };
-        window.addEventListener('touchstart', resume, {once:true, passive:true});
-        window.addEventListener('click', resume, {once:true});
-      });
-    } else {
-      fadeAudio(darkMusic, VOLUME_DARK, 900);
-    }
-  } catch(err){
-    console.warn('darkMusic play try threw:', err);
-    const resume = ()=>{
-      darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{});
-      window.removeEventListener('touchstart', resume);
-      window.removeEventListener('click', resume);
-    };
-    window.addEventListener('touchstart', resume, {once:true, passive:true});
-    window.addEventListener('click', resume, {once:true});
-  }
-
-  // 3) Continue with the UI: show the story (text reveal, etc.)
-  showStory();
-}
-
 /* events */
+function onIntroClickGesture(e){
+  // act only once
+  introCard.removeEventListener('click', onIntroClickGesture)
+  introCard.removeEventListener('keydown', onIntroKeydown)
+  showStory()
+}
+function onIntroKeydown(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onIntroClickGesture(e) } }
+
 introCard.addEventListener('click', onIntroClickGesture)
-introCard.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onIntroClickGesture(e) }})
+introCard.addEventListener('keydown', onIntroKeydown)
 
 /* story close */
 storyClose.addEventListener('click', ()=>{
@@ -593,11 +571,10 @@ function cleanupPuddle(){
   puddleTimer = setTimeout(()=>{
     puddle.animate([{opacity:1, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(.6)'}], {duration:900, easing:'ease-in-out', fill:'forwards'})
     ripple.animate([{opacity:.6, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(1.8)'}], {duration:900, easing:'ease-out', fill:'forwards'})
-    // stains remain as traces (we will remove them before memes)
   }, 3600)
 }
 
-/* beer animation sequence (ensures beer is above all and transitions to memes after full puddle animation) */
+/* beer animation sequence */
 function beerAnimationSequence(){
   if(beerStarted) return
   beerStarted = true
@@ -744,15 +721,15 @@ function startRomance(){
   romanceVideo.style.opacity = '0.6'
   romanceVideo.play().catch(()=>{})
 
-  // Ensure loveMusic is started inside a UX-allowed path if possible.
-  // We primed loveMusic at the first user click (unlockAudioImportant),
-  // so now we attempt to play it. If blocked, fallback attaches resume listeners.
+  // Ensure loveMusic is started: we've primed it earlier in intro click, so attempt to play now.
+  ensureAudioContextAndConnect()
   try{
     loveMusic.currentTime = 0
     loveMusic.volume = 0
     const p = loveMusic.play()
     if(p && typeof p.then === 'function'){
       p.then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{
+        // blocked: attach one-shot resume
         const resume = ()=>{
           loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
           window.removeEventListener('touchstart', resume)
@@ -928,8 +905,6 @@ spoiler.tabIndex = -1
 /* ensure heart initially not keyboard-focusable */
 heartBtn.setAttribute('aria-disabled','true')
 heartBtn.tabIndex = -1
-
 </script>
 </body>
 </html>
-
