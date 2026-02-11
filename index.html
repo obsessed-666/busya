@@ -240,8 +240,8 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   </div>
 
   <!-- audios: use these elements (names must match files in repo) -->
-  <audio id="darkMusic" src="dark.mp3" preload="auto" loop crossorigin="anonymous"></audio>
-  <audio id="loveMusic" src="love.mp3" preload="auto" loop crossorigin="anonymous"></audio>
+  <audio id="darkMusic" src="dark.mp3" preload="auto" loop playsinline crossorigin="anonymous"></audio>
+  <audio id="loveMusic" src="love.mp3" preload="auto" loop playsinline crossorigin="anonymous"></audio>
   <audio id="beerSfx" src="beer-sfx.mp3" preload="auto"></audio>
 </div>
 
@@ -343,39 +343,67 @@ function ensureAudioContextAndConnect(){
   }catch(e){}
 }
 
-/* Strong unlock function:
-   MUST be called inside a real user gesture (click/tap).
-   It will "prime" the audio subsystem by creating/resuming AudioContext and play+pause both tracks.
+/* Prime audio inside a user gesture:
+   - create/resume AudioContext
+   - start+stop a tiny buffer (reliably unlocks audio)
+   - attach media element sources
+   - attempt to play darkMusic immediately (and fade it up)
 */
-function unlockAudioImportant(){
+async function primeAudioGesture(){
   if(audioPrimed) return
   audioPrimed = true
 
-  ensureAudioContextAndConnect()
-
-  try {
-    // tiny volume so priming is silent
-    darkMusic.volume = 0.01
-    loveMusic.volume = 0.01
-
-    // play & immediately pause both to unlock them in iOS (best-effort)
-    darkMusic.play().then(()=>{ darkMusic.pause(); darkMusic.currentTime = 0 }).catch(()=>{})
-    loveMusic.play().then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0 }).catch(()=>{})
-  } catch(e){
-    // best-effort
-  }
-}
-
-/* robust play with resume fallback */
-function playWithFadeAndResume(audioEl, targetVolume, fadeMs){
   try{
-    audioEl.volume = 0
-    const p = audioEl.play()
+    const AC = window.AudioContext || window.webkitAudioContext
+    if(AC){
+      if(!audioCtx) audioCtx = new AC()
+      if(audioCtx.state === 'suspended') {
+        try{ await audioCtx.resume() }catch(e){}
+      }
+      // tiny silent buffer play to unlock
+      try{
+        const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate)
+        const src = audioCtx.createBufferSource()
+        src.buffer = buf
+        src.connect(audioCtx.destination)
+        src.start(0)
+        src.stop(0)
+      }catch(e){}
+      // connect media elements (best-effort)
+      try{
+        if(!mediaSources.some(ms=>ms.el===darkMusic)){
+          const s1 = audioCtx.createMediaElementSource(darkMusic)
+          s1.connect(audioCtx.destination)
+          mediaSources.push({el:darkMusic, src:s1})
+        }
+      }catch(e){}
+      try{
+        if(!mediaSources.some(ms=>ms.el===loveMusic)){
+          const s2 = audioCtx.createMediaElementSource(loveMusic)
+          s2.connect(audioCtx.destination)
+          mediaSources.push({el:loveMusic, src:s2})
+        }
+      }catch(e){}
+    }
+  }catch(e){
+    console.warn('primeAudioGesture audioCtx steps failed', e)
+  }
+
+  // try to play darkMusic immediately (inside gesture)
+  try{
+    darkMusic.currentTime = 0
+    // set a low starting volume, but not zero to avoid some browsers' quirks
+    darkMusic.volume = 0
+    const p = darkMusic.play()
     if(p && typeof p.then === 'function'){
-      p.then(()=> fadeAudio(audioEl, targetVolume, fadeMs)).catch(()=>{
-        // blocked: schedule on next user gesture
+      p.then(()=> {
+        fadeAudio(darkMusic, VOLUME_DARK, 900)
+        console.log('darkMusic started (primed)')
+      }).catch((err)=>{
+        console.warn('darkMusic.play blocked during priming', err)
+        // attach one-shot resume listeners for the next gesture(s)
         const resume = ()=>{
-          audioEl.play().then(()=> fadeAudio(audioEl, targetVolume, fadeMs)).catch(()=>{})
+          darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{})
           window.removeEventListener('touchstart', resume)
           window.removeEventListener('click', resume)
         }
@@ -383,17 +411,21 @@ function playWithFadeAndResume(audioEl, targetVolume, fadeMs){
         window.addEventListener('click', resume, {once:true})
       })
     } else {
-      fadeAudio(audioEl, targetVolume, fadeMs)
+      fadeAudio(darkMusic, VOLUME_DARK, 900)
     }
-  }catch(e){
+  }catch(err){
+    console.warn('darkMusic.play threw', err)
     const resume = ()=>{
-      audioEl.play().then(()=> fadeAudio(audioEl, targetVolume, fadeMs)).catch(()=>{})
+      darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{})
       window.removeEventListener('touchstart', resume)
       window.removeEventListener('click', resume)
     }
     window.addEventListener('touchstart', resume, {once:true,passive:true})
     window.addEventListener('click', resume, {once:true})
   }
+
+  // also attempt a quick silent play/pause for loveMusic to increase chance it's unlocked later
+  try{ loveMusic.play().then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0 }).catch(()=>{}) }catch(e){}
 }
 
 /* prepare story words */
@@ -432,46 +464,7 @@ function enableSpoiler(){
 }
 
 /* show story on first click (user gesture) */
-/* IMPORTANT: we MUST call unlockAudioImportant() and start darkMusic.play() inside this click handler
-   so iOS treats it as a user-initiated audio. */
 function showStory(){
-  // this function is called inside click handler on introCard -> guaranteed user gesture
-  unlockAudioImportant()
-
-  // Immediately start dark music inside the same gesture so it's never blocked
-  try {
-    ensureAudioContextAndConnect()
-    darkMusic.currentTime = 0
-    darkMusic.volume = 0
-    const p = darkMusic.play()
-    if(p && typeof p.then === 'function'){
-      p.then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=> {
-        // fallback: schedule resume on next gesture
-        const resume = ()=>{
-          darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{})
-          window.removeEventListener('touchstart', resume)
-          window.removeEventListener('click', resume)
-        }
-        window.addEventListener('touchstart', resume, {once:true,passive:true})
-        window.addEventListener('click', resume, {once:true})
-      })
-    } else {
-      fadeAudio(darkMusic, VOLUME_DARK, 900)
-    }
-
-    // also prime loveMusic again to increase chance it's allowed later
-    try{ loveMusic.play().then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0 }).catch(()=>{}) }catch(e){}
-  } catch(e){
-    // ensure future resume
-    const resume = ()=>{
-      darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{})
-      window.removeEventListener('touchstart', resume)
-      window.removeEventListener('click', resume)
-    }
-    window.addEventListener('touchstart', resume, {once:true,passive:true})
-    window.addEventListener('click', resume, {once:true})
-  }
-
   prepareStoryWords()
   intro.classList.add('fade-out')
   setTimeout(()=> intro.classList.add('hidden'), 520)
@@ -484,8 +477,15 @@ function showStory(){
 }
 
 /* events */
-function onIntroClickGesture(e){
-  // act only once
+async function onIntroClickGesture(e){
+  // prime audio inside this exact user gesture
+  try{
+    await primeAudioGesture()
+  }catch(err){
+    console.warn('primeAudioGesture error', err)
+  }
+  // then show story
+  // remove listeners so double tap won't retrigger priming logic
   introCard.removeEventListener('click', onIntroClickGesture)
   introCard.removeEventListener('keydown', onIntroKeydown)
   showStory()
@@ -908,4 +908,3 @@ heartBtn.tabIndex = -1
 </script>
 </body>
 </html>
-
