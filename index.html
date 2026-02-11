@@ -8,6 +8,22 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Marck+Script&display=swap" rel="stylesheet">
 <style>
+/* --- ТРЯСКА СТРАНИЦЫ --- */
+@keyframes pageShake {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  10%  { transform: translate(-6px, 4px) rotate(-0.5deg); }
+  20%  { transform: translate(6px, -4px) rotate(0.5deg); }
+  30%  { transform: translate(-5px, 3px) rotate(-0.4deg); }
+  40%  { transform: translate(5px, -3px) rotate(0.4deg); }
+  50%  { transform: translate(-3px, 2px) rotate(-0.3deg); }
+  60%  { transform: translate(3px, -2px) rotate(0.3deg); }
+  70%  { transform: translate(-2px, 1px) rotate(-0.2deg); }
+  80%  { transform: translate(2px, -1px) rotate(0.2deg); }
+  90%  { transform: translate(-1px, 0px) rotate(-0.1deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+.page-shake { animation: pageShake 0.6s ease; }
+
 /* Optional custom face (if you add woff2) */
 @font-face{
   font-family:"Mazut SP Demo";
@@ -572,7 +588,13 @@ function createStains(centerX, bottomY){
 }
 
 /* page shake */
-function shakePage(){ document.body.classList.add('page-shake'); if(navigator.vibrate) navigator.vibrate([80,30,70]); setTimeout(()=>document.body.classList.remove('page-shake'),600) }
+function shakePage(){ 
+  // add CSS class (animation) + device vibration if supported
+  document.body.classList.add('page-shake'); 
+  if(navigator.vibrate) navigator.vibrate([80,30,70]); 
+  // remove class after animation end (0.6s)
+  setTimeout(()=>document.body.classList.remove('page-shake'),600) 
+}
 
 /* puddle cleanup */
 function cleanupPuddle(){
@@ -626,7 +648,7 @@ function beerAnimationSequence(){
     if(t < 1) requestAnimationFrame(step)
     else {
       // landed
-      shakePage()
+      shakePage() // тряска страницы при приземлении
       fadeAudio(darkMusic, 0, 600)
       beerSfx.volume = SFX_VOLUME; beerSfx.currentTime = 0; beerSfx.play().catch(()=>{})
       spawnSplash(startX, endY + 20, 44)
@@ -717,8 +739,98 @@ function revealSpoiler(){
 spoiler.addEventListener('click', (e)=>{ e.stopPropagation(); revealSpoiler() })
 spoiler.addEventListener('keydown', (e)=>{ if((e.key==='Enter'||e.key===' ') && spoiler.classList.contains('ready')){ e.preventDefault(); revealSpoiler() }})
 
+
+/* ---------- НОВОЕ: ГАРАНТИРОВАННЫЙ СТАРТ loveMusic ---------- */
+/*
+  playLoveMusicGuaranteed():
+   - резюмирует audioCtx
+   - поделывает silent buffer unlock
+   - пытается play() несколько раз (interval), затем навешивает одноразовый touch/click как крайний лаг
+   - возвращает Promise, который резолвится при успешном старте (или после навешивания last-resort handler)
+*/
+function playLoveMusicGuaranteed({maxAttempts = 8, intervalMs = 300} = {}) {
+  return new Promise((resolve) => {
+    // Ensure AudioContext & media nodes present
+    try { ensureAudioContextAndConnect() } catch(e){}
+
+    let attempts = 0
+    let intervalId = null
+    let resolved = false
+
+    function finish(ok){
+      if(resolved) return
+      resolved = true
+      if(intervalId) clearInterval(intervalId)
+      resolve(ok)
+    }
+
+    async function tryPlay(){
+      attempts++
+      try{
+        // try to resume audio context first
+        if(audioCtx && audioCtx.state === 'suspended') {
+          try{ await audioCtx.resume() }catch(e){}
+        }
+        // small silent buffer to unlock
+        try{
+          if(audioCtx){
+            const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate)
+            const src = audioCtx.createBufferSource()
+            src.buffer = buf
+            src.connect(audioCtx.destination)
+            src.start(0)
+            src.stop(0)
+          }
+        }catch(e){}
+
+        // attempt playing the media element
+        loveMusic.currentTime = 0
+        loveMusic.volume = 0
+        const p = loveMusic.play()
+        if(p && typeof p.then === 'function'){
+          p.then(()=> {
+            fadeAudio(loveMusic, VOLUME_LOVE, 900)
+            finish(true)
+          }).catch((err)=>{
+            // blocked; we'll retry or fall back
+            // console.warn('loveMusic.play blocked', err)
+          })
+        } else {
+          // immediate success
+          fadeAudio(loveMusic, VOLUME_LOVE, 900)
+          finish(true)
+        }
+      }catch(err){
+        // ignore and retry
+      }
+
+      if(attempts >= maxAttempts && !resolved){
+        // last-resort: attach one-shot user-interaction listeners
+        const resumeHandler = ()=>{
+          loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
+          window.removeEventListener('touchstart', resumeHandler)
+          window.removeEventListener('click', resumeHandler)
+          finish(false) // resolved via user interaction later
+        }
+        window.addEventListener('touchstart', resumeHandler, {once:true,passive:true})
+        window.addEventListener('click', resumeHandler, {once:true})
+        // stop auto retries
+        if(intervalId) clearInterval(intervalId)
+        // resolve now — we attached handlers to start later if needed
+        finish(false)
+      }
+    }
+
+    // try immediately, then set interval
+    tryPlay()
+    intervalId = setInterval(tryPlay, intervalMs)
+  })
+}
+/* ---------- КОНЕЦ: playLoveMusicGuaranteed ---------- */
+
+
 /* start romance: fade dark, start loveMusic reliably and show memes */
-function startRomance(){
+async function startRomance(){
   if(romanceStarted) return
   romanceStarted = true
 
@@ -730,36 +842,22 @@ function startRomance(){
   romanceVideo.style.opacity = '0.6'
   romanceVideo.play().catch(()=>{})
 
-  // Ensure loveMusic is started: we've primed it earlier in intro click, so attempt to play now.
-  ensureAudioContextAndConnect()
+  // Ensure loveMusic is started: attempt guaranteed start before showing memes
   try{
-    loveMusic.currentTime = 0
-    loveMusic.volume = 0
-    const p = loveMusic.play()
-    if(p && typeof p.then === 'function'){
-      p.then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{
-        // blocked: attach one-shot resume
-        const resume = ()=>{
-          loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
-          window.removeEventListener('touchstart', resume)
-          window.removeEventListener('click', resume)
-        }
-        window.addEventListener('touchstart', resume, {once:true,passive:true})
-        window.addEventListener('click', resume, {once:true})
-      })
-    } else {
-      fadeAudio(loveMusic, VOLUME_LOVE, 900)
-    }
+    await playLoveMusicGuaranteed({maxAttempts:10, intervalMs: 300})
   }catch(e){
-    const resume = ()=>{
-      loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
-      window.removeEventListener('touchstart', resume)
-      window.removeEventListener('click', resume)
-    }
-    window.addEventListener('touchstart', resume, {once:true,passive:true})
-    window.addEventListener('click', resume, {once:true})
+    // ignore — createMemes will still proceed, and last-resort handlers will start music at next user gesture
+    console.warn('playLoveMusicGuaranteed failed/settled', e)
   }
 
+  // If loveMusic somehow not playing but audio unlocked, try one more best-effort
+  try{
+    if(loveMusic.paused && !romanceStarted){
+      loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
+    }
+  }catch(e){}
+
+  // finally create memes/UI
   createMemes()
   memesScene.classList.add('active')
 }
@@ -917,4 +1015,3 @@ heartBtn.tabIndex = -1
 </script>
 </body>
 </html>
-
