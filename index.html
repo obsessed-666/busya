@@ -113,6 +113,11 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #storyClose{border:1px solid rgba(255,255,255,.08);background:transparent;color:#fff;padding:6px 12px;border-radius:999px;cursor:pointer;margin:12px 16px 0 auto;display:block}
 #storyScroll{max-height:calc(100dvh - 160px);overflow:auto;padding:22px 20px;line-height:1.72;font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;font-size:clamp(16px,4vw,18px);color:#e6e6ea;-webkit-overflow-scrolling:touch}
 
+/* focus-spoiler: when active hide all paragraphs but keep spoiler visible (no dim) */
+#storyScroll p{transition:opacity .26s ease}
+#storyScroll.focus-spoiler p{opacity:0;pointer-events:none}
+#storyScroll.focus-spoiler .spoiler{opacity:1;pointer-events:auto;transform:none}
+
 /* word-by-word show */
 .story-word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .28s ease,transform .28s ease}
 .story-word.revealed{opacity:1;transform:translateY(0)}
@@ -162,9 +167,6 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #videoOverlay.active{opacity:1;pointer-events:auto}
 #finalVideo{width:min(92vw,900px);max-height:78vh;border-radius:12px;background:#000;box-shadow:0 20px 70px rgba(0,0,0,.6)}
 #videoPlaceholder{display:none;color:#ffe4ec;text-align:center}
-
-/* dim class for background while drop is active */
-.dimmed{filter:brightness(.28) saturate(.9);pointer-events:none;user-select:none}
 </style>
 </head>
 <body>
@@ -440,10 +442,8 @@ function spawnFoam(cx, cy, qty = 18){
 
 /* create stain blobs (decorative beer patches) directly under final can */
 function createStains(centerX, bottomY){
-  // remove previous stains (if any) to reposition correctly
   stainsCreated.forEach(s => { try{s.remove()}catch(e){} })
   stainsCreated = []
-  // create a few overlapping oily stains
   const specs = [
     {w: 240, h: 60, offX: 0,  offY: 12, opacity:0.85, blur:6},
     {w: 160, h: 44, offX: -36, offY: 26, opacity:0.7, blur:8},
@@ -460,10 +460,8 @@ function createStains(centerX, bottomY){
     st.style.opacity = '0'
     st.style.zIndex = 10091
     document.body.appendChild(st)
-    // animate appear
     st.animate([{transform:'scale(.2)', opacity:0},{transform:'scale(1.02)', opacity:1}], {duration:720 + i*80, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
     stainsCreated.push(st)
-    // gentle shimmer loop
     st.animate([{opacity:0.85, transform:'translateY(0)'},{opacity:0.7, transform:'translateY(-2px)'},{opacity:0.85, transform:'translateY(0)'}], {duration:4200 + i*300, iterations:Infinity, easing:'ease-in-out'})
   })
   return stainsCreated
@@ -478,30 +476,15 @@ function cleanupPuddle(){
   puddleTimer = setTimeout(()=>{
     puddle.animate([{opacity:1, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(.6)'}], {duration:900, easing:'ease-in-out', fill:'forwards'})
     ripple.animate([{opacity:.6, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(1.8)'}], {duration:900, easing:'ease-out', fill:'forwards'})
-    // keep stains visible (they remain)
+    // stains remain as traces (we will remove them before memes)
   }, 3600)
 }
 
-/* dim/un-dim helpers (do not remove DOM nodes) */
-function dimEverything(){
-  ['intro','storyScene','confessionScene','forestBg','forestOverlay','romanceFallback','romanceVideo'].forEach(id=>{
-    const el = document.getElementById(id)
-    if(el) el.classList.add('dimmed')
-  })
-}
-function undimEverything(){
-  ['intro','storyScene','confessionScene','forestBg','forestOverlay','romanceFallback','romanceVideo'].forEach(id=>{
-    const el = document.getElementById(id)
-    if(el) el.classList.remove('dimmed')
-  })
-}
-
-/* beer animation sequence (ensures beer is above all and transitions to memes) */
+/* beer animation sequence (ensures beer is above all and transitions to memes after full puddle animation) */
 function beerAnimationSequence(){
   if(beerStarted) return
   beerStarted = true
 
-  // ensure beerLayer is attached to body and fixed
   try{
     if(beerLayer.parentNode !== document.body){
       document.body.appendChild(beerLayer)
@@ -555,23 +538,39 @@ function beerAnimationSequence(){
       puddle.style.left = `${centerX}px`; puddle.style.top = `${puddleTop}px`
       ripple.style.left = `${centerX}px`; ripple.style.top = `${puddleTop}px`
 
-      puddle.animate([{opacity:0, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:1, width:'260px', height:'56px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
-      ripple.animate([{opacity:.9, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'350px', height:'90px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'ease-out', fill:'forwards'})
+      const puddleAnim = puddle.animate([{opacity:0, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:1, width:'260px', height:'56px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
+      const rippleAnim = ripple.animate([{opacity:.9, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'350px', height:'90px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'ease-out', fill:'forwards'})
 
       // create nicely positioned animated stains
       createStains(centerX, puddleTop + 8)
       cleanupPuddle()
 
-      // hide the beer sprite (smooth fade) and then start memes
+      // wait until splashes/puddle animations finish completely before transitioning
+      const maxSplashDuration = 2000
+      const puddleDuration = 820
+      const safety = 420
+      const waitMs = Math.max(maxSplashDuration, puddleDuration) + safety
+
       setTimeout(()=>{
+        // fade out beer elements smoothly
         beerSprite.style.transition = 'opacity 320ms linear, transform 420ms ease'
         beerSprite.style.opacity = '0'
         beerSprite.style.transform += ' scale(.92)'
-        setTimeout(()=>{ beerSprite.style.display = 'none' }, 360)
-        // undim background and start romance/memes
-        undimEverything()
+        // hide puddle/ripple
+        try{ puddle.animate([{opacity:1},{opacity:0}], {duration:300, fill:'forwards'}) }catch(e){}
+        try{ ripple.animate([{opacity:1},{opacity:0}], {duration:300, fill:'forwards'}) }catch(e){}
+        // fade stains then remove
+        stainsCreated.forEach((st,i)=>{
+          try{
+            st.animate([{opacity:1},{opacity:0}], {duration:420 + i*60, fill:'forwards'})
+            setTimeout(()=>{ try{st.remove()}catch(e){} }, 520 + i*60)
+          }catch(e){}
+        })
+        // ensure beerSprite removed after fade
+        setTimeout(()=>{ try{ beerSprite.style.display='none' }catch(e){} }, 380)
+        // finally start romance/memes AFTER everything hidden
         setTimeout(()=> startRomance(), 420)
-      }, 740)
+      }, waitMs)
     }
   }
   requestAnimationFrame(step)
@@ -582,12 +581,14 @@ function revealSpoiler(){
   if(!spoiler.classList.contains('ready')) return
   if(spoiler.classList.contains('open')) return
 
+  // hide other story content but DO NOT darken the screen
+  storyScroll.classList.add('focus-spoiler')
+
+  // mark open and reveal inline phrase
   spoiler.classList.add('open')
-  // show inline phrase in yellow/bold via CSS (no full-screen bubble)
   spoiler.querySelector('.line').removeAttribute('aria-hidden')
-  // dim background while drop animation runs
-  dimEverything()
-  // run beer drop
+
+  // begin beer drop animation (will itself wait for puddle completion before switching scenes)
   setTimeout(()=> beerAnimationSequence(), 150)
 }
 
@@ -600,10 +601,12 @@ function startRomance(){
   if(romanceStarted) return
   romanceStarted = true
 
-  // ensure story hidden
+  // hide story scene fully
   storyScene.classList.remove('active')
+  // remove focus-spoiler so story returns to normal when revisited
+  storyScroll.classList.remove('focus-spoiler')
 
-  // forest adjustment + play romance video visual
+  // forest visual
   document.getElementById('forestBg').style.opacity = '0.36'
   romanceVideo.style.opacity = '0.6'
   romanceVideo.play().catch(()=>{})
