@@ -38,7 +38,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 /* stacking */
 .layer{z-index:0}
 #forestBg,#forestOverlay,#romanceVideo,#romanceFallback,.bg-mist{pointer-events:none; z-index:0}
-#beerLayer{z-index:10095; pointer-events:none} /* keep very top for beer */
+#beerLayer{z-index:10095; pointer-events:none} /* beer top */
 #memesScene{z-index:40}
 #intro{z-index:50; pointer-events:auto}
 #storyScene{z-index:60}
@@ -113,16 +113,11 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #storyClose{border:1px solid rgba(255,255,255,.08);background:transparent;color:#fff;padding:6px 12px;border-radius:999px;cursor:pointer;margin:12px 16px 0 auto;display:block}
 #storyScroll{max-height:calc(100dvh - 160px);overflow:auto;padding:22px 20px;line-height:1.72;font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;font-size:clamp(16px,4vw,18px);color:#e6e6ea;-webkit-overflow-scrolling:touch}
 
-/* focus-spoiler: when active hide all paragraphs but keep spoiler visible (no dim) */
-#storyScroll p{transition:opacity .26s ease}
-#storyScroll.focus-spoiler p{opacity:0;pointer-events:none}
-#storyScroll.focus-spoiler .spoiler{opacity:1;pointer-events:auto;transform:none}
-
 /* word-by-word show */
 .story-word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .28s ease,transform .28s ease}
 .story-word.revealed{opacity:1;transform:translateY(0)}
 
-/* Spoiler: inline bubble only */
+/* Spoiler: inline bubble only, phrase contained, opens to bold yellow inline */
 .spoiler{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;cursor:default;background:transparent;overflow:visible;pointer-events:none;opacity:.98}
 .spoiler.ready{cursor:pointer;pointer-events:auto}
 .spoiler .veil{position:absolute;inset:0;border-radius:999px;background:linear-gradient(180deg, rgba(12,12,14,0.7), rgba(8,8,10,0.56));box-shadow:0 10px 40px rgba(0,0,0,.65), inset 0 0 24px rgba(255,255,255,0.02);backdrop-filter:blur(20px) saturate(.85);-webkit-backdrop-filter:blur(20px) saturate(.85);transition:opacity .42s ease, transform .52s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0);pointer-events:none;animation:veilFloat 6.2s ease-in-out infinite}
@@ -159,8 +154,11 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .36s ease,transform .36s ease}
 .char{display:inline-block;transform-origin:center bottom;animation:charShake 1.7s ease-in-out infinite}
 @keyframes charShake{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-2px,1px) rotate(-2deg)}50%{transform:translate(2px,-1px) rotate(2deg)}75%{transform:translate(-1px,-1px) rotate(-1deg)}100%{transform:translate(0,0) rotate(0)}}
-#heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite}
-@keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* heart initially hidden; will appear after confession reveal */
+#heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);transform:scale(.88);opacity:0;transition:opacity .48s cubic-bezier(.2,.9,.2,1), transform .48s cubic-bezier(.2,.9,.2,1);pointer-events:none}
+#heartBtn.heart-visible{opacity:1;transform:scale(1);pointer-events:auto}
+#heartCaption{font-size:13px;opacity:.85}
 
 /* video overlay */
 #videoOverlay{position:absolute;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease;padding:var(--panel-pad)}
@@ -209,7 +207,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
     <img id="beerSprite" src="beer.png" alt="банка Desperados" onerror="this.style.display='none'" />
     <div id="puddle"></div>
     <div class="ripple" id="ripple"></div>
-    <!-- stains will be appended here dynamically -->
+    <!-- stains appended dynamically -->
   </div>
 
   <section id="memesScene" aria-label="Мемы"></section>
@@ -284,7 +282,6 @@ let romanceStarted = false
 let romanceAudioStarted = false
 let memeAnimationId = null
 let puddleTimer = null
-let loveWasPlayingBeforeVideo = false
 let stainsCreated = []
 
 /* viewport for mobile */
@@ -476,7 +473,6 @@ function cleanupPuddle(){
   puddleTimer = setTimeout(()=>{
     puddle.animate([{opacity:1, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(.6)'}], {duration:900, easing:'ease-in-out', fill:'forwards'})
     ripple.animate([{opacity:.6, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(1.8)'}], {duration:900, easing:'ease-out', fill:'forwards'})
-    // stains remain as traces (we will remove them before memes)
   }, 3600)
 }
 
@@ -576,19 +572,16 @@ function beerAnimationSequence(){
   requestAnimationFrame(step)
 }
 
-/* reveal spoiler (guarded until ready) */
+/* reveal spoiler (guarded until ready). NOTE: do NOT hide story text */
 function revealSpoiler(){
   if(!spoiler.classList.contains('ready')) return
   if(spoiler.classList.contains('open')) return
 
-  // hide other story content but DO NOT darken the screen
-  storyScroll.classList.add('focus-spoiler')
-
-  // mark open and reveal inline phrase
+  // mark open and reveal inline phrase (story remains visible)
   spoiler.classList.add('open')
   spoiler.querySelector('.line').removeAttribute('aria-hidden')
 
-  // begin beer drop animation (will itself wait for puddle completion before switching scenes)
+  // begin beer drop animation
   setTimeout(()=> beerAnimationSequence(), 150)
 }
 
@@ -601,10 +594,8 @@ function startRomance(){
   if(romanceStarted) return
   romanceStarted = true
 
-  // hide story scene fully
+  // hide story scene fully (after user saw beer + puddle)
   storyScene.classList.remove('active')
-  // remove focus-spoiler so story returns to normal when revisited
-  storyScroll.classList.remove('focus-spoiler')
 
   // forest visual
   document.getElementById('forestBg').style.opacity = '0.36'
@@ -695,7 +686,7 @@ function createMemes(){
   loop()
 }
 
-/* reveal confessions word-by-word */
+/* reveal confessions word-by-word and then show heart */
 function revealConfession(){
   if(memeAnimationId) cancelAnimationFrame(memeAnimationId)
   $$('.meme').forEach(m=> m.classList.add('fade-out'))
@@ -719,6 +710,7 @@ function showConfession(){
 
   confessionText.innerHTML = ''
   let wordIndex = 0
+  const allWordSpans = []
   lines.forEach((line, li)=>{
     const p = document.createElement('p')
     const parts = line.match(/\S+|\s+/g) || [line]
@@ -738,19 +730,30 @@ function showConfession(){
         wordSpan.appendChild(charSpan)
       })
       p.appendChild(wordSpan)
+      allWordSpans.push(wordSpan)
       wordIndex++
     })
     confessionText.appendChild(p)
     setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*420)
   })
 
-  const wordSpans = $$('#confessionText .word')
-  wordSpans.forEach((w, i)=> setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)' }, i * WORD_DELAY_MS))
+  // reveal words sequentially
+  allWordSpans.forEach((w, i)=> setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)' }, i * WORD_DELAY_MS))
+
+  // calculate reveal duration and then show heart
+  const totalRevealMs = allWordSpans.length * WORD_DELAY_MS
+  const buffer = 480
+  setTimeout(()=>{
+    // reveal heart with animation
+    heartBtn.classList.add('heart-visible')
+    heartBtn.setAttribute('aria-hidden','false')
+    // ensure it's focusable
+    heartBtn.tabIndex = 0
+  }, totalRevealMs + buffer)
 }
 
 /* video overlay: pause/resume loveMusic on open/close */
 function openVideo(){
-  try{ loveWasPlayingBeforeVideo = !!(loveMusic && !loveMusic.paused && loveMusic.currentTime > 0); }catch(e){ loveWasPlayingBeforeVideo = false }
   try{ if(loveMusic && !loveMusic.paused) loveMusic.pause() }catch(e){}
   const overlay = document.getElementById('videoOverlay')
   overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false')
@@ -762,13 +765,10 @@ function closeVideo(){
   try{ document.getElementById('finalVideo').pause() }catch(e){}
   const overlay = document.getElementById('videoOverlay')
   overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true')
-  // resume loveMusic if it was playing before
-  if(loveWasPlayingBeforeVideo){
-    try{
-      loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 700)).catch(()=>{})
-    }catch(e){}
-    loveWasPlayingBeforeVideo = false
-  }
+  // resume loveMusic always when closing video
+  try{
+    loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 700)).catch(()=>{})
+  }catch(e){}
 }
 
 document.getElementById('heartBtn').addEventListener('click', openVideo)
