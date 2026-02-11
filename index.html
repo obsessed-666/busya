@@ -127,13 +127,16 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 @keyframes veilFloat{0%{transform:translateY(0)}50%{transform:translateY(-2.6px)}100%{transform:translateY(0)}}
 .spoiler .line{position:relative;z-index:3;font-family:"Mazut SP Demo","Merriweather",serif;font-size:clamp(16px,3.6vw,17px);color:rgba(255,255,255,0.03);filter:blur(6px);transition:filter .42s ease,color .42s ease,opacity .42s ease}
 .spoiler.open .veil{opacity:0;transform:translateY(-60px)}
-.spoiler.open .line{color:#fff;filter:blur(0)}
+/* when shown as full-screen phrase modal we will override styles */
 
 /* Beer/puddle */
 #beerLayer{position:absolute;inset:0;pointer-events:none;z-index:30}
 #beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center}
 #puddle{position:absolute;left:0;top:0;display:none;width:28px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0)}
 .ripple{position:absolute;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0)}
+.stain{position:fixed;border-radius:50%;pointer-events:none;mix-blend-mode:multiply;opacity:0;filter:blur(6px);z-index:10070}
+
+/* splash intensive */
 .splash,.foam{position:absolute;border-radius:50%;pointer-events:none}
 .page-shake{animation:pageShake .6s linear}
 @keyframes pageShake{0%{transform:translate(0)}20%{transform:translate(-4px,3px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-2px)}100%{transform:translate(0)}}
@@ -156,6 +159,23 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 @keyframes charShake{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-2px,1px) rotate(-2deg)}50%{transform:translate(2px,-1px) rotate(2deg)}75%{transform:translate(-1px,-1px) rotate(-1deg)}100%{transform:translate(0,0) rotate(0)}}
 #heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite}
 @keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* phrase modal (full-screen) */
+.phraseModal{
+  position:fixed;inset:0;z-index:10080;display:flex;align-items:center;justify-content:center;
+  background:rgba(4,4,6,0.96);backdrop-filter:blur(6px);padding:20px;
+}
+.phraseText{
+  font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;
+  font-weight:700;
+  font-size:clamp(22px,6.8vw,44px);
+  color:#fff;
+  text-align:center;
+  line-height:1.1;
+  text-shadow:0 16px 48px rgba(0,0,0,0.7);
+  padding:18px 24px;border-radius:16px;
+  transform:translateY(2px);opacity:0;transition:opacity .28s ease, transform .28s ease;
+}
 
 /* video overlay */
 #videoOverlay{position:absolute;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease;padding:var(--panel-pad)}
@@ -277,6 +297,7 @@ let romanceStarted = false
 let romanceAudioStarted = false
 let memeAnimationId = null
 let puddleTimer = null
+let loveWasPlayingBeforeVideo = false
 
 /* viewport for mobile */
 function syncVH(){
@@ -361,7 +382,6 @@ function enableSpoiler(){
   spoiler.classList.add('ready')
   spoiler.setAttribute('aria-disabled','false')
   spoiler.tabIndex = 0
-  // make it clickable and keyboard-focusable
 }
 
 /* show story on first click (user gesture) */
@@ -405,43 +425,54 @@ storyScroll.addEventListener('scroll', ()=>{
   storyFog.style.transform = `translateY(${ratio * -12}px)`
 })
 
-/* reveal spoiler (after it's enabled) */
-function revealSpoiler(){
-  if(!spoiler.classList.contains('ready')) return // prevent early clicks
-  if(spoiler.classList.contains('open')) return
-  spoiler.classList.add('open')
-  spoiler.querySelector('.line').removeAttribute('aria-hidden')
-  // start can drop animation
-  beerAnimation()
-}
-
-/* click handlers for spoiler */
-spoiler.addEventListener('click', (e)=>{ e.stopPropagation(); revealSpoiler() })
-spoiler.addEventListener('keydown', (e)=>{ if((e.key==='Enter'||e.key===' ') && spoiler.classList.contains('ready')){ e.preventDefault(); revealSpoiler() }})
-
-/* splash/foam helpers */
-function spawnSplash(cx, cy){
-  for(let i=0;i<22;i++){
+/* spawn helpers (intensified) */
+function spawnSplash(cx, cy, intensity = 26){
+  for(let i=0;i<intensity;i++){
     const d = document.createElement('div'); d.className='splash'
-    const size = 6 + Math.random()*12
+    const size = 6 + Math.random()*22
     d.style.width = `${size}px`; d.style.height = `${size}px`
     d.style.left = `${cx - size/2}px`; d.style.top = `${cy - size/2}px`
-    d.style.background = 'radial-gradient(circle, rgba(255,236,170,.95), rgba(255,170,80,0) 70%)'
-    const dx = (Math.random()*180)-90; const dy = -(40 + Math.random()*120)
-    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px, ${dy}px) scale(.8)`,opacity:.9},{transform:`translate(${dx*1.1}px, ${dy+160}px) scale(.3)`,opacity:0}], {duration:800 + Math.random()*300, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
-    document.body.appendChild(d); setTimeout(()=>d.remove(),1400)
+    d.style.background = 'radial-gradient(circle, rgba(255,236,170,.98), rgba(255,170,80,0) 70%)'
+    d.style.position = 'fixed'; d.style.zIndex = 10075
+    const dx = (Math.random()*260)-130; const dy = -(40 + Math.random()*180)
+    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px, ${dy}px) scale(.8)`,opacity:.95},{transform:`translate(${dx*1.05}px, ${dy+220}px) scale(.28)`,opacity:0}], {duration:900 + Math.random()*420, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
+    document.body.appendChild(d); setTimeout(()=>d.remove(),1700)
   }
 }
-function spawnFoam(cx, cy){
-  for(let i=0;i<10;i++){
+function spawnFoam(cx, cy, qty = 14){
+  for(let i=0;i<qty;i++){
     const f=document.createElement('div'); f.className='foam'
-    const size = 4 + Math.random()*8
+    const size = 4 + Math.random()*12
     f.style.width = `${size}px`; f.style.height = `${size}px`
-    f.style.left = `${cx + (Math.random()*60-30)}px`; f.style.top = `${cy + (Math.random()*20-10)}px`
-    f.style.background = 'radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,0))'
-    f.animate([{transform:'translateY(0) scale(1)',opacity:.85},{transform:`translateY(${-12 - Math.random()*20}px) scale(.5)`,opacity:0}], {duration:800 + Math.random()*400, easing:'ease-out', fill:'forwards'})
-    document.body.appendChild(f); setTimeout(()=>f.remove(),1600)
+    f.style.left = `${cx + (Math.random()*70-35)}px`; f.style.top = `${cy + (Math.random()*30-15)}px`
+    f.style.position = 'fixed'; f.style.zIndex = 10074
+    f.style.background = 'radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0))'
+    f.animate([{transform:'translateY(0) scale(1)',opacity:.95},{transform:`translateY(${-12 - Math.random()*30}px) scale(.45)`,opacity:0}], {duration:900 + Math.random()*600, easing:'ease-out', fill:'forwards'})
+    document.body.appendChild(f); setTimeout(()=>f.remove(),1800)
   }
+}
+
+/* create stain blobs (decorative beer patches) directly under final can */
+function createStains(cx, cy){
+  const stains = []
+  const shapes = [1,2,3]
+  shapes.forEach((s,i)=>{
+    const st = document.createElement('div'); st.className = 'stain'
+    const w = 60 + Math.random()*160*(i+1)
+    const h = Math.round(w * (0.4 + Math.random()*0.5))
+    st.style.width = `${w}px`; st.style.height = `${h}px`
+    st.style.left = `${cx - w/2}px`; st.style.top = `${cy - h/2}px`
+    st.style.background = `radial-gradient(ellipse at ${20+Math.random()*60}% ${30+Math.random()*40}%, rgba(255,230,170,${0.6 - i*0.12}), rgba(200,130,50,${0.12 - i*0.02}))`
+    st.style.transform = 'scale(.2)'; st.style.opacity = '0'
+    document.body.appendChild(st)
+    // animate grow/fade
+    st.animate([{transform:'scale(.2)', opacity:0},{transform:'scale(1.02)', opacity:0.94},{transform:'scale(0.98)', opacity:0.78}], {duration:900 + i*160, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
+    stains.push(st)
+    // schedule fade out later
+    setTimeout(()=> st.animate([{opacity:0},{opacity:0}], {duration:1, fill:'forwards'}), 8000)
+  })
+  // return for cleanup if needed
+  return stains
 }
 
 /* page shake */
@@ -453,15 +484,40 @@ function cleanupPuddle(){
   puddleTimer = setTimeout(()=>{
     puddle.animate([{opacity:1, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(.6)'}], {duration:900, easing:'ease-in-out', fill:'forwards'})
     ripple.animate([{opacity:.6, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(1.8)'}], {duration:900, easing:'ease-out', fill:'forwards'})
-  }, 3000)
+  }, 3600)
 }
 
-/* beer drop animation (puddle sits directly under can) */
-function beerAnimation(){
+/* Hide most UI except phrase modal: */
+function hideEverythingExceptPhrase(){
+  const ids = ['intro','forestBg','forestOverlay','romanceVideo','romanceFallback','storyScene','memesScene','confessionScene']
+  ids.forEach(id=>{
+    const el = document.getElementById(id)
+    if(el) el.style.display = 'none'
+  })
+}
+
+/* restore previously hidden elements (before starting memes) */
+function restoreHiddenAfterReveal(){
+  const ids = ['intro','forestBg','forestOverlay','romanceVideo','romanceFallback','storyScene','memesScene','confessionScene']
+  ids.forEach(id=>{
+    const el = document.getElementById(id)
+    if(el) el.style.display = ''
+  })
+}
+
+/* beer drop animation (puddle sits directly under can) with intensified splashes and stains */
+function beerAnimationSequence(phraseModal){
   if(beerStarted) return
   beerStarted = true
 
+  // make beerLayer sit above everything
+  beerLayer.style.zIndex = 10090
+  beerLayer.style.pointerEvents = 'none'
+
+  // show beer sprite
   beerSprite.style.display = 'block'
+  beerSprite.style.opacity = '1'
+
   const startX = window.innerWidth * (0.48 + Math.random()*0.06)
   const startY = -window.innerHeight * 0.6
   const endY = window.innerHeight * 0.62
@@ -482,46 +538,90 @@ function beerAnimation(){
     beerSprite.style.transform = `translateX(-50%) rotateZ(${rot}deg) rotateX(${flip}deg)`
     if(t < 1) requestAnimationFrame(step)
     else {
+      // landed
       shakePage()
       fadeAudio(darkMusic, 0, 600)
       beerSfx.volume = SFX_VOLUME; beerSfx.currentTime = 0; beerSfx.play().catch(()=>{})
-      spawnSplash(startX, endY + 18); spawnFoam(startX, endY + 20)
+      // stronger effects: spawn intense splash + foam
+      spawnSplash(startX, endY + 20, 36)
+      spawnFoam(startX, endY + 20, 18)
 
+      // compute final position
       const rect = beerSprite.getBoundingClientRect()
       const centerX = rect.left + rect.width/2 + window.scrollX
       const bottomY = rect.bottom + window.scrollY
-      const puddleTop = bottomY - Math.max(8, rect.height * 0.06) // puddle immediately under can
+      const puddleTop = bottomY - Math.max(12, rect.height * 0.06) // puddle sits almost immediately under can
 
+      // position puddle/ripple directly under can
       puddle.style.display = 'block'; ripple.style.display = 'block'
       puddle.style.left = `${centerX}px`; puddle.style.top = `${puddleTop}px`
       ripple.style.left = `${centerX}px`; ripple.style.top = `${puddleTop}px`
 
-      puddle.animate([{opacity:0, width:'22px', height:'8px', transform:'translate(-50%,0) scale(.2)'},{opacity:1, width:'200px', height:'40px', transform:'translate(-50%,0) scale(1)'}], {duration:780, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
-      ripple.animate([{opacity:.8, width:'24px', height:'8px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'260px', height:'60px', transform:'translate(-50%,0) scale(1)'}], {duration:780, easing:'ease-out', fill:'forwards'})
+      puddle.animate([{opacity:0, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:1, width:'220px', height:'44px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
+      ripple.animate([{opacity:.9, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'300px', height:'80px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'ease-out', fill:'forwards'})
+
+      // decorative stains under can
+      createStains(centerX, puddleTop + 8)
 
       cleanupPuddle()
-      setTimeout(startRomance, 760)
+
+      // remove phrase modal after short pause and transition to memes
+      setTimeout(()=>{
+        if(phraseModal && phraseModal.parentNode) phraseModal.remove()
+        // restore hidden visual elements for transition (we will hide storyScene explicitly in startRomance)
+        restoreHiddenAfterReveal()
+        // ensure story scene hidden before memes
+        try{ storyScene.classList.remove('active') }catch(e){}
+        // proceed to romance/memes
+        setTimeout(()=> startRomance(), 200)
+      }, 950)
     }
   }
   requestAnimationFrame(step)
 }
 
-/* spoiler already wired to call revealSpoiler above */
+/* reveal spoiler (guarded until ready) */
+function revealSpoiler(){
+  if(!spoiler.classList.contains('ready')) return
+  if(spoiler.classList.contains('open')) return
+  // open UI: create full-screen phrase modal (large bold single-font)
+  spoiler.classList.add('open')
+  // create modal
+  const modal = document.createElement('div'); modal.className = 'phraseModal'
+  const text = document.createElement('div'); text.className = 'phraseText'
+  // ensure single font and bold, no partial highlighting
+  const phrase = spoilerLine.textContent.trim() || '— Ой, извини, у меня пиво упало.'
+  text.textContent = phrase
+  modal.appendChild(text)
+  document.body.appendChild(modal)
+  // animate in
+  requestAnimationFrame(()=>{ text.style.opacity = '1'; text.style.transform = 'translateY(0)'; })
+
+  // hide everything else visually except audios (user requested)
+  hideEverythingExceptPhrase()
+
+  // start beer animation sequence after brief pause so user reads phrase
+  setTimeout(()=> beerAnimationSequence(modal), 700)
+}
+
+/* click handler wiring */
+spoiler.addEventListener('click', (e)=>{ e.stopPropagation(); revealSpoiler() })
+spoiler.addEventListener('keydown', (e)=>{ if((e.key==='Enter'||e.key===' ') && spoiler.classList.contains('ready')){ e.preventDefault(); revealSpoiler() }})
 
 /* start romance: fade dark, start loveMusic reliably and show memes */
 function startRomance(){
   if(romanceStarted) return
   romanceStarted = true
 
+  // hide story scene forcibly to avoid overlap
   storyScene.classList.remove('active')
-  beerLayer.classList.add('fade-out')
-  setTimeout(()=> beerLayer.classList.add('hidden'), 600)
 
+  // subtle forest adjustment
   document.getElementById('forestBg').style.opacity = '0.36'
   romanceVideo.style.opacity = '0.6'
   romanceVideo.play().catch(()=>{})
 
-  // attempt to play loveMusic (should be primed). If blocked, schedule resume on next gesture.
+  // start loveMusic reliably: it's been primed on first gesture
   try{
     loveMusic.currentTime = 0
     loveMusic.volume = 0
@@ -658,23 +758,46 @@ function showConfession(){
   wordSpans.forEach((w, i)=> setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)' }, i * WORD_DELAY_MS))
 }
 
-/* video overlay */
-function openVideo(){ document.getElementById('videoOverlay').classList.add('active'); document.getElementById('videoOverlay').setAttribute('aria-hidden','false'); document.getElementById('finalVideo').style.display='block'; document.getElementById('videoPlaceholder').style.display='none' }
+/* video overlay: pause/resume loveMusic on open/close */
+function openVideo(){
+  // remember whether music is playing now
+  try{ loveWasPlayingBeforeVideo = !!(loveMusic && !loveMusic.paused && !loveMusic.ended); }catch(e){ loveWasPlayingBeforeVideo = false }
+  try{ if(loveMusic && !loveMusic.paused) loveMusic.pause() }catch(e){}
+  const overlay = document.getElementById('videoOverlay')
+  overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false')
+  document.getElementById('finalVideo').style.display='block'
+  document.getElementById('videoPlaceholder').style.display='none'
+  try{ document.getElementById('finalVideo').play().catch(()=>{}) }catch(e){}
+}
+function closeVideo(){
+  try{ document.getElementById('finalVideo').pause() }catch(e){}
+  const overlay = document.getElementById('videoOverlay')
+  overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true')
+  // resume loveMusic if it was playing before
+  if(loveWasPlayingBeforeVideo){
+    try{
+      loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 700)).catch(()=>{})
+    }catch(e){}
+    loveWasPlayingBeforeVideo = false
+  }
+}
 
 document.getElementById('heartBtn').addEventListener('click', openVideo)
 document.getElementById('heartBtn').addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openVideo() }})
 
 document.getElementById('videoOverlay').addEventListener('click', (e)=>{
-  if(e.target === document.getElementById('videoOverlay')){
-    document.getElementById('videoOverlay').classList.remove('active'); document.getElementById('videoOverlay').setAttribute('aria-hidden','true')
-    try{ document.getElementById('finalVideo').pause() }catch(e){}
-  }
+  if(e.target === document.getElementById('videoOverlay')){ closeVideo() }
 })
 
-/* volumes default */
+/* initial volumes */
 darkMusic.volume = 0
 loveMusic.volume = 0
 beerSfx.volume = SFX_VOLUME
+
+/* Accessibility: ensure spoiler initially disabled until story words done */
+spoiler.setAttribute('aria-disabled','true')
+spoiler.tabIndex = -1
+
 </script>
 </body>
 </html>
