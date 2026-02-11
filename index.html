@@ -35,16 +35,17 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #app{position:relative;width:100%;height:100%;overflow:hidden}
 .layer{position:absolute;inset:0}
 
-/* IMPORTANT: stacking & pointer-events fixes so background layers DO NOT intercept clicks */
+/* stacking */
 .layer{z-index:0}
 #forestBg,#forestOverlay,#romanceVideo,#romanceFallback,.bg-mist{pointer-events:none; z-index:0}
+#beerLayer{z-index:10095; pointer-events:none} /* keep very top for beer */
 #memesScene{z-index:40}
 #intro{z-index:50; pointer-events:auto}
 #storyScene{z-index:60}
 #confessionScene{z-index:70}
 #videoOverlay{z-index:100}
 
-/* keep existing utility classes */
+/* utility */
 .hidden{display:none !important}
 .fade-out{opacity:0 !important;transform:scale(.96) !important;transition:opacity .45s ease,transform .45s ease}
 
@@ -69,7 +70,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 @keyframes forestDrift{0%,100%{background-position:50% 50%}50%{background-position:55% 45%}}
 @keyframes forestPulse{0%{transform:scale(1);filter:blur(0) brightness(1)}50%{transform:scale(1.02);filter:blur(1.6px) brightness(.92)}100%{transform:scale(1);filter:blur(0) brightness(1)}}
 
-/* Intro - gothic frame for the cat photo */
+/* Intro - gothic frame */
 #intro{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:var(--panel-pad);background:radial-gradient(circle at 50% 30%,rgba(100,140,200,.04),rgba(5,7,15,.96))}
 #introCard{
   width:min(88vw,520px);
@@ -78,14 +79,12 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   border-radius:18px;
   background:linear-gradient(180deg,#060405,#0b0b0b 60%);
   box-shadow:0 30px 80px rgba(0,0,0,.8), inset 0 2px 0 rgba(255,255,255,.02);
-  border:6px double var(--goth-border); /* gothic double border */
+  border:6px double var(--goth-border);
   cursor:pointer;
   position:relative;
   transition:transform .28s ease, box-shadow .28s ease;
   outline:0;
-  -webkit-tap-highlight-color: transparent;
 }
-#introCard:hover{transform:translateY(-4px);box-shadow:0 36px 100px rgba(0,0,0,.9)}
 #introCard img{width:100%;border-radius:12px;display:block;animation:catPulse 3.4s ease-in-out infinite}
 #introHint{margin-top:10px;font-size:14px;opacity:.9}
 @keyframes catPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.01)}}
@@ -111,7 +110,6 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
   animation:storyFog 22s ease-in-out infinite;
   pointer-events:none;
 }
-@keyframes storyFog{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
 #storyClose{border:1px solid rgba(255,255,255,.08);background:transparent;color:#fff;padding:6px 12px;border-radius:999px;cursor:pointer;margin:12px 16px 0 auto;display:block}
 #storyScroll{max-height:calc(100dvh - 160px);overflow:auto;padding:22px 20px;line-height:1.72;font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;font-size:clamp(16px,4vw,18px);color:#e6e6ea;-webkit-overflow-scrolling:touch}
 
@@ -119,31 +117,29 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .story-word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .28s ease,transform .28s ease}
 .story-word.revealed{opacity:1;transform:translateY(0)}
 
-/* Spoiler rebuilt: single-font phrase, blurred veil, no sharp edges */
-.spoiler{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;cursor:default;background:transparent;overflow:visible;pointer-events:none;opacity:.98}
+/* Spoiler: small centered bubble (not full-screen) */
+.spoiler{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;cursor:default;background:transparent;overflow:visible;pointer-events:none;opacity:.98}
 .spoiler.ready{cursor:pointer;pointer-events:auto}
-.spoiler .veil{position:absolute;inset:0;border-radius:999px;background:linear-gradient(180deg, rgba(12,12,14,0.65), rgba(8,8,10,0.55));box-shadow:0 16px 60px rgba(0,0,0,.7), inset 0 0 40px rgba(255,255,255,0.01);backdrop-filter:blur(22px) saturate(.85);-webkit-backdrop-filter:blur(22px) saturate(.85);transition:opacity .48s ease, transform .52s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0);pointer-events:none;mix-blend-mode:normal;animation:veilFloat 6.2s ease-in-out infinite}
-@keyframes veilFloat{0%{transform:translateY(0)}50%{transform:translateY(-2.6px)}100%{transform:translateY(0)}}
-.spoiler .line{position:relative;z-index:3;font-family:"Mazut SP Demo","Merriweather",serif;font-size:clamp(18px,4.4vw,20px);font-weight:700;color:rgba(255,255,255,0.02);filter:blur(6px);transition:filter .42s ease,color .42s ease,opacity .42s ease;text-align:center}
-.spoiler.open .veil{opacity:0;transform:translateY(-60px)}
-/* when shown as full-screen phrase modal we will override styles */
+.spoiler .veil{position:absolute;inset:0;border-radius:999px;background:linear-gradient(180deg, rgba(12,12,14,0.7), rgba(8,8,10,0.56));box-shadow:0 10px 40px rgba(0,0,0,.65), inset 0 0 24px rgba(255,255,255,0.02);backdrop-filter:blur(20px) saturate(.85);-webkit-backdrop-filter:blur(20px) saturate(.85);transition:opacity .42s ease, transform .52s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0);pointer-events:none;animation:veilFloat 6.2s ease-in-out infinite}
+@keyframes veilFloat{0%{transform:translateY(0)}50%{transform:translateY(-1.6px)}100%{transform:translateY(0)}}
+.spoiler .line{position:relative;z-index:3;font-family:"Mazut SP Demo","Merriweather",serif;font-size:clamp(16px,3.6vw,18px);font-weight:700;color:rgba(255,255,255,0.03);filter:blur(5px);transition:filter .42s ease,color .42s ease,opacity .42s ease;text-align:center}
+.spoiler.open .veil{opacity:0;transform:translateY(-36px)}
+.spoiler.open .line{color:#fff;filter:blur(0)}
 
-/* Beer/puddle */
-#beerLayer{position:absolute;inset:0;pointer-events:none;z-index:30}
-#beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center}
-#puddle{position:absolute;left:0;top:0;display:none;width:28px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0)}
-.ripple{position:absolute;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0)}
-.stain{position:fixed;border-radius:50%;pointer-events:none;mix-blend-mode:multiply;opacity:0;filter:blur(6px);z-index:10072}
+/* Beer and effects (fixed, highest) */
+#beerLayer{position:fixed;inset:0;pointer-events:none;z-index:10095}
+#beerSprite{position:fixed;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center;z-index:10096}
+#puddle{position:fixed;left:0;top:0;display:none;width:28px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0);z-index:10094}
+.ripple{position:fixed;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0);z-index:10093}
+.splash,.foam{position:fixed;border-radius:50%;pointer-events:none;z-index:10092}
 
-/* splash intensive */
-.splash,.foam{position:fixed;border-radius:50%;pointer-events:none}
-.page-shake{animation:pageShake .6s linear}
-@keyframes pageShake{0%{transform:translate(0)}20%{transform:translate(-4px,3px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-2px)}100%{transform:translate(0)}}
+/* stain blobs */
+.stain{position:fixed;border-radius:50%;pointer-events:none;mix-blend-mode:multiply;opacity:0;filter:blur(6px);z-index:10091}
 
 /* Memes tuned for iPhone 14 Plus */
 #memesScene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .6s ease}
 #memesScene.active{opacity:1;pointer-events:auto}
-.meme{position:absolute;left:0;top:0;width:clamp(72px,18vw,120px);padding:6px;border-radius:12px;background:linear-gradient(180deg,rgba(255,210,225,.12),rgba(120,80,120,.06));border:1px solid rgba(255,210,230,.06);box-shadow:0 14px 40px rgba(0,0,0,.45);overflow:hidden;cursor:pointer;backdrop-filter:blur(3px)}
+.meme{position:absolute;left:0;top:0;width:clamp(72px,18vw,110px);padding:6px;border-radius:12px;background:linear-gradient(180deg,rgba(255,210,225,.12),rgba(120,80,120,.06));border:1px solid rgba(255,210,230,.06);box-shadow:0 14px 40px rgba(0,0,0,.45);overflow:hidden;cursor:pointer;backdrop-filter:blur(3px)}
 .meme img{width:100%;height:100%;object-fit:cover;filter:contrast(1.03) saturate(1.02)}
 .meme::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 30px rgba(0,0,0,.28)}
 
@@ -159,21 +155,14 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite}
 @keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 
-/* phrase modal (full-screen) */
-.phraseModal{
-  position:fixed;inset:0;z-index:10080;display:flex;align-items:center;justify-content:center;
-  background:rgba(4,4,6,0.96);backdrop-filter:blur(6px);padding:20px;
+/* small phrase bubble (not full-screen) */
+.phraseBubble{
+  position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);z-index:10097;
+  max-width:86vw;padding:16px 18px;border-radius:14px;background:rgba(6,6,8,0.96);backdrop-filter:blur(6px);
+  box-shadow:0 30px 90px rgba(0,0,0,0.7);text-align:center;
 }
-.phraseText{
-  font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;
-  font-weight:700;
-  font-size:clamp(22px,6.8vw,44px);
-  color:#fff;
-  text-align:center;
-  line-height:1.1;
-  text-shadow:0 16px 48px rgba(0,0,0,0.7);
-  padding:18px 24px;border-radius:16px;
-  transform:translateY(2px);opacity:0;transition:opacity .28s ease, transform .28s ease;
+.phraseBubble .phraseText{
+  font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;font-weight:700;color:#fff;font-size:clamp(18px,5.2vw,28px);line-height:1.05;text-shadow:0 12px 36px rgba(0,0,0,0.7)
 }
 
 /* video overlay */
@@ -181,6 +170,9 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #videoOverlay.active{opacity:1;pointer-events:auto}
 #finalVideo{width:min(92vw,900px);max-height:78vh;border-radius:12px;background:#000;box-shadow:0 20px 70px rgba(0,0,0,.6)}
 #videoPlaceholder{display:none;color:#ffe4ec;text-align:center}
+
+/* dim class for background while phrase shows - keeps elements in DOM (so memes can be created) */
+.dimmed{filter:brightness(.3);pointer-events:none;user-select:none}
 </style>
 </head>
 <body>
@@ -277,7 +269,7 @@ const storyScroll = $('#storyScroll')
 const storyFog = $('#storyFog')
 const spoiler = $('#spoiler')
 const spoilerLine = spoiler.querySelector('.line')
-let beerLayer = $('#beerLayer')   // will move to body when needed
+let beerLayer = $('#beerLayer')
 const beerSprite = $('#beerSprite')
 const puddle = $('#puddle')
 const ripple = $('#ripple')
@@ -455,11 +447,11 @@ function spawnFoam(cx, cy, qty = 18){
 /* create stain blobs (decorative beer patches) directly under final can */
 function createStains(cx, cy){
   const stains = []
-  const shapes = [1,2,3,4]
+  const shapes = [1,2,3]
   shapes.forEach((s,i)=>{
     const st = document.createElement('div'); st.className = 'stain'
-    const w = 80 + Math.random()*200*(i+1)
-    const h = Math.round(w * (0.35 + Math.random()*0.5))
+    const w = 80 + Math.random()*160*(i+1)
+    const h = Math.round(w * (0.26 + Math.random()*0.4))
     st.style.width = `${w}px`; st.style.height = `${h}px`
     st.style.left = `${cx - w/2}px`; st.style.top = `${cy - h/2}px`
     st.style.background = `radial-gradient(ellipse at ${20+Math.random()*60}% ${30+Math.random()*40}%, rgba(255,230,170,${0.62 - i*0.12}), rgba(200,130,50,${0.12 - i*0.02}))`
@@ -469,8 +461,7 @@ function createStains(cx, cy){
     st.animate([{transform:'scale(.2)', opacity:0},{transform:'scale(1.02)', opacity:0.94},{transform:'scale(0.98)', opacity:0.8}], {duration:900 + i*160, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
     stains.push(st)
     setTimeout(()=>{ st.style.transition = 'opacity 1s linear'; st.style.opacity = '0.6' }, 300)
-    // fade out later
-    setTimeout(()=> st.animate([{opacity:0},{opacity:0}], {duration:1, fill:'forwards'}), 9000)
+    setTimeout(()=> { st.style.transition = 'opacity 1s linear'; st.style.opacity = '0.35' }, 6000)
   })
   return stains
 }
@@ -487,31 +478,27 @@ function cleanupPuddle(){
   }, 3600)
 }
 
-/* Hide most UI except phrase modal: */
-function hideEverythingExceptPhrase(){
-  const ids = ['intro','forestBg','forestOverlay','romanceVideo','romanceFallback','storyScene','memesScene','confessionScene']
-  ids.forEach(id=>{
+/* dim/un-dim helpers (do not remove DOM nodes) */
+function dimEverything(){
+  // apply .dimmed to main roots, but keep memesScene available
+  ['intro','storyScene','confessionScene','forestBg','forestOverlay','romanceFallback','romanceVideo'].forEach(id=>{
     const el = document.getElementById(id)
-    if(el) el.style.display = 'none'
+    if(el) el.classList.add('dimmed')
+  })
+}
+function undimEverything(){
+  ['intro','storyScene','confessionScene','forestBg','forestOverlay','romanceFallback','romanceVideo'].forEach(id=>{
+    const el = document.getElementById(id)
+    if(el) el.classList.remove('dimmed')
   })
 }
 
-/* restore previously hidden elements (before starting memes) */
-function restoreHiddenAfterReveal(){
-  const ids = ['intro','forestBg','forestOverlay','romanceVideo','romanceFallback','storyScene','memesScene','confessionScene']
-  ids.forEach(id=>{
-    const el = document.getElementById(id)
-    if(el) el.style.display = ''
-  })
-}
-
-/* beer drop animation (puddle sits directly under can) with intensified splashes and stains
-   Ensure beer layer is moved to document.body and positioned fixed above modal so it's always on top */
-function beerAnimationSequence(phraseModal){
+/* beer animation sequence (ensures beer is above all and transitions to memes) */
+function beerAnimationSequence(phraseBubbleEl){
   if(beerStarted) return
   beerStarted = true
 
-  // move beerLayer to body and make fixed so it's guaranteed to render above any stacking contexts
+  // make sure beerLayer is attached to body and fixed
   try{
     if(beerLayer.parentNode !== document.body){
       document.body.appendChild(beerLayer)
@@ -522,12 +509,10 @@ function beerAnimationSequence(phraseModal){
       beerLayer.style.height = '100%'
       beerLayer.style.pointerEvents = 'none'
     }
-    // ensure beer layer is topmost relative to phrase modal
     beerLayer.style.zIndex = '10095'
     beerSprite.style.zIndex = '10096'
-  }catch(e){ /* ignore */ }
+  }catch(e){}
 
-  // show beer sprite
   beerSprite.style.display = 'block'
   beerSprite.style.opacity = '1'
 
@@ -555,40 +540,32 @@ function beerAnimationSequence(phraseModal){
       shakePage()
       fadeAudio(darkMusic, 0, 600)
       beerSfx.volume = SFX_VOLUME; beerSfx.currentTime = 0; beerSfx.play().catch(()=>{})
-      // stronger effects: spawn intense splash + foam
-      spawnSplash(startX, endY + 20, 40)
+      spawnSplash(startX, endY + 20, 44)
       spawnFoam(startX, endY + 20, 22)
 
-      // compute final position
       const rect = beerSprite.getBoundingClientRect()
       const centerX = rect.left + rect.width/2 + window.scrollX
       const bottomY = rect.bottom + window.scrollY
-      const puddleTop = bottomY - Math.max(10, rect.height * 0.06) // puddle immediately under can
+      const puddleTop = bottomY - Math.max(10, rect.height * 0.06)
 
-      // position puddle/ripple directly under can (fixed coords)
-      puddle.style.position = 'fixed'
-      ripple.style.position = 'fixed'
       puddle.style.display = 'block'; ripple.style.display = 'block'
       puddle.style.left = `${centerX}px`; puddle.style.top = `${puddleTop}px`
       ripple.style.left = `${centerX}px`; ripple.style.top = `${puddleTop}px`
 
-      // bigger final puddle
       puddle.animate([{opacity:0, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:1, width:'260px', height:'56px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
       ripple.animate([{opacity:.9, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'350px', height:'90px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'ease-out', fill:'forwards'})
 
-      // decorative stains under can (slightly offset down)
       createStains(centerX, puddleTop + 10)
-
       cleanupPuddle()
 
-      // remove phrase modal after short pause and transition to memes
+      // hide phrase bubble but keep dim until memes loading
       setTimeout(()=>{
-        if(phraseModal && phraseModal.parentNode) phraseModal.remove()
-        // hide story scene and transition
-        try{ storyScene.classList.remove('active') }catch(e){}
-        // proceed to romance/memes
-        setTimeout(()=> startRomance(), 240)
-      }, 980)
+        if(phraseBubbleEl && phraseBubbleEl.parentNode) phraseBubbleEl.remove()
+        // undim background and start romance/memes
+        undimEverything()
+        // small delay to let UI settle, then start memes (ensures memesScene not hidden)
+        setTimeout(()=> startRomance(), 200)
+      }, 900)
     }
   }
   requestAnimationFrame(step)
@@ -598,24 +575,21 @@ function beerAnimationSequence(phraseModal){
 function revealSpoiler(){
   if(!spoiler.classList.contains('ready')) return
   if(spoiler.classList.contains('open')) return
-  // open UI: create full-screen phrase modal (large bold single-font)
+
   spoiler.classList.add('open')
-  // create modal
-  const modal = document.createElement('div'); modal.className = 'phraseModal'
-  const text = document.createElement('div'); text.className = 'phraseText'
-  // ensure single font and bold, no partial highlighting
+  // create small non-fullscreen phrase bubble
+  const bubble = document.createElement('div'); bubble.className = 'phraseBubble'
+  const txt = document.createElement('div'); txt.className = 'phraseText'
   const phrase = spoilerLine.textContent.trim() || '— Ой, извини, у меня пиво упало.'
-  text.textContent = phrase
-  modal.appendChild(text)
-  document.body.appendChild(modal)
-  // animate in
-  requestAnimationFrame(()=>{ text.style.opacity = '1'; text.style.transform = 'translateY(0)'; })
+  txt.textContent = phrase
+  bubble.appendChild(txt)
+  document.body.appendChild(bubble)
 
-  // hide everything else visually except audios (user requested)
-  hideEverythingExceptPhrase()
+  // dim other UI (keeps memesScene present in DOM)
+  dimEverything()
 
-  // start beer animation sequence after brief pause so user reads phrase
-  setTimeout(()=> beerAnimationSequence(modal), 700)
+  // after short read time, drop the can and animate
+  setTimeout(()=> beerAnimationSequence(bubble), 620)
 }
 
 /* click handler wiring */
@@ -627,10 +601,10 @@ function startRomance(){
   if(romanceStarted) return
   romanceStarted = true
 
-  // hide story scene forcibly to avoid overlap
+  // ensure story hidden
   storyScene.classList.remove('active')
 
-  // subtle forest adjustment
+  // forest adjustment + play romance video visual
   document.getElementById('forestBg').style.opacity = '0.36'
   romanceVideo.style.opacity = '0.6'
   romanceVideo.play().catch(()=>{})
@@ -810,7 +784,6 @@ beerSfx.volume = SFX_VOLUME
 /* Accessibility: ensure spoiler initially disabled until story words done */
 spoiler.setAttribute('aria-disabled','true')
 spoiler.tabIndex = -1
-
 </script>
 </body>
 </html>
