@@ -539,6 +539,7 @@ function spawnPuddleBlobs(cx, cy){
   const blobs = 7
   for(let i=0;i<blobs;i++){
     const b = document.createElement('div')
+    b.setAttribute('data-beer-blob','1')
     const w = 80 + Math.random()*160
     const h = 30 + Math.random()*70
     b.style.position = 'fixed'
@@ -571,6 +572,18 @@ function spawnPuddleBlobs(cx, cy){
 }
 
 spawnPuddleBlobs(centerX, puddleTop)
+      // ждём полного завершения анимации лужи, потом чистим её и только тогда мемы
+setTimeout(()=>{
+  // удалить все кляксы пива
+  document.querySelectorAll('[data-beer-blob]').forEach(b=>b.remove())
+
+  // убрать банку
+  beerSprite.style.display = 'none'
+
+  // теперь безопасно запускать романтическую сцену
+  startRomance()
+}, 1400)
+
 
 
       // create nicely positioned animated stains
@@ -610,7 +623,6 @@ setTimeout(()=>{
     stainsCreated.forEach(s=>{ try{s.remove()}catch(e){} })
   }catch(e){}
 
-  startRomance()
 }, 900)
 
       }, waitMs)
@@ -827,5 +839,6 @@ spoiler.tabIndex = -1
 </script>
 </body>
 </html>
+
 
 
