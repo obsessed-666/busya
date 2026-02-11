@@ -568,8 +568,19 @@ function beerAnimationSequence(){
         })
         // ensure beerSprite removed after fade
         setTimeout(()=>{ try{ beerSprite.style.display='none' }catch(e){} }, 380)
-        // finally start romance/memes AFTER everything hidden
-        setTimeout(()=> startRomance(), 420)
+        // finally start romance/memes ONLY AFTER beer visuals are fully gone
+setTimeout(()=>{
+  // на всякий случай принудительно скрываем ВСЕ пивные элементы
+  try{
+    beerSprite.style.display = 'none'
+    puddle.style.display = 'none'
+    ripple.style.display = 'none'
+    stainsCreated.forEach(s=>{ try{s.remove()}catch(e){} })
+  }catch(e){}
+
+  startRomance()
+}, 900)
+
       }, waitMs)
     }
   }
@@ -789,3 +800,4 @@ spoiler.tabIndex = -1
 </script>
 </body>
 </html>
+
