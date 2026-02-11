@@ -311,6 +311,12 @@ let stainsCreated = []
 let audioCtx = null
 let mediaSources = []
 
+/* NEW: buffer-based playback state for love.mp3 */
+let loveBuffer = null         // decoded AudioBuffer
+let loveSource = null         // current AudioBufferSourceNode (one-shot)
+let loveGain = null           // GainNode to fade
+let lovePlaying = false       // flag for buffer playback
+
 /* viewport for mobile */
 function syncVH(){
   const vh = (window.visualViewport?.height || window.innerHeight) * 0.01
@@ -343,27 +349,26 @@ function ensureAudioContextAndConnect(){
     if(audioCtx.state === 'suspended') {
       audioCtx.resume().catch(()=>{})
     }
-    // connect media elements to audio context (best-effort)
-    ;[darkMusic, loveMusic].forEach(el=>{
+    // connect media elements to audio context (best-effort) for legacy fallback
+    ;[darkMusic].forEach(el=>{
       try{
-        // avoid double-creating source for same element
         if(!mediaSources.some(ms => ms.el === el)){
           const src = audioCtx.createMediaElementSource(el)
           src.connect(audioCtx.destination)
           mediaSources.push({el, src})
         }
-      }catch(e){
-        // some browsers disallow createMediaElementSource when audio not same-origin or already used
-      }
+      }catch(e){}
     })
+    // don't force createMediaElementSource for loveMusic here because we prefer buffer playback
   }catch(e){}
 }
 
 /* Prime audio inside a user gesture:
    - create/resume AudioContext
    - start+stop a tiny buffer (reliably unlocks audio)
-   - attach media element sources
+   - attach media element sources (best-effort)
    - attempt to play darkMusic immediately (and fade it up)
+   - attempt to fetch+decode love.mp3 into loveBuffer (inside gesture for best success)
 */
 async function primeAudioGesture(){
   if(audioPrimed) return
@@ -385,19 +390,12 @@ async function primeAudioGesture(){
         src.start(0)
         src.stop(0)
       }catch(e){}
-      // connect media elements (best-effort)
+      // connect darkMusic element to audioCtx for fade control
       try{
         if(!mediaSources.some(ms=>ms.el===darkMusic)){
           const s1 = audioCtx.createMediaElementSource(darkMusic)
           s1.connect(audioCtx.destination)
           mediaSources.push({el:darkMusic, src:s1})
-        }
-      }catch(e){}
-      try{
-        if(!mediaSources.some(ms=>ms.el===loveMusic)){
-          const s2 = audioCtx.createMediaElementSource(loveMusic)
-          s2.connect(audioCtx.destination)
-          mediaSources.push({el:loveMusic, src:s2})
         }
       }catch(e){}
     }
@@ -408,16 +406,12 @@ async function primeAudioGesture(){
   // try to play darkMusic immediately (inside gesture)
   try{
     darkMusic.currentTime = 0
-    // set a low starting volume, but not zero to avoid some browsers' quirks
     darkMusic.volume = 0
     const p = darkMusic.play()
     if(p && typeof p.then === 'function'){
       p.then(()=> {
         fadeAudio(darkMusic, VOLUME_DARK, 900)
-        console.log('darkMusic started (primed)')
       }).catch((err)=>{
-        console.warn('darkMusic.play blocked during priming', err)
-        // attach one-shot resume listeners for the next gesture(s)
         const resume = ()=>{
           darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{})
           window.removeEventListener('touchstart', resume)
@@ -430,7 +424,6 @@ async function primeAudioGesture(){
       fadeAudio(darkMusic, VOLUME_DARK, 900)
     }
   }catch(err){
-    console.warn('darkMusic.play threw', err)
     const resume = ()=>{
       darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{})
       window.removeEventListener('touchstart', resume)
@@ -440,8 +433,42 @@ async function primeAudioGesture(){
     window.addEventListener('click', resume, {once:true})
   }
 
-  // also attempt a quick silent play/pause for loveMusic to increase chance it's unlocked later
+  // also attempt a quick silent play/pause for loveMusic element (fallback)
   try{ loveMusic.play().then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0 }).catch(()=>{}) }catch(e){}
+
+  // --- NEW: try fetch+decode love.mp3 into buffer (do this while still inside user gesture)
+  try{
+    // only attempt if AudioContext available
+    if(audioCtx && !loveBuffer){
+      // fetch with same-origin; ensure your server serves love.mp3 with same origin or CORS allows it
+      const resp = await fetch('love.mp3', {cache: 'no-cache'})
+      if(resp.ok){
+        const ab = await resp.arrayBuffer()
+        // decodeAudioData may throw on unsupported formats; try-catch
+        try{
+          const decoded = await audioCtx.decodeAudioData(ab.slice(0))
+          loveBuffer = decoded
+          console.log('love.mp3 decoded to buffer (ready for buffer playback)')
+        }catch(e){
+          // older Safari sometimes requires callback-style decodeAudioData
+          try{
+            audioCtx.decodeAudioData(ab.slice(0), function(buf){
+              loveBuffer = buf
+              console.log('love.mp3 decoded via callback')
+            }, function(err){
+              console.warn('decodeAudioData callback failed', err)
+            })
+          }catch(err2){
+            console.warn('decodeAudioData failed', err2)
+          }
+        }
+      } else {
+        console.warn('fetch love.mp3 failed', resp.status)
+      }
+    }
+  }catch(e){
+    console.warn('fetch/decode love.mp3 failed inside gesture', e)
+  }
 }
 
 /* prepare story words */
@@ -494,7 +521,7 @@ function showStory(){
 
 /* events */
 async function onIntroClickGesture(e){
-  // 💥 САМЫЙ ПЕРВЫЙ ЖЕСТ — СРАЗУ СТАРТУЕМ МРАЧНУЮ МУЗЫКУ
+  // First gesture: start darkMusic and prime audio (also decode love.mp3 if possible)
   try{
     darkMusic.currentTime = 0
     darkMusic.volume = 0
@@ -504,7 +531,6 @@ async function onIntroClickGesture(e){
     console.warn('darkMusic direct play failed', err)
   }
 
-  // теперь уже делаем всю твою магию с AudioContext
   try{
     await primeAudioGesture()
   }catch(err){
@@ -589,10 +615,8 @@ function createStains(centerX, bottomY){
 
 /* page shake */
 function shakePage(){ 
-  // add CSS class (animation) + device vibration if supported
   document.body.classList.add('page-shake'); 
   if(navigator.vibrate) navigator.vibrate([80,30,70]); 
-  // remove class after animation end (0.6s)
   setTimeout(()=>document.body.classList.remove('page-shake'),600) 
 }
 
@@ -740,17 +764,61 @@ spoiler.addEventListener('click', (e)=>{ e.stopPropagation(); revealSpoiler() })
 spoiler.addEventListener('keydown', (e)=>{ if((e.key==='Enter'||e.key===' ') && spoiler.classList.contains('ready')){ e.preventDefault(); revealSpoiler() }})
 
 
-/* ---------- НОВОЕ: ГАРАНТИРОВАННЫЙ СТАРТ loveMusic ---------- */
-/*
-  playLoveMusicGuaranteed():
-   - резюмирует audioCtx
-   - поделывает silent buffer unlock
-   - пытается play() несколько раз (interval), затем навешивает одноразовый touch/click как крайний лаг
-   - возвращает Promise, который резолвится при успешном старте (или после навешивания last-resort handler)
-*/
+/* ---------- BUFFER PLAYBACK HELPERS (love.mp3) ---------- */
+
+/* play loveBuffer via AudioBufferSourceNode (preferred; reliable after user gesture) */
+async function playLoveBuffer() {
+  if(!audioCtx){
+    ensureAudioContextAndConnect()
+    if(!audioCtx) throw new Error('No AudioContext')
+  }
+  if(!loveBuffer) throw new Error('No loveBuffer decoded')
+
+  // stop any existing
+  stopLoveBuffer()
+
+  loveGain = audioCtx.createGain()
+  loveGain.gain.setValueAtTime(0, audioCtx.currentTime)
+  loveSource = audioCtx.createBufferSource()
+  loveSource.buffer = loveBuffer
+  loveSource.loop = true
+  loveSource.connect(loveGain)
+  loveGain.connect(audioCtx.destination)
+  try{
+    loveSource.start(0)
+    // fade in
+    loveGain.gain.linearRampToValueAtTime(VOLUME_LOVE, audioCtx.currentTime + 0.9)
+    lovePlaying = true
+    return true
+  }catch(e){
+    console.warn('loveSource.start failed', e)
+    // cleanup
+    stopLoveBuffer()
+    throw e
+  }
+}
+
+/* stop buffer playback */
+function stopLoveBuffer(){
+  try{
+    if(loveSource){
+      try{ loveSource.stop(0) }catch(e){}
+      try{ loveSource.disconnect() }catch(e){}
+      loveSource = null
+    }
+  }catch(e){}
+  try{
+    if(loveGain){
+      try{ loveGain.disconnect() }catch(e){}
+      loveGain = null
+    }
+  }catch(e){}
+  lovePlaying = false
+}
+
+/* Fallback: existing playLoveMusicGuaranteed (keeps previous logic) */
 function playLoveMusicGuaranteed({maxAttempts = 8, intervalMs = 300} = {}) {
   return new Promise((resolve) => {
-    // Ensure AudioContext & media nodes present
     try { ensureAudioContextAndConnect() } catch(e){}
 
     let attempts = 0
@@ -767,11 +835,9 @@ function playLoveMusicGuaranteed({maxAttempts = 8, intervalMs = 300} = {}) {
     async function tryPlay(){
       attempts++
       try{
-        // try to resume audio context first
         if(audioCtx && audioCtx.state === 'suspended') {
           try{ await audioCtx.resume() }catch(e){}
         }
-        // small silent buffer to unlock
         try{
           if(audioCtx){
             const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate)
@@ -782,8 +848,6 @@ function playLoveMusicGuaranteed({maxAttempts = 8, intervalMs = 300} = {}) {
             src.stop(0)
           }
         }catch(e){}
-
-        // attempt playing the media element
         loveMusic.currentTime = 0
         loveMusic.volume = 0
         const p = loveMusic.play()
@@ -791,42 +855,32 @@ function playLoveMusicGuaranteed({maxAttempts = 8, intervalMs = 300} = {}) {
           p.then(()=> {
             fadeAudio(loveMusic, VOLUME_LOVE, 900)
             finish(true)
-          }).catch((err)=>{
-            // blocked; we'll retry or fall back
-            // console.warn('loveMusic.play blocked', err)
-          })
+          }).catch(()=>{})
         } else {
-          // immediate success
           fadeAudio(loveMusic, VOLUME_LOVE, 900)
           finish(true)
         }
-      }catch(err){
-        // ignore and retry
-      }
-
+      }catch(err){}
       if(attempts >= maxAttempts && !resolved){
-        // last-resort: attach one-shot user-interaction listeners
         const resumeHandler = ()=>{
           loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
           window.removeEventListener('touchstart', resumeHandler)
           window.removeEventListener('click', resumeHandler)
-          finish(false) // resolved via user interaction later
+          finish(false)
         }
         window.addEventListener('touchstart', resumeHandler, {once:true,passive:true})
         window.addEventListener('click', resumeHandler, {once:true})
-        // stop auto retries
         if(intervalId) clearInterval(intervalId)
-        // resolve now — we attached handlers to start later if needed
         finish(false)
       }
     }
 
-    // try immediately, then set interval
     tryPlay()
     intervalId = setInterval(tryPlay, intervalMs)
   })
 }
-/* ---------- КОНЕЦ: playLoveMusicGuaranteed ---------- */
+
+/* ---------- END buffer helpers ---------- */
 
 
 /* start romance: fade dark, start loveMusic reliably and show memes */
@@ -842,22 +896,27 @@ async function startRomance(){
   romanceVideo.style.opacity = '0.6'
   romanceVideo.play().catch(()=>{})
 
-  // Ensure loveMusic is started: attempt guaranteed start before showing memes
+  // Primary: if we have loveBuffer decoded, use buffer playback (most reliable)
   try{
-    await playLoveMusicGuaranteed({maxAttempts:10, intervalMs: 300})
+    if(loveBuffer){
+      // ensure audio context resumed
+      if(audioCtx && audioCtx.state === 'suspended'){
+        try{ await audioCtx.resume() }catch(e){}
+      }
+      await playLoveBuffer()
+    } else {
+      // fallback to previous robust attempt approach (HTMLAudioElement)
+      await playLoveMusicGuaranteed({maxAttempts:10, intervalMs:300})
+    }
   }catch(e){
-    // ignore — createMemes will still proceed, and last-resort handlers will start music at next user gesture
-    console.warn('playLoveMusicGuaranteed failed/settled', e)
+    // last resort: attach one-shot user gesture to start loveMusic (already in playLoveMusicGuaranteed)
+    console.warn('startRomance: could not start buffer playback, falling back or waiting for gesture', e)
+    // if buffer isn't available, ensure fallback is attempted (non-blocking)
+    if(!loveBuffer){
+      playLoveMusicGuaranteed({maxAttempts:10, intervalMs:300}).catch(()=>{})
+    }
   }
 
-  // If loveMusic somehow not playing but audio unlocked, try one more best-effort
-  try{
-    if(loveMusic.paused && !romanceStarted){
-      loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
-    }
-  }catch(e){}
-
-  // finally create memes/UI
   createMemes()
   memesScene.classList.add('active')
 }
@@ -976,7 +1035,21 @@ function showConfession(){
 
 /* video overlay: pause/resume loveMusic on open/close */
 function openVideo(){
-  try{ loveWasPlayingBeforeVideo = !!(loveMusic && !loveMusic.paused && loveMusic.currentTime > 0); }catch(e){ loveWasPlayingBeforeVideo = false }
+  try{
+    // record whether we were playing buffer or element before opening video
+    loveWasPlayingBeforeVideo = lovePlaying || (!!(loveMusic && !loveMusic.paused && loveMusic.currentTime > 0))
+  }catch(e){
+    loveWasPlayingBeforeVideo = false
+  }
+
+  // stop buffer-based playback if active
+  try{
+    if(lovePlaying){
+      stopLoveBuffer()
+    }
+  }catch(e){}
+
+  // pause element fallback if playing
   try{ if(loveMusic && !loveMusic.paused) loveMusic.pause() }catch(e){}
   const overlay = document.getElementById('videoOverlay')
   overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false')
@@ -989,9 +1062,23 @@ function closeVideo(){
   const overlay = document.getElementById('videoOverlay')
   overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true')
   if(loveWasPlayingBeforeVideo){
-    try{
-      loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 700)).catch(()=>{})
-    }catch(e){}
+    // prefer buffer playback if buffer available
+    if(loveBuffer){
+      try{
+        // ensure audio context resumed
+        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{})
+        playLoveBuffer().catch(()=> {
+          // fallback to element
+          try{ loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 700)).catch(()=>{}) }catch(e){}
+        })
+      }catch(e){
+        try{ loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 700)).catch(()=>{}) }catch(err){}
+      }
+    } else {
+      try{
+        loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 700)).catch(()=>{})
+      }catch(e){}
+    }
     loveWasPlayingBeforeVideo = false
   }
 }
