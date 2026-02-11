@@ -478,14 +478,23 @@ function showStory(){
 
 /* events */
 async function onIntroClickGesture(e){
-  // prime audio inside this exact user gesture
+  // 💥 САМЫЙ ПЕРВЫЙ ЖЕСТ — СРАЗУ СТАРТУЕМ МРАЧНУЮ МУЗЫКУ
+  try{
+    darkMusic.currentTime = 0
+    darkMusic.volume = 0
+    await darkMusic.play()
+    fadeAudio(darkMusic, VOLUME_DARK, 900)
+  }catch(err){
+    console.warn('darkMusic direct play failed', err)
+  }
+
+  // теперь уже делаем всю твою магию с AudioContext
   try{
     await primeAudioGesture()
   }catch(err){
     console.warn('primeAudioGesture error', err)
   }
-  // then show story
-  // remove listeners so double tap won't retrigger priming logic
+
   introCard.removeEventListener('click', onIntroClickGesture)
   introCard.removeEventListener('keydown', onIntroKeydown)
   showStory()
@@ -908,3 +917,4 @@ heartBtn.tabIndex = -1
 </script>
 </body>
 </html>
+
