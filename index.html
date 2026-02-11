@@ -118,15 +118,15 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .story-word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .28s ease,transform .28s ease}
 .story-word.revealed{opacity:1;transform:translateY(0)}
 
-/* Spoiler: inline bubble only (no sharp edges, strong blur) */
-.spoiler{position:relative;display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;cursor:default;background:transparent;overflow:visible;pointer-events:none;opacity:.98}
+/* Spoiler: inline bubble only */
+.spoiler{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;cursor:default;background:transparent;overflow:visible;pointer-events:none;opacity:.98}
 .spoiler.ready{cursor:pointer;pointer-events:auto}
-.spoiler .veil{position:absolute;inset:0;border-radius:999px;background:rgba(10,10,12,0.55);box-shadow:0 18px 60px rgba(0,0,0,.7), inset 0 0 30px rgba(255,255,255,0.01);backdrop-filter:blur(28px) saturate(.8);-webkit-backdrop-filter:blur(28px) saturate(.8);transition:opacity .48s ease, transform .56s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0);pointer-events:none;animation:veilFloat 6s ease-in-out infinite}
+.spoiler .veil{position:absolute;inset:0;border-radius:999px;background:linear-gradient(180deg, rgba(12,12,14,0.7), rgba(8,8,10,0.56));box-shadow:0 10px 40px rgba(0,0,0,.65), inset 0 0 24px rgba(255,255,255,0.02);backdrop-filter:blur(20px) saturate(.85);-webkit-backdrop-filter:blur(20px) saturate(.85);transition:opacity .42s ease, transform .52s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0);pointer-events:none;animation:veilFloat 6.2s ease-in-out infinite}
 @keyframes veilFloat{0%{transform:translateY(0)}50%{transform:translateY(-1.6px)}100%{transform:translateY(0)}}
-.spoiler .line{position:relative;z-index:3;font-family:"Mazut SP Demo","Merriweather",serif;font-size:clamp(16px,3.6vw,18px);font-weight:400;color:rgba(255,255,255,0.03);filter:blur(6px);transition:filter .32s ease,color .32s ease,opacity .32s ease;text-align:center;padding:4px 6px;border-radius:8px}
+.spoiler .line{position:relative;z-index:3;font-family:"Mazut SP Demo","Merriweather",serif;font-size:clamp(16px,3.6vw,18px);font-weight:400;color:rgba(255,255,255,0.03);filter:blur(5px);transition:filter .32s ease,color .32s ease,opacity .32s ease;text-align:center;padding:4px 6px;border-radius:8px}
 .spoiler.open .veil{opacity:0;transform:translateY(-26px)}
 /* when opened: bold yellow inline text (no external bubble) */
-.spoiler.open .line{color:#ffd166;filter:blur(0);font-weight:700;letter-spacing:.2px;text-shadow:0 8px 30px rgba(0,0,0,.7)}
+.spoiler.open .line{color:#ffd166;filter:blur(0);font-weight:800;letter-spacing:.2px;text-shadow:0 8px 24px rgba(0,0,0,.6)}
 
 /* Beer and effects (fixed, highest) */
 #beerLayer{position:fixed;inset:0;pointer-events:none;z-index:10095}
@@ -228,7 +228,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
     </div>
   </div>
 
-  <!-- audios (use these elements; we prime them on gesture) -->
+  <!-- audios: use these elements (names must match files in repo) -->
   <audio id="darkMusic" src="dark.mp3" preload="auto" loop></audio>
   <audio id="loveMusic" src="love.mp3" preload="auto" loop></audio>
   <audio id="beerSfx" src="beer-sfx.mp3" preload="auto"></audio>
@@ -237,612 +237,617 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 <!-- NOTE: upload second meme image with exact filename: memes_extra.png (50% of memes attempt to use it) -->
 
 <script>
-/* -------------- IMPORTANT FIXED VERSION -------------- */
-/* This file was adjusted to:
-   - reliably start dark music on first click (iPhone-friendly priming)
-   - ensure love (romantic) music reliably starts when memes appear
-   - play full beer puddle animation under the can before switching scenes
-   - keep the story text visible after spoiler click (do not hide paragraphs)
-   - spoiler remains disabled until the story finishes showing word-by-word
-   - puddle appears directly under the can and is removed before memes
-   - minimal, robust fallbacks for mobile browsers
-*/
-
 /* Settings */
-const BEER_BASE_DURATION_MS = 1450;
-const MEME_COUNT = 18;
-const VOLUME_DARK = 0.18;
-const VOLUME_LOVE = 0.22;
-const SFX_VOLUME = 0.6;
-const STORY_WORD_DELAY_MS = 56;
-const WORD_DELAY_MS = 90;
-const MEME_EXTRA_FILENAME = 'memes_extra.png'; // upload to repo
+const BEER_BASE_DURATION_MS = 1450
+const MEME_COUNT = 18
+const VOLUME_DARK = 0.18
+const VOLUME_LOVE = 0.22
+const SFX_VOLUME = 0.6
+const STORY_WORD_DELAY_MS = 56
+const WORD_DELAY_MS = 90
+const MEME_EXTRA_FILENAME = 'memes_extra.png' // upload to repo
 
 /* helpers */
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
+const $ = s => document.querySelector(s)
+const $$ = s => Array.from(document.querySelectorAll(s))
 
 /* elements */
-const introCard = $('#introCard');
-const intro = $('#intro');
-const storyScene = $('#storyScene');
-const storyClose = $('#storyClose');
-const storyScroll = $('#storyScroll');
-const storyFog = $('#storyFog');
-const spoiler = $('#spoiler');
-const spoilerLine = spoiler.querySelector('.line');
-let beerLayer = $('#beerLayer');
-const beerSprite = $('#beerSprite');
-const puddle = $('#puddle');
-const ripple = $('#ripple');
-const memesScene = $('#memesScene');
-const confessionScene = $('#confessionScene');
-const confessionText = $('#confessionText');
-const heartBtn = $('#heartBtn');
-const darkMusic = $('#darkMusic');
-const loveMusic = $('#loveMusic');
-const beerSfx = $('#beerSfx');
-const romanceVideo = $('#romanceVideo');
-const finalVideo = $('#finalVideo');
+const introCard = $('#introCard')
+const intro = $('#intro')
+const storyScene = $('#storyScene')
+const storyClose = $('#storyClose')
+const storyScroll = $('#storyScroll')
+const storyFog = $('#storyFog')
+const spoiler = $('#spoiler')
+const spoilerLine = spoiler.querySelector('.line')
+let beerLayer = $('#beerLayer')
+const beerSprite = $('#beerSprite')
+const puddle = $('#puddle')
+const ripple = $('#ripple')
+const memesScene = $('#memesScene')
+const confessionScene = $('#confessionScene')
+const confessionText = $('#confessionText')
+const heartBtn = $('#heartBtn')
+const darkMusic = $('#darkMusic')   // audio element
+const loveMusic = $('#loveMusic')   // audio element
+const beerSfx = $('#beerSfx')
+const romanceVideo = $('#romanceVideo')
+const finalVideo = $('#finalVideo')
 
-let audioPrimed = false;
-let beerStarted = false;
-let romanceStarted = false;
-let memeAnimationId = null;
-let puddleTimer = null;
-let loveWasPlayingBeforeVideo = false;
-let stainsCreated = [];
+let audioPrimed = false
+let beerStarted = false
+let romanceStarted = false
+let romanceAudioStarted = false
+let memeAnimationId = null
+let puddleTimer = null
+let loveWasPlayingBeforeVideo = false
+let stainsCreated = []
 
 /* viewport for mobile */
 function syncVH(){
-  const vh = (window.visualViewport?.height || window.innerHeight) * 0.01;
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
+  const vh = (window.visualViewport?.height || window.innerHeight) * 0.01
+  document.documentElement.style.setProperty('--vh', `${vh}px`)
 }
-syncVH();
-window.addEventListener('resize', syncVH, {passive:true});
+syncVH()
+window.addEventListener('resize', syncVH, {passive:true})
 
 /* fade helper */
 function fadeAudio(audio, target, duration){
-  const start = audio.volume || 0;
-  const diff = target - start;
-  const t0 = performance.now();
+  const start = audio.volume || 0
+  const diff = target - start
+  const t0 = performance.now()
   function step(now){
-    const p = Math.min((now - t0) / duration, 1);
-    audio.volume = start + diff * p;
-    if(p < 1) requestAnimationFrame(step);
+    const p = Math.min((now - t0) / duration, 1)
+    audio.volume = start + diff * p
+    if(p < 1) requestAnimationFrame(step)
   }
-  requestAnimationFrame(step);
+  requestAnimationFrame(step)
 }
 
-/* robust play within user gesture; if blocked, schedule resume on next user gesture */
-function tryPlayImmediate(audio, targetVolume=0.2, fadeMs=900){
+/* Strong unlock function:
+   MUST be called inside a real user gesture (click/tap).
+   It will "prime" the audio subsystem by playing+pausing both tracks,
+   then mark audioPrimed so later play() calls won't be blocked by iOS.
+*/
+function unlockAudioImportant(){
+  if(audioPrimed) return
+  audioPrimed = true
+
+  try {
+    // set very low volumes so user doesn't hear this priming
+    darkMusic.volume = 0.01
+    loveMusic.volume = 0.01
+
+    // play & immediately pause both to unlock them in iOS
+    darkMusic.play().then(()=>{ darkMusic.pause(); darkMusic.currentTime = 0 }).catch(()=>{})
+    loveMusic.play().then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0 }).catch(()=>{})
+  } catch(e){
+    // best-effort; if play is blocked, we'll attach resume listener below when needed
+  }
+}
+
+/* robust play with resume fallback */
+function playWithFadeAndResume(audioEl, targetVolume, fadeMs){
   try{
-    audio.volume = 0;
-    const p = audio.play();
+    audioEl.volume = 0
+    const p = audioEl.play()
     if(p && typeof p.then === 'function'){
-      p.then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{
+      p.then(()=> fadeAudio(audioEl, targetVolume, fadeMs)).catch(()=>{
+        // blocked: schedule on next user gesture
         const resume = ()=>{
-          audio.play().then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{});
-          window.removeEventListener('touchstart', resume);
-          window.removeEventListener('click', resume);
-        };
-        window.addEventListener('touchstart', resume, {once:true,passive:true});
-        window.addEventListener('click', resume, {once:true});
-      });
+          audioEl.play().then(()=> fadeAudio(audioEl, targetVolume, fadeMs)).catch(()=>{})
+          window.removeEventListener('touchstart', resume)
+          window.removeEventListener('click', resume)
+        }
+        window.addEventListener('touchstart', resume, {once:true,passive:true})
+        window.addEventListener('click', resume, {once:true})
+      })
     } else {
-      fadeAudio(audio, targetVolume, fadeMs);
+      fadeAudio(audioEl, targetVolume, fadeMs)
     }
   }catch(e){
     const resume = ()=>{
-      audio.play().then(()=> fadeAudio(audio, targetVolume, fadeMs)).catch(()=>{});
-      window.removeEventListener('touchstart', resume);
-      window.removeEventListener('click', resume);
-    };
-    window.addEventListener('touchstart', resume, {once:true,passive:true});
-    window.addEventListener('click', resume, {once:true});
+      audioEl.play().then(()=> fadeAudio(audioEl, targetVolume, fadeMs)).catch(()=>{})
+      window.removeEventListener('touchstart', resume)
+      window.removeEventListener('click', resume)
+    }
+    window.addEventListener('touchstart', resume, {once:true,passive:true})
+    window.addEventListener('click', resume, {once:true})
   }
 }
 
-/* Prime audio elements reliably on the first user gesture.
-   This function is called during the first intro click.
-   It attempts to play & pause loveMusic so it can start later without a gesture.
-*/
-function primeAudioElements(){
-  if(audioPrimed) return;
-  audioPrimed = true;
-
-  // Prime dark music so we can start it immediately
-  try{
-    darkMusic.volume = 0;
-    const p = darkMusic.play();
-    if(p && typeof p.then === 'function'){
-      p.then(()=> {
-        darkMusic.pause();
-        darkMusic.currentTime = 0;
-      }).catch(()=>{});
-    }
-  }catch(e){}
-
-  // Prime love music (play & pause) so browsers unlock it for later
-  try{
-    loveMusic.volume = 0;
-    const p2 = loveMusic.play();
-    if(p2 && typeof p2.then === 'function'){
-      p2.then(()=> {
-        loveMusic.pause();
-        loveMusic.currentTime = 0;
-      }).catch(()=>{});
-    }
-  }catch(e){}
-
-  // prime beerSfx (short)
-  try{
-    beerSfx.volume = 0;
-    beerSfx.play().then(()=>{ beerSfx.pause(); beerSfx.currentTime = 0; }).catch(()=>{});
-  }catch(e){}
-}
-
-/* prepare story words (split to spans) */
+/* prepare story words */
 function prepareStoryWords(){
-  const ps = $$('#storyScroll p');
+  const ps = $$('#storyScroll p')
   ps.forEach(p=>{
-    const raw = p.textContent.trim();
-    const parts = raw.match(/\S+|\s+/g) || [raw];
-    p.innerHTML = '';
+    const raw = p.textContent.trim()
+    const parts = raw.match(/\S+|\s+/g) || [raw]
+    p.innerHTML = ''
     parts.forEach(part=>{
       if(/\s+/.test(part)){
-        p.appendChild(document.createTextNode(part));
-        return;
+        p.appendChild(document.createTextNode(part))
+        return
       }
-      const span = document.createElement('span');
-      span.className = 'story-word';
-      span.textContent = part;
-      p.appendChild(span);
-      p.appendChild(document.createTextNode(' '));
-    });
-  });
+      const span = document.createElement('span')
+      span.className = 'story-word'
+      span.textContent = part
+      p.appendChild(span)
+      p.appendChild(document.createTextNode(' '))
+    })
+  })
 }
 
-/* reveal words one-by-one; returns total duration */
+/* reveal words one-by-one; return total duration (ms) */
 function revealStoryWords(){
-  const words = $$('#storyScroll .story-word');
-  words.forEach((w,i)=> setTimeout(()=> w.classList.add('revealed'), i * STORY_WORD_DELAY_MS));
-  return words.length * STORY_WORD_DELAY_MS;
+  const words = $$('#storyScroll .story-word')
+  words.forEach((w,i)=> setTimeout(()=> w.classList.add('revealed'), i * STORY_WORD_DELAY_MS))
+  return words.length * STORY_WORD_DELAY_MS
 }
 
 /* enable spoiler after story finished */
 function enableSpoiler(){
-  spoiler.classList.add('ready');
-  spoiler.setAttribute('aria-disabled','false');
-  spoiler.tabIndex = 0;
+  spoiler.classList.add('ready')
+  spoiler.setAttribute('aria-disabled','false')
+  spoiler.tabIndex = 0
 }
 
-/* Show story: prime audios and start dark music reliably */
+/* show story on first click (user gesture) */
+/* IMPORTANT: we MUST call unlockAudioImportant() and start darkMusic.play() inside this click handler
+   so iOS treats it as a user-initiated audio. */
 function showStory(){
-  // prime audio elements on first user gesture
-  primeAudioElements();
+  // this function is called inside click handler on introCard -> guaranteed user gesture
+  unlockAudioImportant()
 
-  // start dark music (play + fade)
-  tryPlayImmediate(darkMusic, VOLUME_DARK, 900);
+  // Immediately start dark music inside the same gesture so it's never blocked
+  try {
+    darkMusic.currentTime = 0
+    darkMusic.volume = 0
+    const p = darkMusic.play()
+    if(p && typeof p.then === 'function'){
+      p.then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=> {
+        // fallback: schedule resume on next gesture
+        const resume = ()=>{
+          darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{})
+          window.removeEventListener('touchstart', resume)
+          window.removeEventListener('click', resume)
+        }
+        window.addEventListener('touchstart', resume, {once:true,passive:true})
+        window.addEventListener('click', resume, {once:true})
+      })
+    } else {
+      fadeAudio(darkMusic, VOLUME_DARK, 900)
+    }
+  } catch(e){
+    // ensure future resume
+    const resume = ()=>{
+      darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{})
+      window.removeEventListener('touchstart', resume)
+      window.removeEventListener('click', resume)
+    }
+    window.addEventListener('touchstart', resume, {once:true,passive:true})
+    window.addEventListener('click', resume, {once:true})
+  }
 
-  // prepare & reveal text
-  prepareStoryWords();
-  intro.classList.add('fade-out');
-  setTimeout(()=> intro.classList.add('hidden'), 520);
-  storyScene.classList.add('active');
+  prepareStoryWords()
+  intro.classList.add('fade-out')
+  setTimeout(()=> intro.classList.add('hidden'), 520)
+  storyScene.classList.add('active')
 
   // reveal words and enable spoiler when done
-  const totalMs = revealStoryWords();
-  const safety = 420; // small buffer
-  setTimeout(()=> enableSpoiler(), totalMs + safety);
+  const totalMs = revealStoryWords()
+  const safety = 420 // small buffer
+  setTimeout(()=> enableSpoiler(), totalMs + safety)
 }
 
 /* events */
-introCard.addEventListener('click', showStory);
-introCard.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); showStory(); }});
+introCard.addEventListener('click', showStory)
+introCard.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); showStory() }})
 
 /* story close */
 storyClose.addEventListener('click', ()=>{
-  storyScene.classList.remove('active');
-  intro.classList.remove('hidden');
-  setTimeout(()=> intro.classList.remove('fade-out'), 10);
-});
+  storyScene.classList.remove('active')
+  intro.classList.remove('hidden')
+  setTimeout(()=> intro.classList.remove('fade-out'), 10)
+})
 
 /* scroll fog parallax */
 storyScroll.addEventListener('scroll', ()=>{
-  const ratio = storyScroll.scrollTop / Math.max(1, (storyScroll.scrollHeight - storyScroll.clientHeight));
-  storyFog.style.transform = `translateY(${ratio * -12}px)`;
-});
+  const ratio = storyScroll.scrollTop / Math.max(1, (storyScroll.scrollHeight - storyScroll.clientHeight))
+  storyFog.style.transform = `translateY(${ratio * -12}px)`
+})
 
-/* splash/foam helpers */
-function spawnSplash(cx, cy, intensity = 28){
+/* spawn helpers (intensified) */
+function spawnSplash(cx, cy, intensity = 36){
   for(let i=0;i<intensity;i++){
-    const d = document.createElement('div'); d.className='splash';
-    const size = 8 + Math.random()*22;
-    d.style.width = `${size}px`; d.style.height = `${size}px`;
-    d.style.left = `${cx - size/2}px`; d.style.top = `${cy - size/2}px`;
-    d.style.background = 'radial-gradient(circle, rgba(255,236,170,.98), rgba(255,170,80,0) 70%)';
-    d.style.zIndex = 10092;
-    const dx = (Math.random()*360)-180; const dy = -(40 + Math.random()*220);
-    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px, ${dy}px) scale(.9)`,opacity:.95},{transform:`translate(${dx*1.05}px, ${dy+220}px) scale(.28)`,opacity:0}], {duration:800 + Math.random()*520, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'});
-    document.body.appendChild(d); setTimeout(()=>d.remove(),2000);
+    const d = document.createElement('div'); d.className='splash'
+    const size = 8 + Math.random()*26
+    d.style.width = `${size}px`; d.style.height = `${size}px`
+    d.style.left = `${cx - size/2}px`; d.style.top = `${cy - size/2}px`
+    d.style.background = 'radial-gradient(circle, rgba(255,236,170,.98), rgba(255,170,80,0) 70%)'
+    d.style.zIndex = 10092
+    const dx = (Math.random()*360)-180; const dy = -(40 + Math.random()*240)
+    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px, ${dy}px) scale(.9)`,opacity:.95},{transform:`translate(${dx*1.05}px, ${dy+240}px) scale(.28)`,opacity:0}], {duration:900 + Math.random()*520, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
+    document.body.appendChild(d); setTimeout(()=>d.remove(),2000)
   }
 }
-function spawnFoam(cx, cy, qty = 14){
+function spawnFoam(cx, cy, qty = 18){
   for(let i=0;i<qty;i++){
-    const f=document.createElement('div'); f.className='foam';
-    const size = 5 + Math.random()*12;
-    f.style.width = `${size}px`; f.style.height = `${size}px`;
-    f.style.left = `${cx + (Math.random()*80-40)}px`; f.style.top = `${cy + (Math.random()*40-20)}px`;
-    f.style.background = 'radial-gradient(circle,rgba(255,255,255,.98),rgba(255,255,255,0))';
-    f.style.zIndex = 10092;
-    f.animate([{transform:'translateY(0) scale(1)',opacity:.95},{transform:`translateY(${-12 - Math.random()*40}px) scale(.45)`,opacity:0}], {duration:800 + Math.random()*700, easing:'ease-out', fill:'forwards'});
-    document.body.appendChild(f); setTimeout(()=>f.remove(),2000);
+    const f=document.createElement('div'); f.className='foam'
+    const size = 5 + Math.random()*14
+    f.style.width = `${size}px`; f.style.height = `${size}px`
+    f.style.left = `${cx + (Math.random()*80-40)}px`; f.style.top = `${cy + (Math.random()*40-20)}px`
+    f.style.background = 'radial-gradient(circle,rgba(255,255,255,.98),rgba(255,255,255,0))'
+    f.style.zIndex = 10092
+    f.animate([{transform:'translateY(0) scale(1)',opacity:.95},{transform:`translateY(${-12 - Math.random()*40}px) scale(.45)`,opacity:0}], {duration:900 + Math.random()*700, easing:'ease-out', fill:'forwards'})
+    document.body.appendChild(f); setTimeout(()=>f.remove(),2000)
   }
 }
 
 /* create stain blobs (decorative beer patches) directly under final can */
 function createStains(centerX, bottomY){
-  stainsCreated.forEach(s => { try{s.remove()}catch(e){} });
-  stainsCreated = [];
+  stainsCreated.forEach(s => { try{s.remove()}catch(e){} })
+  stainsCreated = []
   const specs = [
     {w: 240, h: 60, offX: 0,  offY: 12, opacity:0.85, blur:6},
     {w: 160, h: 44, offX: -36, offY: 26, opacity:0.7, blur:8},
     {w: 120, h: 34, offX: 40, offY: 18, opacity:0.62, blur:10},
     {w: 300, h: 80, offX: 0, offY: 44, opacity:0.45, blur:18}
-  ];
+  ]
   specs.forEach((s,i)=>{
-    const st = document.createElement('div'); st.className = 'stain';
-    st.style.width = `${s.w}px`; st.style.height = `${s.h}px`;
-    st.style.left = `${centerX - s.w/2 + s.offX}px`;
-    st.style.top = `${bottomY + s.offY}px`;
-    st.style.background = `radial-gradient(ellipse at 30% 40%, rgba(255,235,170,${s.opacity}), rgba(200,120,40,${s.opacity*0.22}))`;
-    st.style.filter = `blur(${s.blur}px)`;
-    st.style.opacity = '0';
-    st.style.zIndex = 10091;
-    document.body.appendChild(st);
-    st.animate([{transform:'scale(.2)', opacity:0},{transform:'scale(1.02)', opacity:1}], {duration:720 + i*80, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'});
-    stainsCreated.push(st);
-    st.animate([{opacity:0.85, transform:'translateY(0)'},{opacity:0.7, transform:'translateY(-2px)'},{opacity:0.85, transform:'translateY(0)'}], {duration:4200 + i*300, iterations:Infinity, easing:'ease-in-out'});
-  });
-  return stainsCreated;
-}
-
-/* puddle blobs - realistic spread under the can */
-function spawnPuddleBlobs(cx, cy){
-  const blobs = 7;
-  const created = [];
-  for(let i=0;i<blobs;i++){
-    const b = document.createElement('div');
-    b.setAttribute('data-beer-blob','1');
-    const w = 60 + Math.random()*140;
-    const h = 24 + Math.random()*60;
-    b.style.position = 'fixed';
-    b.style.left = `${cx}px`;
-    b.style.top = `${cy}px`;
-    b.style.width = `${w}px`;
-    b.style.height = `${h}px`;
-    b.style.borderRadius = '50%';
-    b.style.pointerEvents = 'none';
-    b.style.zIndex = 10094;
-    b.style.background = 'radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 25%, #c76e21 75%)';
-    b.style.filter = 'blur(2px)';
-    b.style.transform = 'translate(-50%,-50%) scale(0.08)';
-    b.style.opacity = '0';
-    document.body.appendChild(b);
-    const dx = (Math.random()*140 - 70);
-    const dy = (Math.random()*60 - 30);
-    b.animate([
-      {transform:'translate(-50%,-50%) scale(0.08)', opacity:0},
-      {transform:`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1)`, opacity:1}
-    ], {
-      duration: 800 + Math.random()*320,
-      easing: 'cubic-bezier(.2,.8,.2,1)',
-      fill: 'forwards'
-    });
-    created.push(b);
-  }
-  return created;
+    const st = document.createElement('div'); st.className = 'stain'
+    st.style.width = `${s.w}px`; st.style.height = `${s.h}px`
+    st.style.left = `${centerX - s.w/2 + s.offX}px`
+    st.style.top = `${bottomY + s.offY}px`
+    st.style.background = `radial-gradient(ellipse at 30% 40%, rgba(255,235,170,${s.opacity}), rgba(200,120,40,${s.opacity*0.22}))`
+    st.style.filter = `blur(${s.blur}px)`
+    st.style.opacity = '0'
+    st.style.zIndex = 10091
+    document.body.appendChild(st)
+    st.animate([{transform:'scale(.2)', opacity:0},{transform:'scale(1.02)', opacity:1}], {duration:720 + i*80, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
+    stainsCreated.push(st)
+    st.animate([{opacity:0.85, transform:'translateY(0)'},{opacity:0.7, transform:'translateY(-2px)'},{opacity:0.85, transform:'translateY(0)'}], {duration:4200 + i*300, iterations:Infinity, easing:'ease-in-out'})
+  })
+  return stainsCreated
 }
 
 /* page shake */
-function shakePage(){ document.body.classList.add('page-shake'); if(navigator.vibrate) navigator.vibrate([80,30,70]); setTimeout(()=>document.body.classList.remove('page-shake'),600); }
+function shakePage(){ document.body.classList.add('page-shake'); if(navigator.vibrate) navigator.vibrate([80,30,70]); setTimeout(()=>document.body.classList.remove('page-shake'),600) }
 
 /* puddle cleanup */
 function cleanupPuddle(){
-  if(puddleTimer) clearTimeout(puddleTimer);
+  if(puddleTimer) clearTimeout(puddleTimer)
   puddleTimer = setTimeout(()=>{
-    document.querySelectorAll('[data-beer-blob]').forEach(b=>{
-      try{ b.animate([{opacity:1},{opacity:0}], {duration:900, fill:'forwards'}); setTimeout(()=>b.remove(), 920); }catch(e){}
-    });
-  }, 3600);
+    puddle.animate([{opacity:1, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(.6)'}], {duration:900, easing:'ease-in-out', fill:'forwards'})
+    ripple.animate([{opacity:.6, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(1.8)'}], {duration:900, easing:'ease-out', fill:'forwards'})
+    // stains remain as traces (we will remove them before memes)
+  }, 3600)
 }
 
 /* beer animation sequence (ensures beer is above all and transitions to memes after full puddle animation) */
 function beerAnimationSequence(){
-  if(beerStarted) return;
-  beerStarted = true;
+  if(beerStarted) return
+  beerStarted = true
 
   try{
     if(beerLayer.parentNode !== document.body){
-      document.body.appendChild(beerLayer);
-      beerLayer.style.position = 'fixed';
-      beerLayer.style.left = '0';
-      beerLayer.style.top = '0';
-      beerLayer.style.width = '100%';
-      beerLayer.style.height = '100%';
-      beerLayer.style.pointerEvents = 'none';
+      document.body.appendChild(beerLayer)
+      beerLayer.style.position = 'fixed'
+      beerLayer.style.left = '0'
+      beerLayer.style.top = '0'
+      beerLayer.style.width = '100%'
+      beerLayer.style.height = '100%'
+      beerLayer.style.pointerEvents = 'none'
     }
-    beerLayer.style.zIndex = '10095';
-    beerSprite.style.zIndex = '10096';
+    beerLayer.style.zIndex = '10095'
+    beerSprite.style.zIndex = '10096'
   }catch(e){}
 
-  beerSprite.style.display = 'block';
-  beerSprite.style.opacity = '1';
+  beerSprite.style.display = 'block'
+  beerSprite.style.opacity = '1'
 
-  const startX = window.innerWidth * (0.48 + Math.random()*0.06);
-  const startY = -window.innerHeight * 0.6;
-  const endY = window.innerHeight * 0.62;
-  const startRot = Math.random()*20 - 10;
-  const endRot = startRot + 300;
-  const duration = BEER_BASE_DURATION_MS + Math.random()*320;
-  const t0 = performance.now();
+  const startX = window.innerWidth * (0.48 + Math.random()*0.06)
+  const startY = -window.innerHeight * 0.6
+  const endY = window.innerHeight * 0.62
+  const startRot = Math.random()*20 - 10
+  const endRot = startRot + 300
+  const duration = BEER_BASE_DURATION_MS + Math.random()*320
+  const t0 = performance.now()
 
-  beerSprite.style.left = `${startX}px`; beerSprite.style.top = `${startY}px`;
+  beerSprite.style.left = `${startX}px`; beerSprite.style.top = `${startY}px`
 
   function step(now){
-    const t = Math.min(1,(now - t0)/duration);
-    const eased = t < 1 ? (1 - Math.pow(1 - t, 3)) : 1;
-    const y = startY + (endY - startY) * eased;
-    const rot = startRot + (endRot - startRot) * eased;
-    const flip = 360 * eased;
-    beerSprite.style.top = `${y}px`;
-    beerSprite.style.transform = `translateX(-50%) rotateZ(${rot}deg) rotateX(${flip}deg)`;
-    if(t < 1) requestAnimationFrame(step);
+    const t = Math.min(1,(now - t0)/duration)
+    const eased = t < 1 ? (1 - Math.pow(1 - t, 3)) : 1
+    const y = startY + (endY - startY) * eased
+    const rot = startRot + (endRot - startRot) * eased
+    const flip = 360 * eased
+    beerSprite.style.top = `${y}px`
+    beerSprite.style.transform = `translateX(-50%) rotateZ(${rot}deg) rotateX(${flip}deg)`
+    if(t < 1) requestAnimationFrame(step)
     else {
       // landed
-      shakePage();
-      fadeAudio(darkMusic, 0, 600);
-      beerSfx.volume = SFX_VOLUME; beerSfx.currentTime = 0; beerSfx.play().catch(()=>{});
-      spawnSplash(startX, endY + 20, 44);
-      spawnFoam(startX, endY + 20, 22);
+      shakePage()
+      fadeAudio(darkMusic, 0, 600)
+      beerSfx.volume = SFX_VOLUME; beerSfx.currentTime = 0; beerSfx.play().catch(()=>{})
+      spawnSplash(startX, endY + 20, 44)
+      spawnFoam(startX, endY + 20, 22)
 
-      const rect = beerSprite.getBoundingClientRect();
-      const centerX = rect.left + rect.width/2 + window.scrollX;
-      const bottomY = rect.bottom + window.scrollY;
-      // puddle top coordinate directly under can bottom
-      const puddleTop = bottomY - Math.max(8, rect.height * 0.06);
+      const rect = beerSprite.getBoundingClientRect()
+      const centerX = rect.left + rect.width/2 + window.scrollX
+      const bottomY = rect.bottom + window.scrollY
+      const puddleTop = bottomY - Math.max(10, rect.height * 0.06)
 
-      // show main puddle element (small helper)
-      puddle.style.display = 'block'; ripple.style.display = 'block';
-      puddle.style.left = `${centerX}px`; puddle.style.top = `${puddleTop}px`;
-      ripple.style.left = `${centerX}px`; ripple.style.top = `${puddleTop}px`;
+      puddle.style.display = 'block'; ripple.style.display = 'block'
+      puddle.style.left = `${centerX}px`; puddle.style.top = `${puddleTop}px`
+      ripple.style.left = `${centerX}px`; ripple.style.top = `${puddleTop}px`
 
-      // realistic puddle blobs animation
-      const blobs = spawnPuddleBlobs(centerX, puddleTop);
-      // keep track of these blobs for removal
-      // create stains under it for longer traces
-      const createdStains = createStains(centerX, puddleTop + 8);
+      // реалистичная лужа из клякс
+      function spawnPuddleBlobs(cx, cy){
+        const blobs = 7
+        for(let i=0;i<blobs;i++){
+          const b = document.createElement('div')
+          b.setAttribute('data-beer-blob','1')
+          const w = 80 + Math.random()*160
+          const h = 30 + Math.random()*70
+          b.style.position = 'fixed'
+          b.style.left = `${cx}px`
+          b.style.top = `${cy}px`
+          b.style.width = `${w}px`
+          b.style.height = `${h}px`
+          b.style.borderRadius = '50%'
+          b.style.pointerEvents = 'none'
+          b.style.zIndex = 10094
+          b.style.background = 'radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 25%, #c76e21 75%)'
+          b.style.filter = 'blur(2px)'
+          b.style.transform = 'translate(-50%,-50%) scale(0.1)'
+          b.style.opacity = '0'
 
-      // big puddle animation (main expansion)
-      const puddleAnim = puddle.animate([{opacity:0, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.14)'},{opacity:1, width:'260px', height:'56px', transform:'translate(-50%,0) scale(1)'}], {duration:900, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'});
-      const rippleAnim = ripple.animate([{opacity:.9, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'350px', height:'90px', transform:'translate(-50%,0) scale(1)'}], {duration:900, easing:'ease-out', fill:'forwards'});
+          document.body.appendChild(b)
 
-      // ensure full puddle/blobs play through BEFORE transition
-      const puddleDuration = 900;
-      const blobDuration = 900;
-      const safety = 500;
-      const waitMs = Math.max(puddleDuration, blobDuration) + safety;
+          const dx = (Math.random()*160 - 80)
+          const dy = (Math.random()*80 - 40)
 
+          b.animate([
+            {transform:'translate(-50%,-50%) scale(0.1)', opacity:0},
+            {transform:`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1)`, opacity:1}
+          ], {
+            duration: 900 + Math.random()*300,
+            easing: 'cubic-bezier(.2,.8,.2,1)',
+            fill: 'forwards'
+          })
+        }
+      }
+
+      spawnPuddleBlobs(centerX, puddleTop)
+
+      // create nicely positioned animated stains
+      createStains(centerX, puddleTop + 8)
+      cleanupPuddle()
+
+      // WAIT: play out the puddle animation fully, then transition to romance/memes.
+      // We already spawned blobs that animate ~900-1200ms. Wait slightly more to be safe.
       setTimeout(()=>{
-        // fade out beerSprite and main puddle/ripple (visual tidy)
-        try{ beerSprite.style.transition = 'opacity 300ms linear'; beerSprite.style.opacity = '0'; }catch(e){}
-        try{ puddle.animate([{opacity:1},{opacity:0}], {duration:300, fill:'forwards'}) }catch(e){}
-        try{ ripple.animate([{opacity:1},{opacity:0}], {duration:300, fill:'forwards'}) }catch(e){}
-        // remove blobs
-        document.querySelectorAll('[data-beer-blob]').forEach(b=>{ try{ b.remove(); }catch(e){} });
-        // remove main elements
-        setTimeout(()=>{ try{ beerSprite.style.display='none'; puddle.style.display='none'; ripple.style.display='none'; }catch(e){} }, 380);
+        // remove blobs (they served visual purpose)
+        document.querySelectorAll('[data-beer-blob]').forEach(b=>b.remove())
 
-        // keep stains (createdStains) as traces, but remove them shortly after to not persist into memes
-        setTimeout(()=>{ createdStains.forEach(s=>{ try{s.remove()}catch(e){} }); }, 1400);
+        // remove beer sprite
+        beerSprite.style.display = 'none'
 
-        // now start romance/memes
-        startRomance();
-
-      }, waitMs);
+        // start romance/memes after puddle completed
+        startRomance()
+      }, 1400)
     }
   }
-  requestAnimationFrame(step);
+  requestAnimationFrame(step)
 }
 
 /* reveal spoiler (guarded until ready) */
 function revealSpoiler(){
-  if(!spoiler.classList.contains('ready')) return;
-  if(spoiler.classList.contains('open')) return;
+  if(!spoiler.classList.contains('ready')) return
+  if(spoiler.classList.contains('open')) return
 
-  // mark open and reveal inline phrase (do NOT hide story text)
-  spoiler.classList.add('open');
-  spoiler.querySelector('.line').removeAttribute('aria-hidden');
+  // mark open and reveal inline phrase
+  spoiler.classList.add('open')
+  spoiler.querySelector('.line').removeAttribute('aria-hidden')
 
-  // begin beer drop animation (will wait for puddle animation before switching scenes)
-  setTimeout(()=> beerAnimationSequence(), 150);
+  // begin beer drop animation (will itself wait for puddle completion before switching scenes)
+  setTimeout(()=> beerAnimationSequence(), 150)
 }
 
 /* click handler wiring */
-spoiler.addEventListener('click', (e)=>{ e.stopPropagation(); revealSpoiler(); });
-spoiler.addEventListener('keydown', (e)=>{ if((e.key==='Enter'||e.key===' ') && spoiler.classList.contains('ready')){ e.preventDefault(); revealSpoiler(); }});
+spoiler.addEventListener('click', (e)=>{ e.stopPropagation(); revealSpoiler() })
+spoiler.addEventListener('keydown', (e)=>{ if((e.key==='Enter'||e.key===' ') && spoiler.classList.contains('ready')){ e.preventDefault(); revealSpoiler() }})
 
 /* start romance: fade dark, start loveMusic reliably and show memes */
 function startRomance(){
-  if(romanceStarted) return;
-  romanceStarted = true;
+  if(romanceStarted) return
+  romanceStarted = true
 
-  // hide story scene visually (but text already visible earlier; here we close)
-  storyScene.classList.remove('active');
+  // hide story scene fully
+  storyScene.classList.remove('active')
 
   // forest visual
-  document.getElementById('forestBg').style.opacity = '0.36';
-  romanceVideo.style.opacity = '0.6';
-  romanceVideo.play().catch(()=>{});
+  document.getElementById('forestBg').style.opacity = '0.36'
+  romanceVideo.style.opacity = '0.6'
+  romanceVideo.play().catch(()=>{})
 
-  // start loveMusic reliably: it was primed during first gesture
+  // Ensure loveMusic is started inside a UX-allowed path if possible.
+  // We primed loveMusic at the first user click (unlockAudioImportant),
+  // so now we attempt to play it. If blocked, fallback attaches resume listeners.
   try{
-    tryPlayImmediate(loveMusic, VOLUME_LOVE, 900);
+    loveMusic.currentTime = 0
+    loveMusic.volume = 0
+    const p = loveMusic.play()
+    if(p && typeof p.then === 'function'){
+      p.then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{
+        const resume = ()=>{
+          loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
+          window.removeEventListener('touchstart', resume)
+          window.removeEventListener('click', resume)
+        }
+        window.addEventListener('touchstart', resume, {once:true,passive:true})
+        window.addEventListener('click', resume, {once:true})
+      })
+    } else {
+      fadeAudio(loveMusic, VOLUME_LOVE, 900)
+    }
   }catch(e){
-    // fallback: try play with small delay
-    setTimeout(()=>{ tryPlayImmediate(loveMusic, VOLUME_LOVE, 900); }, 200);
+    const resume = ()=>{
+      loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 900)).catch(()=>{})
+      window.removeEventListener('touchstart', resume)
+      window.removeEventListener('click', resume)
+    }
+    window.addEventListener('touchstart', resume, {once:true,passive:true})
+    window.addEventListener('click', resume, {once:true})
   }
 
-  createMemes();
-  memesScene.classList.add('active');
+  createMemes()
+  memesScene.classList.add('active')
 }
 
 /* create memes; alternate between meme.png and memes_extra.png; extra image +10% size */
 function createMemes(){
-  // fade out dark music
-  fadeAudio(darkMusic, 0, 800);
-
-  memesScene.innerHTML = '';
-  const memes = [];
-  const bounds = ()=>({w:window.innerWidth,h:window.innerHeight});
-  const filenames = [];
-  for(let i=0;i<MEME_COUNT;i++) filenames.push(i % 2 === 0 ? 'meme.png' : MEME_EXTRA_FILENAME);
+  fadeAudio(darkMusic, 0, 800)
+  memesScene.innerHTML = ''
+  const memes = []
+  const bounds = ()=>({w:window.innerWidth,h:window.innerHeight})
+  const filenames = []
+  for(let i=0;i<MEME_COUNT;i++) filenames.push(i % 2 === 0 ? 'meme.png' : MEME_EXTRA_FILENAME)
 
   for(let i=0;i<MEME_COUNT;i++){
-    const el = document.createElement('div'); el.className = 'meme tap-target';
-    el.setAttribute('role','button'); el.setAttribute('tabindex','0');
-    const img = document.createElement('img'); img.src = filenames[i]; img.alt = 'мем-картинка';
-    img.onerror = ()=> { if(img.src.endsWith(MEME_EXTRA_FILENAME)) img.src = 'meme.png'; else img.style.display='none'; };
-    el.appendChild(img); memesScene.appendChild(el);
+    const el = document.createElement('div'); el.className = 'meme tap-target'
+    el.setAttribute('role','button'); el.setAttribute('tabindex','0')
+    const img = document.createElement('img'); img.src = filenames[i]; img.alt = 'мем-картинка'
+    img.onerror = ()=> { if(img.src.endsWith(MEME_EXTRA_FILENAME)) img.src = 'meme.png'; else img.style.display='none' }
+    el.appendChild(img); memesScene.appendChild(el)
 
-    const b = bounds();
-    let size = 70 + Math.random()*60;
-    if(filenames[i]===MEME_EXTRA_FILENAME) size = Math.round(size * 1.10); // +10%
-    el.style.width = `${size}px`;
-    const x = Math.random()*(b.w - size);
-    const y = Math.random()*(b.h - size);
-    memes.push({el,x,y,vx:(Math.random()*0.9+0.2)*(Math.random()>0.5?1:-1),vy:(Math.random()*0.9+0.2)*(Math.random()>0.5?1:-1),size});
+    const b = bounds()
+    let size = 70 + Math.random()*60
+    if(filenames[i]===MEME_EXTRA_FILENAME) size = Math.round(size * 1.10) // +10%
+    el.style.width = `${size}px`
+    const x = Math.random()*(b.w - size)
+    const y = Math.random()*(b.h - size)
+    memes.push({el,x,y,vx:(Math.random()*0.9+0.2)*(Math.random()>0.5?1:-1),vy:(Math.random()*0.9+0.2)*(Math.random()>0.5?1:-1),size})
 
-    const onClick = ()=> revealConfession();
-    el.addEventListener('click', onClick, {once:true});
-    el.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onClick(); }}, {once:true});
+    const onClick = ()=> revealConfession()
+    el.addEventListener('click', onClick, {once:true})
+    el.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onClick() }}, {once:true})
   }
 
   function loop(){
-    const b = bounds();
+    const b = bounds()
     for(let i=0;i<memes.length;i++){
-      const a = memes[i];
-      a.x += a.vx; a.y += a.vy;
-      if(a.x < 6 || a.x + a.size > b.w - 6) a.vx *= -1;
-      if(a.y < 6 || a.y + a.size > b.h - 6) a.vy *= -1;
+      const a = memes[i]
+      a.x += a.vx; a.y += a.vy
+      if(a.x < 6 || a.x + a.size > b.w - 6) a.vx *= -1
+      if(a.y < 6 || a.y + a.size > b.h - 6) a.vy *= -1
       for(let j=i+1;j<memes.length;j++){
-        const c = memes[j];
-        const dx = a.x - c.x; const dy = a.y - c.y;
-        const dist = Math.hypot(dx,dy); const minDist = (a.size + c.size)*0.28;
+        const c = memes[j]
+        const dx = a.x - c.x; const dy = a.y - c.y
+        const dist = Math.hypot(dx,dy); const minDist = (a.size + c.size)*0.28
         if(dist < minDist){
-          const nx = dx / (dist || 1); const ny = dy / (dist || 1);
-          a.vx += nx * 0.08; a.vy += ny * 0.08; c.vx -= nx * 0.08; c.vy -= ny * 0.08;
+          const nx = dx / (dist || 1); const ny = dy / (dist || 1)
+          a.vx += nx * 0.08; a.vy += ny * 0.08; c.vx -= nx * 0.08; c.vy -= ny * 0.08
         }
       }
-      a.el.style.transform = `translate3d(${a.x}px,${a.y}px,0) rotateZ(${(a.vx+a.vy)*6}deg)`;
+      a.el.style.transform = `translate3d(${a.x}px,${a.y}px,0) rotateZ(${(a.vx+a.vy)*6}deg)`
     }
-    memeAnimationId = requestAnimationFrame(loop);
+    memeAnimationId = requestAnimationFrame(loop)
   }
-  loop();
+  loop()
 }
 
 /* reveal confessions word-by-word */
 function revealConfession(){
-  if(memeAnimationId) cancelAnimationFrame(memeAnimationId);
-  $$('.meme').forEach(m=> m.classList.add('fade-out'));
-  setTimeout(()=>{ memesScene.classList.remove('active'); memesScene.innerHTML=''; showConfession(); }, 520);
+  if(memeAnimationId) cancelAnimationFrame(memeAnimationId)
+  $$('.meme').forEach(m=> m.classList.add('fade-out'))
+  setTimeout(()=>{ memesScene.classList.remove('active'); memesScene.innerHTML=''; showConfession() }, 520)
 }
 
 function showConfession(){
-  confessionScene.classList.add('active');
-  const raw = confessionText.textContent;
+  confessionScene.classList.add('active')
+  const raw = confessionText.textContent
   const lines = [
     'буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было.',
     'и не будет.',
     'ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было.',
     'полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя.',
     'очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни'
-  ];
+  ]
   if(raw !== lines.join(' ')){
-    confessionText.textContent = raw;
-    return;
+    confessionText.textContent = raw
+    return
   }
 
-  confessionText.innerHTML = '';
-  let wordIndex = 0;
+  confessionText.innerHTML = ''
+  let wordIndex = 0
   lines.forEach((line, li)=>{
-    const p = document.createElement('p');
-    const parts = line.match(/\S+|\s+/g) || [line];
+    const p = document.createElement('p')
+    const parts = line.match(/\S+|\s+/g) || [line]
     parts.forEach((part)=>{
       if(/\s+/.test(part)){
-        p.appendChild(document.createTextNode(part));
-        return;
+        p.appendChild(document.createTextNode(part))
+        return
       }
-      const wordSpan = document.createElement('span');
-      wordSpan.className = 'word';
-      const chars = part.split('');
+      const wordSpan = document.createElement('span')
+      wordSpan.className = 'word'
+      const chars = part.split('')
       chars.forEach((ch, ci)=>{
-        const charSpan = document.createElement('span');
-        charSpan.className = 'char';
-        charSpan.style.animationDelay = `${(ci*0.03)}s`;
-        charSpan.textContent = ch;
-        wordSpan.appendChild(charSpan);
-      });
-      p.appendChild(wordSpan);
-      wordIndex++;
-    });
-    confessionText.appendChild(p);
-    setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)'; }, 200 + li*420);
-  });
+        const charSpan = document.createElement('span')
+        charSpan.className = 'char'
+        charSpan.style.animationDelay = `${(ci*0.03)}s`
+        charSpan.textContent = ch
+        wordSpan.appendChild(charSpan)
+      })
+      p.appendChild(wordSpan)
+      wordIndex++
+    })
+    confessionText.appendChild(p)
+    setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*420)
+  })
 
-  const wordSpans = $$('#confessionText .word');
-  wordSpans.forEach((w, i)=> setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)'; }, i * WORD_DELAY_MS));
+  const wordSpans = $$('#confessionText .word')
+  wordSpans.forEach((w, i)=> setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)' }, i * WORD_DELAY_MS))
 }
 
 /* video overlay: pause/resume loveMusic on open/close */
 function openVideo(){
-  try{ loveWasPlayingBeforeVideo = !!(loveMusic && !loveMusic.paused && loveMusic.currentTime > 0); }catch(e){ loveWasPlayingBeforeVideo = false; }
-  try{ if(loveMusic && !loveMusic.paused) loveMusic.pause(); }catch(e){}
-  const overlay = document.getElementById('videoOverlay');
-  overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false');
-  document.getElementById('finalVideo').style.display='block';
-  document.getElementById('videoPlaceholder').style.display='none';
-  try{ document.getElementById('finalVideo').play().catch(()=>{}); }catch(e){}
+  try{ loveWasPlayingBeforeVideo = !!(loveMusic && !loveMusic.paused && loveMusic.currentTime > 0); }catch(e){ loveWasPlayingBeforeVideo = false }
+  try{ if(loveMusic && !loveMusic.paused) loveMusic.pause() }catch(e){}
+  const overlay = document.getElementById('videoOverlay')
+  overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false')
+  document.getElementById('finalVideo').style.display='block'
+  document.getElementById('videoPlaceholder').style.display='none'
+  try{ document.getElementById('finalVideo').play().catch(()=>{}) }catch(e){}
 }
 function closeVideo(){
-  try{ document.getElementById('finalVideo').pause(); }catch(e){}
-  const overlay = document.getElementById('videoOverlay');
-  overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true');
+  try{ document.getElementById('finalVideo').pause() }catch(e){}
+  const overlay = document.getElementById('videoOverlay')
+  overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true')
   // resume loveMusic if it was playing before
   if(loveWasPlayingBeforeVideo){
     try{
-      loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 700)).catch(()=>{});
+      loveMusic.play().then(()=> fadeAudio(loveMusic, VOLUME_LOVE, 700)).catch(()=>{})
     }catch(e){}
-    loveWasPlayingBeforeVideo = false;
+    loveWasPlayingBeforeVideo = false
   }
 }
 
-document.getElementById('heartBtn').addEventListener('click', openVideo);
-document.getElementById('heartBtn').addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openVideo(); }});
+document.getElementById('heartBtn').addEventListener('click', openVideo)
+document.getElementById('heartBtn').addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openVideo() }})
 
 document.getElementById('videoOverlay').addEventListener('click', (e)=>{
-  if(e.target === document.getElementById('videoOverlay')){ closeVideo(); }
-});
+  if(e.target === document.getElementById('videoOverlay')){ closeVideo() }
+})
 
-/* initial volumes (start silent until we prime) */
-darkMusic.volume = 0;
-loveMusic.volume = 0;
-beerSfx.volume = SFX_VOLUME;
+/* initial volumes */
+darkMusic.volume = 0
+loveMusic.volume = 0
+beerSfx.volume = SFX_VOLUME
 
 /* Accessibility: ensure spoiler initially disabled until story words done */
-spoiler.setAttribute('aria-disabled','true');
-spoiler.tabIndex = -1;
+spoiler.setAttribute('aria-disabled','true')
+spoiler.tabIndex = -1
 </script>
 </body>
 </html>
