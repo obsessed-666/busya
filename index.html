@@ -38,7 +38,6 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 /* IMPORTANT: stacking & pointer-events fixes so background layers DO NOT intercept clicks */
 .layer{z-index:0}
 #forestBg,#forestOverlay,#romanceVideo,#romanceFallback,.bg-mist{pointer-events:none; z-index:0}
-#beerLayer{z-index:30; pointer-events:none}
 #memesScene{z-index:40}
 #intro{z-index:50; pointer-events:auto}
 #storyScene{z-index:60}
@@ -125,7 +124,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .spoiler.ready{cursor:pointer;pointer-events:auto}
 .spoiler .veil{position:absolute;inset:0;border-radius:999px;background:linear-gradient(180deg, rgba(12,12,14,0.65), rgba(8,8,10,0.55));box-shadow:0 16px 60px rgba(0,0,0,.7), inset 0 0 40px rgba(255,255,255,0.01);backdrop-filter:blur(22px) saturate(.85);-webkit-backdrop-filter:blur(22px) saturate(.85);transition:opacity .48s ease, transform .52s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0);pointer-events:none;mix-blend-mode:normal;animation:veilFloat 6.2s ease-in-out infinite}
 @keyframes veilFloat{0%{transform:translateY(0)}50%{transform:translateY(-2.6px)}100%{transform:translateY(0)}}
-.spoiler .line{position:relative;z-index:3;font-family:"Mazut SP Demo","Merriweather",serif;font-size:clamp(16px,3.6vw,17px);color:rgba(255,255,255,0.03);filter:blur(6px);transition:filter .42s ease,color .42s ease,opacity .42s ease}
+.spoiler .line{position:relative;z-index:3;font-family:"Mazut SP Demo","Merriweather",serif;font-size:clamp(18px,4.4vw,20px);font-weight:700;color:rgba(255,255,255,0.02);filter:blur(6px);transition:filter .42s ease,color .42s ease,opacity .42s ease;text-align:center}
 .spoiler.open .veil{opacity:0;transform:translateY(-60px)}
 /* when shown as full-screen phrase modal we will override styles */
 
@@ -134,10 +133,10 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center}
 #puddle{position:absolute;left:0;top:0;display:none;width:28px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0)}
 .ripple{position:absolute;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0)}
-.stain{position:fixed;border-radius:50%;pointer-events:none;mix-blend-mode:multiply;opacity:0;filter:blur(6px);z-index:10070}
+.stain{position:fixed;border-radius:50%;pointer-events:none;mix-blend-mode:multiply;opacity:0;filter:blur(6px);z-index:10072}
 
 /* splash intensive */
-.splash,.foam{position:absolute;border-radius:50%;pointer-events:none}
+.splash,.foam{position:fixed;border-radius:50%;pointer-events:none}
 .page-shake{animation:pageShake .6s linear}
 @keyframes pageShake{0%{transform:translate(0)}20%{transform:translate(-4px,3px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-2px)}100%{transform:translate(0)}}
 
@@ -278,7 +277,7 @@ const storyScroll = $('#storyScroll')
 const storyFog = $('#storyFog')
 const spoiler = $('#spoiler')
 const spoilerLine = spoiler.querySelector('.line')
-const beerLayer = $('#beerLayer')
+let beerLayer = $('#beerLayer')   // will move to body when needed
 const beerSprite = $('#beerSprite')
 const puddle = $('#puddle')
 const ripple = $('#ripple')
@@ -290,6 +289,7 @@ const darkMusic = $('#darkMusic')
 const loveMusic = $('#loveMusic')
 const beerSfx = $('#beerSfx')
 const romanceVideo = $('#romanceVideo')
+const finalVideo = $('#finalVideo')
 
 let audioPrimed = false
 let beerStarted = false
@@ -426,52 +426,52 @@ storyScroll.addEventListener('scroll', ()=>{
 })
 
 /* spawn helpers (intensified) */
-function spawnSplash(cx, cy, intensity = 26){
+function spawnSplash(cx, cy, intensity = 36){
   for(let i=0;i<intensity;i++){
     const d = document.createElement('div'); d.className='splash'
-    const size = 6 + Math.random()*22
+    const size = 8 + Math.random()*26
     d.style.width = `${size}px`; d.style.height = `${size}px`
     d.style.left = `${cx - size/2}px`; d.style.top = `${cy - size/2}px`
     d.style.background = 'radial-gradient(circle, rgba(255,236,170,.98), rgba(255,170,80,0) 70%)'
-    d.style.position = 'fixed'; d.style.zIndex = 10075
-    const dx = (Math.random()*260)-130; const dy = -(40 + Math.random()*180)
-    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px, ${dy}px) scale(.8)`,opacity:.95},{transform:`translate(${dx*1.05}px, ${dy+220}px) scale(.28)`,opacity:0}], {duration:900 + Math.random()*420, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
-    document.body.appendChild(d); setTimeout(()=>d.remove(),1700)
+    d.style.zIndex = 10092
+    const dx = (Math.random()*360)-180; const dy = -(40 + Math.random()*240)
+    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px, ${dy}px) scale(.9)`,opacity:.95},{transform:`translate(${dx*1.05}px, ${dy+240}px) scale(.28)`,opacity:0}], {duration:900 + Math.random()*520, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
+    document.body.appendChild(d); setTimeout(()=>d.remove(),2000)
   }
 }
-function spawnFoam(cx, cy, qty = 14){
+function spawnFoam(cx, cy, qty = 18){
   for(let i=0;i<qty;i++){
     const f=document.createElement('div'); f.className='foam'
-    const size = 4 + Math.random()*12
+    const size = 5 + Math.random()*14
     f.style.width = `${size}px`; f.style.height = `${size}px`
-    f.style.left = `${cx + (Math.random()*70-35)}px`; f.style.top = `${cy + (Math.random()*30-15)}px`
-    f.style.position = 'fixed'; f.style.zIndex = 10074
-    f.style.background = 'radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0))'
-    f.animate([{transform:'translateY(0) scale(1)',opacity:.95},{transform:`translateY(${-12 - Math.random()*30}px) scale(.45)`,opacity:0}], {duration:900 + Math.random()*600, easing:'ease-out', fill:'forwards'})
-    document.body.appendChild(f); setTimeout(()=>f.remove(),1800)
+    f.style.left = `${cx + (Math.random()*80-40)}px`; f.style.top = `${cy + (Math.random()*40-20)}px`
+    f.style.background = 'radial-gradient(circle,rgba(255,255,255,.98),rgba(255,255,255,0))'
+    f.style.zIndex = 10092
+    f.animate([{transform:'translateY(0) scale(1)',opacity:.95},{transform:`translateY(${-12 - Math.random()*40}px) scale(.45)`,opacity:0}], {duration:900 + Math.random()*700, easing:'ease-out', fill:'forwards'})
+    document.body.appendChild(f); setTimeout(()=>f.remove(),2000)
   }
 }
 
 /* create stain blobs (decorative beer patches) directly under final can */
 function createStains(cx, cy){
   const stains = []
-  const shapes = [1,2,3]
+  const shapes = [1,2,3,4]
   shapes.forEach((s,i)=>{
     const st = document.createElement('div'); st.className = 'stain'
-    const w = 60 + Math.random()*160*(i+1)
-    const h = Math.round(w * (0.4 + Math.random()*0.5))
+    const w = 80 + Math.random()*200*(i+1)
+    const h = Math.round(w * (0.35 + Math.random()*0.5))
     st.style.width = `${w}px`; st.style.height = `${h}px`
     st.style.left = `${cx - w/2}px`; st.style.top = `${cy - h/2}px`
-    st.style.background = `radial-gradient(ellipse at ${20+Math.random()*60}% ${30+Math.random()*40}%, rgba(255,230,170,${0.6 - i*0.12}), rgba(200,130,50,${0.12 - i*0.02}))`
+    st.style.background = `radial-gradient(ellipse at ${20+Math.random()*60}% ${30+Math.random()*40}%, rgba(255,230,170,${0.62 - i*0.12}), rgba(200,130,50,${0.12 - i*0.02}))`
     st.style.transform = 'scale(.2)'; st.style.opacity = '0'
+    st.style.zIndex = 10091
     document.body.appendChild(st)
-    // animate grow/fade
-    st.animate([{transform:'scale(.2)', opacity:0},{transform:'scale(1.02)', opacity:0.94},{transform:'scale(0.98)', opacity:0.78}], {duration:900 + i*160, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
+    st.animate([{transform:'scale(.2)', opacity:0},{transform:'scale(1.02)', opacity:0.94},{transform:'scale(0.98)', opacity:0.8}], {duration:900 + i*160, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
     stains.push(st)
-    // schedule fade out later
-    setTimeout(()=> st.animate([{opacity:0},{opacity:0}], {duration:1, fill:'forwards'}), 8000)
+    setTimeout(()=>{ st.style.transition = 'opacity 1s linear'; st.style.opacity = '0.6' }, 300)
+    // fade out later
+    setTimeout(()=> st.animate([{opacity:0},{opacity:0}], {duration:1, fill:'forwards'}), 9000)
   })
-  // return for cleanup if needed
   return stains
 }
 
@@ -505,14 +505,27 @@ function restoreHiddenAfterReveal(){
   })
 }
 
-/* beer drop animation (puddle sits directly under can) with intensified splashes and stains */
+/* beer drop animation (puddle sits directly under can) with intensified splashes and stains
+   Ensure beer layer is moved to document.body and positioned fixed above modal so it's always on top */
 function beerAnimationSequence(phraseModal){
   if(beerStarted) return
   beerStarted = true
 
-  // make beerLayer sit above everything
-  beerLayer.style.zIndex = 10090
-  beerLayer.style.pointerEvents = 'none'
+  // move beerLayer to body and make fixed so it's guaranteed to render above any stacking contexts
+  try{
+    if(beerLayer.parentNode !== document.body){
+      document.body.appendChild(beerLayer)
+      beerLayer.style.position = 'fixed'
+      beerLayer.style.left = '0'
+      beerLayer.style.top = '0'
+      beerLayer.style.width = '100%'
+      beerLayer.style.height = '100%'
+      beerLayer.style.pointerEvents = 'none'
+    }
+    // ensure beer layer is topmost relative to phrase modal
+    beerLayer.style.zIndex = '10095'
+    beerSprite.style.zIndex = '10096'
+  }catch(e){ /* ignore */ }
 
   // show beer sprite
   beerSprite.style.display = 'block'
@@ -543,38 +556,39 @@ function beerAnimationSequence(phraseModal){
       fadeAudio(darkMusic, 0, 600)
       beerSfx.volume = SFX_VOLUME; beerSfx.currentTime = 0; beerSfx.play().catch(()=>{})
       // stronger effects: spawn intense splash + foam
-      spawnSplash(startX, endY + 20, 36)
-      spawnFoam(startX, endY + 20, 18)
+      spawnSplash(startX, endY + 20, 40)
+      spawnFoam(startX, endY + 20, 22)
 
       // compute final position
       const rect = beerSprite.getBoundingClientRect()
       const centerX = rect.left + rect.width/2 + window.scrollX
       const bottomY = rect.bottom + window.scrollY
-      const puddleTop = bottomY - Math.max(12, rect.height * 0.06) // puddle sits almost immediately under can
+      const puddleTop = bottomY - Math.max(10, rect.height * 0.06) // puddle immediately under can
 
-      // position puddle/ripple directly under can
+      // position puddle/ripple directly under can (fixed coords)
+      puddle.style.position = 'fixed'
+      ripple.style.position = 'fixed'
       puddle.style.display = 'block'; ripple.style.display = 'block'
       puddle.style.left = `${centerX}px`; puddle.style.top = `${puddleTop}px`
       ripple.style.left = `${centerX}px`; ripple.style.top = `${puddleTop}px`
 
-      puddle.animate([{opacity:0, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:1, width:'220px', height:'44px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
-      ripple.animate([{opacity:.9, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'300px', height:'80px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'ease-out', fill:'forwards'})
+      // bigger final puddle
+      puddle.animate([{opacity:0, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:1, width:'260px', height:'56px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
+      ripple.animate([{opacity:.9, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'350px', height:'90px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'ease-out', fill:'forwards'})
 
-      // decorative stains under can
-      createStains(centerX, puddleTop + 8)
+      // decorative stains under can (slightly offset down)
+      createStains(centerX, puddleTop + 10)
 
       cleanupPuddle()
 
       // remove phrase modal after short pause and transition to memes
       setTimeout(()=>{
         if(phraseModal && phraseModal.parentNode) phraseModal.remove()
-        // restore hidden visual elements for transition (we will hide storyScene explicitly in startRomance)
-        restoreHiddenAfterReveal()
-        // ensure story scene hidden before memes
+        // hide story scene and transition
         try{ storyScene.classList.remove('active') }catch(e){}
         // proceed to romance/memes
-        setTimeout(()=> startRomance(), 200)
-      }, 950)
+        setTimeout(()=> startRomance(), 240)
+      }, 980)
     }
   }
   requestAnimationFrame(step)
@@ -760,8 +774,7 @@ function showConfession(){
 
 /* video overlay: pause/resume loveMusic on open/close */
 function openVideo(){
-  // remember whether music is playing now
-  try{ loveWasPlayingBeforeVideo = !!(loveMusic && !loveMusic.paused && !loveMusic.ended); }catch(e){ loveWasPlayingBeforeVideo = false }
+  try{ loveWasPlayingBeforeVideo = !!(loveMusic && !loveMusic.paused && loveMusic.currentTime > 0); }catch(e){ loveWasPlayingBeforeVideo = false }
   try{ if(loveMusic && !loveMusic.paused) loveMusic.pause() }catch(e){}
   const overlay = document.getElementById('videoOverlay')
   overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false')
