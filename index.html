@@ -15,6 +15,7 @@
   font-style:normal;
   font-display:swap;
 }
+
 /* --- Reset & vars --- */
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -393,7 +394,7 @@ function revealSpoiler(){
 
   // create stage and ensure beer is above it
   const stage = createPunchlineStage(phrase)
-  stage.style.pointerEvents = 'none'
+  stage.style.pointerEvents = 'none' // no interaction
 
   // bring beerLayer above stage so beer + puddle are visible
   beerLayer.style.zIndex = 220
@@ -421,20 +422,19 @@ spoiler.addEventListener('keydown', (e)=>{ if((e.key==='Enter'||e.key===' ') && 
 
 /* spawn visual splashes / foam */
 function spawnSplash(cx, cy){
-  // increased splashes for stronger effect
-  for(let i=0;i<40;i++){
+  for(let i=0;i<22;i++){
     const d = document.createElement('div'); d.className='splash'
-    const size = 5 + Math.random()*18
+    const size = 6 + Math.random()*12
     d.style.width = `${size}px`; d.style.height = `${size}px`
     d.style.left = `${cx - size/2}px`; d.style.top = `${cy - size/2}px`
     d.style.background = 'radial-gradient(circle, rgba(255,236,170,.95), rgba(255,170,80,0) 70%)'
-    const dx = (Math.random()*260)-130; const dy = -(40 + Math.random()*160)
-    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px, ${dy}px) scale(.8)`,opacity:.9},{transform:`translate(${dx*1.1}px, ${dy+200}px) scale(.3)`,opacity:0}], {duration:820 + Math.random()*360, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
-    document.body.appendChild(d); setTimeout(()=>d.remove(),1500)
+    const dx = (Math.random()*180)-90; const dy = -(40 + Math.random()*120)
+    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px, ${dy}px) scale(.8)`,opacity:.9},{transform:`translate(${dx*1.1}px, ${dy+160}px) scale(.3)`,opacity:0}], {duration:800 + Math.random()*300, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
+    document.body.appendChild(d); setTimeout(()=>d.remove(),1400)
   }
 }
 function spawnFoam(cx, cy){
-  for(let i=0;i<14;i++){
+  for(let i=0;i<10;i++){
     const f=document.createElement('div'); f.className='foam'
     const size = 4 + Math.random()*8
     f.style.width = `${size}px`; f.style.height = `${size}px`
@@ -457,7 +457,7 @@ function cleanupPuddle(){
   }, 3000)
 }
 
-/* beerAnimation(callback)
+/* beerAnimation(callbackOnComplete)
    runs the drop animation and calls callback when finished */
 function beerAnimation(callback){
   if(beerStarted) return
@@ -495,8 +495,7 @@ function beerAnimation(callback){
       const rect = beerSprite.getBoundingClientRect()
       const centerX = rect.left + rect.width/2 + window.scrollX
       const bottomY = rect.bottom + window.scrollY
-      // move puddle slightly closer (higher) to can final point
-      const puddleTop = bottomY - Math.max(12, rect.height * 0.22)
+      const puddleTop = bottomY - Math.max(8, rect.height * 0.06) // just under can
 
       spawnSplash(centerX, bottomY + 18)
       spawnFoam(centerX, bottomY + 20)
