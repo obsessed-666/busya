@@ -456,14 +456,61 @@ function showStory(){
  This guarantees the play() attempt is done inside the original user gesture.
 */
 function onIntroClickGesture(e){
-  // 1) prime audio subsystem
-  unlockAudioImportant()
+  // 1) Priming: обязательно в том же юзер-жесте
+  try {
+    // tiny priming volume so it's silent
+    darkMusic.volume = 0.01;
+    loveMusic.volume = 0.01;
 
-  // 2) start dark music in-gesture (robust fallback inside playWithFadeAndResume)
-  playWithFadeAndResume(darkMusic, VOLUME_DARK, 900)
+    // optional extra primer file (if you uploaded prime.mp3):
+    // const primer = new Audio('prime.mp3');
+    // primer.volume = 0.02;
+    // primer.play().then(()=>{ primer.pause(); primer.currentTime = 0; }).catch(()=>{});
 
-  // 3) then show the story UI / start text reveal
-  showStory()
+    // Play+pause both tracks to unlock iOS audio subsystem
+    darkMusic.play().then(()=>{ darkMusic.pause(); darkMusic.currentTime = 0; }).catch(()=>{});
+    loveMusic.play().then(()=>{ loveMusic.pause(); loveMusic.currentTime = 0; }).catch(()=>{});
+  } catch(err) {
+    console.warn('Priming failed (best-effort):', err);
+  }
+
+  // 2) Try to start dark music immediately (again, inside this gesture)
+  try {
+    darkMusic.currentTime = 0;
+    darkMusic.volume = 0;
+    const promise = darkMusic.play();
+    if (promise && typeof promise.then === 'function') {
+      promise.then(()=>{
+        // fade to desired volume
+        fadeAudio(darkMusic, VOLUME_DARK, 900);
+        console.log('darkMusic.started');
+      }).catch((err)=>{
+        console.warn('darkMusic.play() blocked, will attach resume listeners:', err);
+        // Attach resume listeners for the next user gesture(s)
+        const resume = ()=>{
+          darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{});
+          window.removeEventListener('touchstart', resume);
+          window.removeEventListener('click', resume);
+        };
+        window.addEventListener('touchstart', resume, {once:true, passive:true});
+        window.addEventListener('click', resume, {once:true});
+      });
+    } else {
+      fadeAudio(darkMusic, VOLUME_DARK, 900);
+    }
+  } catch(err){
+    console.warn('darkMusic play try threw:', err);
+    const resume = ()=>{
+      darkMusic.play().then(()=> fadeAudio(darkMusic, VOLUME_DARK, 900)).catch(()=>{});
+      window.removeEventListener('touchstart', resume);
+      window.removeEventListener('click', resume);
+    };
+    window.addEventListener('touchstart', resume, {once:true, passive:true});
+    window.addEventListener('click', resume, {once:true});
+  }
+
+  // 3) Continue with the UI: show the story (text reveal, etc.)
+  showStory();
 }
 
 /* events */
@@ -885,3 +932,4 @@ heartBtn.tabIndex = -1
 </script>
 </body>
 </html>
+
