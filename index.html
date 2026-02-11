@@ -38,7 +38,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 /* IMPORTANT: stacking & pointer-events fixes so background layers DO NOT intercept clicks */
 .layer{z-index:0}
 #forestBg,#forestOverlay,#romanceVideo,#romanceFallback,.bg-mist{pointer-events:none; z-index:0}
-#beerLayer{z-index:30; pointer-events:none}
+#beerLayer{z-index:300; pointer-events:none} /* <-- raised so beer & splashes are above everything */
 #memesScene{z-index:40}
 #intro{z-index:50; pointer-events:auto}
 #storyScene{z-index:60}
@@ -130,11 +130,11 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .spoiler.open .line{color:#fff;filter:blur(0)}
 
 /* Beer/puddle */
-#beerLayer{position:absolute;inset:0;pointer-events:none;z-index:30}
-#beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center}
-#puddle{position:absolute;left:0;top:0;display:none;width:28px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0)}
-.ripple{position:absolute;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0)}
-.splash,.foam{position:absolute;border-radius:50%;pointer-events:none}
+#beerLayer{position:absolute;inset:0;pointer-events:none;z-index:300}
+#beerSprite{position:absolute;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center;z-index:305}
+#puddle{position:absolute;left:0;top:0;display:none;width:28px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0);z-index:302}
+.ripple{position:absolute;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0);z-index:301}
+.splash,.foam,.puddle-spot{position:absolute;border-radius:50%;pointer-events:none;z-index:304}
 .page-shake{animation:pageShake .6s linear}
 @keyframes pageShake{0%{transform:translate(0)}20%{transform:translate(-4px,3px)}40%{transform:translate(4px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-2px)}100%{transform:translate(0)}}
 
@@ -419,29 +419,61 @@ function revealSpoiler(){
 spoiler.addEventListener('click', (e)=>{ e.stopPropagation(); revealSpoiler() })
 spoiler.addEventListener('keydown', (e)=>{ if((e.key==='Enter'||e.key===' ') && spoiler.classList.contains('ready')){ e.preventDefault(); revealSpoiler() }})
 
-/* splash/foam helpers */
+/* splash/foam helpers (append to beerLayer so they render above story) */
 function spawnSplash(cx, cy){
-  for(let i=0;i<22;i++){
+  const parent = beerLayer || document.body
+  // increased splashes for stronger effect
+  for(let i=0;i<48;i++){
     const d = document.createElement('div'); d.className='splash'
-    const size = 6 + Math.random()*12
+    const size = 6 + Math.random()*18
     d.style.width = `${size}px`; d.style.height = `${size}px`
     d.style.left = `${cx - size/2}px`; d.style.top = `${cy - size/2}px`
-    d.style.background = 'radial-gradient(circle, rgba(255,236,170,.95), rgba(255,170,80,0) 70%)'
-    const dx = (Math.random()*180)-90; const dy = -(40 + Math.random()*120)
-    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px, ${dy}px) scale(.8)`,opacity:.9},{transform:`translate(${dx*1.1}px, ${dy+160}px) scale(.3)`,opacity:0}], {duration:800 + Math.random()*300, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
-    document.body.appendChild(d); setTimeout(()=>d.remove(),1400)
+    d.style.background = 'radial-gradient(circle, rgba(255,236,170,.97), rgba(255,170,80,0) 70%)'
+    const dx = (Math.random()*260)-130; const dy = -(40 + Math.random()*160)
+    d.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${dx}px, ${dy}px) scale(.8)`,opacity:.9},{transform:`translate(${dx*1.1}px, ${dy+200}px) scale(.3)`,opacity:0}], {duration:820 + Math.random()*360, easing:'cubic-bezier(.2,.9,.2,1)', fill:'forwards'})
+    parent.appendChild(d); setTimeout(()=>d.remove(),1600)
   }
 }
+
 function spawnFoam(cx, cy){
-  for(let i=0;i<10;i++){
+  const parent = beerLayer || document.body
+  for(let i=0;i<18;i++){
     const f=document.createElement('div'); f.className='foam'
     const size = 4 + Math.random()*8
     f.style.width = `${size}px`; f.style.height = `${size}px`
-    f.style.left = `${cx + (Math.random()*60-30)}px`; f.style.top = `${cy + (Math.random()*20-10)}px`
-    f.style.background = 'radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,0))'
-    f.animate([{transform:'translateY(0) scale(1)',opacity:.85},{transform:`translateY(${-12 - Math.random()*20}px) scale(.5)`,opacity:0}], {duration:800 + Math.random()*400, easing:'ease-out', fill:'forwards'})
-    document.body.appendChild(f); setTimeout(()=>f.remove(),1600)
+    f.style.left = `${cx + (Math.random()*80-40)}px`; f.style.top = `${cy + (Math.random()*30-15)}px`
+    f.style.background = 'radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0))'
+    f.animate([{transform:'translateY(0) scale(1)',opacity:.95},{transform:`translateY(${-12 - Math.random()*20}px) scale(.5)`,opacity:0}], {duration:820 + Math.random()*480, easing:'ease-out', fill:'forwards'})
+    parent.appendChild(f); setTimeout(()=>f.remove(),1700)
   }
+}
+
+/* add multiple animated puddle spots under final point for realism */
+function spawnPuddleSpots(centerX, topY){
+  const parent = beerLayer || document.body
+  const spots = []
+  for(let i=0;i<6;i++){
+    const s = document.createElement('div'); s.className = 'puddle-spot'
+    const w = 60 + Math.random()*120
+    const h = 20 + Math.random()*40
+    s.style.width = `${w}px`; s.style.height = `${h}px`
+    // random offset around center but tightly clustered under the can
+    const ox = (Math.random()*60) - 30
+    const oy = (Math.random()*18) - 6
+    s.style.left = `${centerX + ox - w/2}px`
+    s.style.top = `${topY + oy}px`
+    s.style.background = 'radial-gradient(ellipse at 30% 30%, rgba(255,235,180,0.95), rgba(200,120,60,0.85) 40%, rgba(150,80,30,0.6) 80%)'
+    s.style.filter = 'blur(2px)'
+    s.style.opacity = '0'
+    parent.appendChild(s)
+    // animate scale & opacity lightly
+    s.animate([{opacity:0, transform:'scale(.6)'},{opacity:0.9, transform:'scale(1)'},{opacity:0.6, transform:'scale(.98)'}], {duration:1200 + Math.random()*600, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
+    spots.push(s)
+    // fade later
+    setTimeout(()=> s.animate([{opacity:.6},{opacity:0}], {duration:1600, fill:'forwards', easing:'ease-out'}), 2400 + Math.random()*600)
+    setTimeout(()=> s.remove(), 4200 + Math.random()*800)
+  }
+  return spots
 }
 
 /* page shake */
@@ -451,15 +483,23 @@ function shakePage(){ document.body.classList.add('page-shake'); if(navigator.vi
 function cleanupPuddle(){
   if(puddleTimer) clearTimeout(puddleTimer)
   puddleTimer = setTimeout(()=>{
+    // animate main puddle + ripple fade-out
     puddle.animate([{opacity:1, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(.6)'}], {duration:900, easing:'ease-in-out', fill:'forwards'})
     ripple.animate([{opacity:.6, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(1.8)'}], {duration:900, easing:'ease-out', fill:'forwards'})
+    // also fade out stray spots if any remain (they self-remove)
   }, 3000)
 }
 
-/* beer drop animation (puddle sits directly under can) */
+/* beer drop animation (ensure beerLayer above everything + puddle directly under can) */
 function beerAnimation(){
   if(beerStarted) return
   beerStarted = true
+
+  // ensure beerLayer is topmost for this interaction
+  beerLayer.style.zIndex = 999
+
+  // try to keep darkMusic controlled
+  tryPlayImmediate(darkMusic, VOLUME_DARK, 600)
 
   beerSprite.style.display = 'block'
   const startX = window.innerWidth * (0.48 + Math.random()*0.06)
@@ -485,28 +525,41 @@ function beerAnimation(){
       shakePage()
       fadeAudio(darkMusic, 0, 600)
       beerSfx.volume = SFX_VOLUME; beerSfx.currentTime = 0; beerSfx.play().catch(()=>{})
-      spawnSplash(startX, endY + 18); spawnFoam(startX, endY + 20)
+
+      // spawn splashes & foams appended to beerLayer (so always visible)
+      spawnSplash(startX, endY + 18)
+      spawnFoam(startX, endY + 20)
 
       const rect = beerSprite.getBoundingClientRect()
       const centerX = rect.left + rect.width/2 + window.scrollX
       const bottomY = rect.bottom + window.scrollY
-      const puddleTop = bottomY - Math.max(8, rect.height * 0.06) // puddle immediately under can
+      // puddle immediately under can (slightly higher so it's flush under can base)
+      const puddleTop = bottomY - Math.max(10, rect.height * 0.08)
 
       puddle.style.display = 'block'; ripple.style.display = 'block'
       puddle.style.left = `${centerX}px`; puddle.style.top = `${puddleTop}px`
       ripple.style.left = `${centerX}px`; ripple.style.top = `${puddleTop}px`
 
-      puddle.animate([{opacity:0, width:'22px', height:'8px', transform:'translate(-50%,0) scale(.2)'},{opacity:1, width:'200px', height:'40px', transform:'translate(-50%,0) scale(1)'}], {duration:780, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
-      ripple.animate([{opacity:.8, width:'24px', height:'8px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'260px', height:'60px', transform:'translate(-50%,0) scale(1)'}], {duration:780, easing:'ease-out', fill:'forwards'})
+      // main puddle expand animation
+      puddle.animate([{opacity:0, width:'22px', height:'8px', transform:'translate(-50%,0) scale(.2)'},{opacity:1, width:'220px', height:'44px', transform:'translate(-50%,0) scale(1)'}], {duration:780, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
+      ripple.animate([{opacity:.8, width:'24px', height:'8px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'280px', height:'60px', transform:'translate(-50%,0) scale(1)'}], {duration:780, easing:'ease-out', fill:'forwards'})
+
+      // spawn multiple layered puddle spots (visual richness)
+      spawnPuddleSpots(centerX, puddleTop + 6)
 
       cleanupPuddle()
-      setTimeout(startRomance, 760)
+
+      // keep beerLayer top for a moment, then allow other scenes to appear
+      setTimeout(()=> {
+        // return beerLayer z-index to safe default (still above many elements)
+        beerLayer.style.zIndex = 300
+        // start romance sequence (memes + love music)
+        setTimeout(startRomance, 160)
+      }, 820)
     }
   }
   requestAnimationFrame(step)
 }
-
-/* spoiler already wired to call revealSpoiler above */
 
 /* start romance: fade dark, start loveMusic reliably and show memes */
 function startRomance(){
