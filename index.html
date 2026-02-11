@@ -154,8 +154,15 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .36s ease,transform .36s ease}
 .char{display:inline-block;transform-origin:center bottom;animation:charShake 1.7s ease-in-out infinite}
 @keyframes charShake{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-2px,1px) rotate(-2deg)}50%{transform:translate(2px,-1px) rotate(2deg)}75%{transform:translate(-1px,-1px) rotate(-1deg)}100%{transform:translate(0,0) rotate(0)}}
-#heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite}
+
+/* heart button initially disabled until confession fully displayed */
+#heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite;pointer-events:none;opacity:0.92}
+#heartBtn.enabled{pointer-events:auto}
 @keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* heart caption hidden until confession done */
+#heartCaption{opacity:0;transform:translateY(8px);transition:opacity .42s ease, transform .42s ease; font-size:13px; color: #ffdfe8}
+#heartCaption.visible{opacity:1;transform:translateY(0);}
 
 /* video overlay */
 #videoOverlay{position:absolute;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease;padding:var(--panel-pad)}
@@ -212,8 +219,11 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 
   <section id="confessionScene" aria-label="Признание">
     <div id="confessionBox">
-      <div id="confessionText">буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было. и не будет. ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было. полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя. очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни</div>
-      <div id="heartBtn" class="tap-target" role="button" tabindex="0" aria-label="Нажать сердечко">💘</div>
+      <!-- UPDATED CONFESSION TEXT (user requested) -->
+      <div id="confessionText">
+        буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было. И не будет. Ты каждый день даришь мне ту самую искреннюю детскую радость и улыбку, которых у меня очень давно не было. полгода назад я и представить, что смогу полюбить кого-то так сильно как тебя. Если бы я был слепым - ты была бы моим зрением. Если бы я был глухим - ты была бы моим слухом. Если бы я был немым - ты была бы мои голосом. Если бы не было тебя - не было бы меня. Очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни.
+      </div>
+      <div id="heartBtn" class="tap-target" role="button" tabindex="-1" aria-label="Нажать сердечко">💘</div>
       <div id="heartCaption">сердечко тык</div>
     </div>
   </section>
@@ -268,6 +278,7 @@ const memesScene = $('#memesScene')
 const confessionScene = $('#confessionScene')
 const confessionText = $('#confessionText')
 const heartBtn = $('#heartBtn')
+const heartCaption = $('#heartCaption')
 const darkMusic = $('#darkMusic')   // audio element
 const loveMusic = $('#loveMusic')   // audio element
 const beerSfx = $('#beerSfx')
@@ -392,8 +403,6 @@ function enableSpoiler(){
 }
 
 /* show story on first click (user gesture) */
-/* IMPORTANT: we MUST call unlockAudioImportant() and start darkMusic.play() inside this click handler
-   so iOS treats it as a user-initiated audio. */
 function showStory(){
   // this function is called inside click handler on introCard -> guaranteed user gesture
   unlockAudioImportant()
@@ -763,23 +772,31 @@ function revealConfession(){
   setTimeout(()=>{ memesScene.classList.remove('active'); memesScene.innerHTML=''; showConfession() }, 520)
 }
 
+/* SHOW CONFESSION (updated text already in HTML) */
+/* This function displays confession text letter/word animations and enables the heart after completion */
 function showConfession(){
   confessionScene.classList.add('active')
-  const raw = confessionText.textContent
+
+  // The confessionText already contains the updated text as provided.
+  // We'll split into lines similar to previous behavior to animate paragraphs.
+  const rawText = confessionText.textContent.trim()
+  // split into reasonable lines for animation (attempt to preserve natural breaks)
   const lines = [
-    'буся, котик, я познакомился с тобой лишь месяц назад, но во мне теплится чувство, будто я знал тебя во всех своих прошлых жизнях, ведь более идеального метча на земле еще не было.',
-    'и не будет.',
-    'ты каждый день даришь мне ту самую радость и улыбку, которых у меня очень давно не было.',
-    'полгода назад я и не думал, что смогу полюбить кого-то так сильно как тебя.',
-    'очень сильно жду нашей встречи, я обязательно поцелую тебя под припев этой песни'
+    // We'll split by sentences to create natural paragraphs
   ]
-  if(raw !== lines.join(' ')){
-    confessionText.textContent = raw
-    return
+  // If the rawText contains multiple sentences, split on period + space to create lines
+  const sentences = rawText.split(/(?<=\.)\s+/)
+  if(sentences.length > 1){
+    sentences.forEach(s => {
+      if(s.trim()) lines.push(s.trim())
+    })
+  } else {
+    // fallback: keep entire raw as single line
+    lines.push(rawText)
   }
 
+  // Clear and compose animated paragraphs
   confessionText.innerHTML = ''
-  let wordIndex = 0
   lines.forEach((line, li)=>{
     const p = document.createElement('p')
     const parts = line.match(/\S+|\s+/g) || [line]
@@ -799,14 +816,30 @@ function showConfession(){
         wordSpan.appendChild(charSpan)
       })
       p.appendChild(wordSpan)
-      wordIndex++
+      // add a single space after word for consistent spacing
+      p.appendChild(document.createTextNode(' '))
     })
     confessionText.appendChild(p)
+    // animate paragraph appearance staggered
     setTimeout(()=>{ p.style.opacity = '1'; p.style.transform = 'translateY(0)' }, 200 + li*420)
   })
 
+  // reveal words one-by-one across all paragraphs
   const wordSpans = $$('#confessionText .word')
   wordSpans.forEach((w, i)=> setTimeout(()=>{ w.style.opacity = '1'; w.style.transform = 'translateY(0)' }, i * WORD_DELAY_MS))
+
+  // compute total time to finish word-by-word reveal, then enable heart & caption
+  const totalWordMs = wordSpans.length * WORD_DELAY_MS
+  const buffer = 420
+  setTimeout(()=>{
+    // enable heart button interactivity and caption animation
+    heartBtn.classList.add('enabled')
+    heartBtn.setAttribute('tabindex','0')
+    heartBtn.setAttribute('aria-disabled','false')
+    heartCaption.classList.add('visible')
+
+    // make sure clicking heart opens video (bindings already exist)
+  }, totalWordMs + buffer)
 }
 
 /* video overlay: pause/resume loveMusic on open/close */
@@ -832,8 +865,9 @@ function closeVideo(){
   }
 }
 
-document.getElementById('heartBtn').addEventListener('click', openVideo)
-document.getElementById('heartBtn').addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openVideo() }})
+/* bind heart open only when enabled (we keep global binding but check class) */
+heartBtn.addEventListener('click', (e)=>{ if(heartBtn.classList.contains('enabled')) openVideo() })
+heartBtn.addEventListener('keydown', (e)=>{ if((e.key==='Enter'||e.key===' ') && heartBtn.classList.contains('enabled')){ e.preventDefault(); openVideo() }})
 
 document.getElementById('videoOverlay').addEventListener('click', (e)=>{
   if(e.target === document.getElementById('videoOverlay')){ closeVideo() }
@@ -847,6 +881,11 @@ beerSfx.volume = SFX_VOLUME
 /* Accessibility: ensure spoiler initially disabled until story words done */
 spoiler.setAttribute('aria-disabled','true')
 spoiler.tabIndex = -1
+
+/* ensure heart initially not keyboard-focusable */
+heartBtn.setAttribute('aria-disabled','true')
+heartBtn.tabIndex = -1
+
 </script>
 </body>
 </html>
