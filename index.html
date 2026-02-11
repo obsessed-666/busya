@@ -117,24 +117,26 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 .story-word{display:inline-block;opacity:0;transform:translateY(6px);transition:opacity .28s ease,transform .28s ease}
 .story-word.revealed{opacity:1;transform:translateY(0)}
 
-/* Spoiler: small centered bubble (not full-screen) */
+/* Spoiler: inline bubble only */
 .spoiler{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;cursor:default;background:transparent;overflow:visible;pointer-events:none;opacity:.98}
 .spoiler.ready{cursor:pointer;pointer-events:auto}
 .spoiler .veil{position:absolute;inset:0;border-radius:999px;background:linear-gradient(180deg, rgba(12,12,14,0.7), rgba(8,8,10,0.56));box-shadow:0 10px 40px rgba(0,0,0,.65), inset 0 0 24px rgba(255,255,255,0.02);backdrop-filter:blur(20px) saturate(.85);-webkit-backdrop-filter:blur(20px) saturate(.85);transition:opacity .42s ease, transform .52s cubic-bezier(.2,.8,.2,1);opacity:1;transform:translateY(0);pointer-events:none;animation:veilFloat 6.2s ease-in-out infinite}
 @keyframes veilFloat{0%{transform:translateY(0)}50%{transform:translateY(-1.6px)}100%{transform:translateY(0)}}
-.spoiler .line{position:relative;z-index:3;font-family:"Mazut SP Demo","Merriweather",serif;font-size:clamp(16px,3.6vw,18px);font-weight:700;color:rgba(255,255,255,0.03);filter:blur(5px);transition:filter .42s ease,color .42s ease,opacity .42s ease;text-align:center}
-.spoiler.open .veil{opacity:0;transform:translateY(-36px)}
-.spoiler.open .line{color:#fff;filter:blur(0)}
+.spoiler .line{position:relative;z-index:3;font-family:"Mazut SP Demo","Merriweather",serif;font-size:clamp(16px,3.6vw,18px);font-weight:400;color:rgba(255,255,255,0.03);filter:blur(5px);transition:filter .32s ease,color .32s ease,opacity .32s ease;text-align:center;padding:4px 6px;border-radius:8px}
+.spoiler.open .veil{opacity:0;transform:translateY(-26px)}
+/* when opened: bold yellow inline text (no external bubble) */
+.spoiler.open .line{color:#ffd166;filter:blur(0);font-weight:800;letter-spacing:.2px;text-shadow:0 8px 24px rgba(0,0,0,.6)}
 
 /* Beer and effects (fixed, highest) */
 #beerLayer{position:fixed;inset:0;pointer-events:none;z-index:10095}
-#beerSprite{position:fixed;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center;z-index:10096}
+#beerSprite{position:fixed;left:50%;top:-40%;width:min(34vw,160px);display:none;filter:drop-shadow(0 20px 45px rgba(0,0,0,.6));transform-origin:center;z-index:10096;transition:opacity .32s linear}
 #puddle{position:fixed;left:0;top:0;display:none;width:28px;height:12px;border-radius:999px;opacity:0;background:radial-gradient(ellipse at 40% 30%, #fff2c4 0%, #ffdd8a 28%, #c76e21 78%);filter:blur(1.6px);transform:translate(-50%,0);z-index:10094}
 .ripple{position:fixed;left:0;top:0;display:none;width:20px;height:8px;border-radius:50%;border:2px solid rgba(255,220,130,.8);opacity:0;transform:translate(-50%,0);z-index:10093}
 .splash,.foam{position:fixed;border-radius:50%;pointer-events:none;z-index:10092}
 
 /* stain blobs */
-.stain{position:fixed;border-radius:50%;pointer-events:none;mix-blend-mode:multiply;opacity:0;filter:blur(6px);z-index:10091}
+.stain{position:fixed;border-radius:50%;pointer-events:none;mix-blend-mode:multiply;opacity:0;filter:blur(6px);z-index:10091;transform-origin:center center;animation:stainWiggle 3.6s ease-in-out infinite}
+@keyframes stainWiggle{0%{transform:scale(0.98) translateY(0)}50%{transform:scale(1.02) translateY(-2px)}100%{transform:scale(0.98) translateY(0)}}
 
 /* Memes tuned for iPhone 14 Plus */
 #memesScene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .6s ease}
@@ -155,24 +157,14 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
 #heartBtn{font-size:52px;margin-top:12px;cursor:pointer;color:#ff4f7d;text-shadow:0 6px 18px rgba(255,79,125,.45);animation:heartPulse 1.6s ease-in-out infinite}
 @keyframes heartPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 
-/* small phrase bubble (not full-screen) */
-.phraseBubble{
-  position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);z-index:10097;
-  max-width:86vw;padding:16px 18px;border-radius:14px;background:rgba(6,6,8,0.96);backdrop-filter:blur(6px);
-  box-shadow:0 30px 90px rgba(0,0,0,0.7);text-align:center;
-}
-.phraseBubble .phraseText{
-  font-family:"Mazut SP Demo","Cinzel","Merriweather",serif;font-weight:700;color:#fff;font-size:clamp(18px,5.2vw,28px);line-height:1.05;text-shadow:0 12px 36px rgba(0,0,0,0.7)
-}
-
 /* video overlay */
 #videoOverlay{position:absolute;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease;padding:var(--panel-pad)}
 #videoOverlay.active{opacity:1;pointer-events:auto}
 #finalVideo{width:min(92vw,900px);max-height:78vh;border-radius:12px;background:#000;box-shadow:0 20px 70px rgba(0,0,0,.6)}
 #videoPlaceholder{display:none;color:#ffe4ec;text-align:center}
 
-/* dim class for background while phrase shows - keeps elements in DOM (so memes can be created) */
-.dimmed{filter:brightness(.3);pointer-events:none;user-select:none}
+/* dim class for background while drop is active */
+.dimmed{filter:brightness(.28) saturate(.9);pointer-events:none;user-select:none}
 </style>
 </head>
 <body>
@@ -201,7 +193,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
         <p>И вдруг — тишина. Снова. Я понимал, что кто бы то ни был за дверью, вероятно, тоже услышал, как я стою и молча слушаю, внимая этот психоделический ужас. Где-то спустя секунд 20 раздался громкий железный звук — звук падения прямо перед моей грёбанной дверью. Я набрался смелости и прислонил ухо к двери, чтобы попытаться идентифицировать, что же упало... и что, чёрт возьми, тут вообще происходит.</p>
         <p>Как вдруг, как гром среди ясного дня, как снег в июле, я услышал нежный, милый и до боли знакомый женский голос, который стеснительно произнёс:</p>
 
-        <!-- SPOILER: single font phrase, blurred until reveal. Initially pointer-events disabled -->
+        <!-- SPOILER: inline bubble only -->
         <div class="spoiler" id="spoiler" role="button" aria-pressed="false" aria-disabled="true" tabindex="-1">
           <div class="veil" aria-hidden="true"></div>
           <div class="line" aria-hidden="true">— Ой, извини, у меня пиво упало.</div>
@@ -215,6 +207,7 @@ button,[role="button"],.tap-target{-webkit-tap-highlight-color:transparent;touch
     <img id="beerSprite" src="beer.png" alt="банка Desperados" onerror="this.style.display='none'" />
     <div id="puddle"></div>
     <div class="ripple" id="ripple"></div>
+    <!-- stains will be appended here dynamically -->
   </div>
 
   <section id="memesScene" aria-label="Мемы"></section>
@@ -290,6 +283,7 @@ let romanceAudioStarted = false
 let memeAnimationId = null
 let puddleTimer = null
 let loveWasPlayingBeforeVideo = false
+let stainsCreated = []
 
 /* viewport for mobile */
 function syncVH(){
@@ -445,25 +439,34 @@ function spawnFoam(cx, cy, qty = 18){
 }
 
 /* create stain blobs (decorative beer patches) directly under final can */
-function createStains(cx, cy){
-  const stains = []
-  const shapes = [1,2,3]
-  shapes.forEach((s,i)=>{
+function createStains(centerX, bottomY){
+  // remove previous stains (if any) to reposition correctly
+  stainsCreated.forEach(s => { try{s.remove()}catch(e){} })
+  stainsCreated = []
+  // create a few overlapping oily stains
+  const specs = [
+    {w: 240, h: 60, offX: 0,  offY: 12, opacity:0.85, blur:6},
+    {w: 160, h: 44, offX: -36, offY: 26, opacity:0.7, blur:8},
+    {w: 120, h: 34, offX: 40, offY: 18, opacity:0.62, blur:10},
+    {w: 300, h: 80, offX: 0, offY: 44, opacity:0.45, blur:18}
+  ]
+  specs.forEach((s,i)=>{
     const st = document.createElement('div'); st.className = 'stain'
-    const w = 80 + Math.random()*160*(i+1)
-    const h = Math.round(w * (0.26 + Math.random()*0.4))
-    st.style.width = `${w}px`; st.style.height = `${h}px`
-    st.style.left = `${cx - w/2}px`; st.style.top = `${cy - h/2}px`
-    st.style.background = `radial-gradient(ellipse at ${20+Math.random()*60}% ${30+Math.random()*40}%, rgba(255,230,170,${0.62 - i*0.12}), rgba(200,130,50,${0.12 - i*0.02}))`
-    st.style.transform = 'scale(.2)'; st.style.opacity = '0'
+    st.style.width = `${s.w}px`; st.style.height = `${s.h}px`
+    st.style.left = `${centerX - s.w/2 + s.offX}px`
+    st.style.top = `${bottomY + s.offY}px`
+    st.style.background = `radial-gradient(ellipse at 30% 40%, rgba(255,235,170,${s.opacity}), rgba(200,120,40,${s.opacity*0.22}))`
+    st.style.filter = `blur(${s.blur}px)`
+    st.style.opacity = '0'
     st.style.zIndex = 10091
     document.body.appendChild(st)
-    st.animate([{transform:'scale(.2)', opacity:0},{transform:'scale(1.02)', opacity:0.94},{transform:'scale(0.98)', opacity:0.8}], {duration:900 + i*160, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
-    stains.push(st)
-    setTimeout(()=>{ st.style.transition = 'opacity 1s linear'; st.style.opacity = '0.6' }, 300)
-    setTimeout(()=> { st.style.transition = 'opacity 1s linear'; st.style.opacity = '0.35' }, 6000)
+    // animate appear
+    st.animate([{transform:'scale(.2)', opacity:0},{transform:'scale(1.02)', opacity:1}], {duration:720 + i*80, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
+    stainsCreated.push(st)
+    // gentle shimmer loop
+    st.animate([{opacity:0.85, transform:'translateY(0)'},{opacity:0.7, transform:'translateY(-2px)'},{opacity:0.85, transform:'translateY(0)'}], {duration:4200 + i*300, iterations:Infinity, easing:'ease-in-out'})
   })
-  return stains
+  return stainsCreated
 }
 
 /* page shake */
@@ -475,12 +478,12 @@ function cleanupPuddle(){
   puddleTimer = setTimeout(()=>{
     puddle.animate([{opacity:1, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(.6)'}], {duration:900, easing:'ease-in-out', fill:'forwards'})
     ripple.animate([{opacity:.6, transform:'translate(-50%,0) scale(1)'},{opacity:0, transform:'translate(-50%,0) scale(1.8)'}], {duration:900, easing:'ease-out', fill:'forwards'})
+    // keep stains visible (they remain)
   }, 3600)
 }
 
 /* dim/un-dim helpers (do not remove DOM nodes) */
 function dimEverything(){
-  // apply .dimmed to main roots, but keep memesScene available
   ['intro','storyScene','confessionScene','forestBg','forestOverlay','romanceFallback','romanceVideo'].forEach(id=>{
     const el = document.getElementById(id)
     if(el) el.classList.add('dimmed')
@@ -494,11 +497,11 @@ function undimEverything(){
 }
 
 /* beer animation sequence (ensures beer is above all and transitions to memes) */
-function beerAnimationSequence(phraseBubbleEl){
+function beerAnimationSequence(){
   if(beerStarted) return
   beerStarted = true
 
-  // make sure beerLayer is attached to body and fixed
+  // ensure beerLayer is attached to body and fixed
   try{
     if(beerLayer.parentNode !== document.body){
       document.body.appendChild(beerLayer)
@@ -555,17 +558,20 @@ function beerAnimationSequence(phraseBubbleEl){
       puddle.animate([{opacity:0, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:1, width:'260px', height:'56px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'})
       ripple.animate([{opacity:.9, width:'28px', height:'10px', transform:'translate(-50%,0) scale(.2)'},{opacity:0, width:'350px', height:'90px', transform:'translate(-50%,0) scale(1)'}], {duration:820, easing:'ease-out', fill:'forwards'})
 
-      createStains(centerX, puddleTop + 10)
+      // create nicely positioned animated stains
+      createStains(centerX, puddleTop + 8)
       cleanupPuddle()
 
-      // hide phrase bubble but keep dim until memes loading
+      // hide the beer sprite (smooth fade) and then start memes
       setTimeout(()=>{
-        if(phraseBubbleEl && phraseBubbleEl.parentNode) phraseBubbleEl.remove()
+        beerSprite.style.transition = 'opacity 320ms linear, transform 420ms ease'
+        beerSprite.style.opacity = '0'
+        beerSprite.style.transform += ' scale(.92)'
+        setTimeout(()=>{ beerSprite.style.display = 'none' }, 360)
         // undim background and start romance/memes
         undimEverything()
-        // small delay to let UI settle, then start memes (ensures memesScene not hidden)
-        setTimeout(()=> startRomance(), 200)
-      }, 900)
+        setTimeout(()=> startRomance(), 420)
+      }, 740)
     }
   }
   requestAnimationFrame(step)
@@ -577,19 +583,12 @@ function revealSpoiler(){
   if(spoiler.classList.contains('open')) return
 
   spoiler.classList.add('open')
-  // create small non-fullscreen phrase bubble
-  const bubble = document.createElement('div'); bubble.className = 'phraseBubble'
-  const txt = document.createElement('div'); txt.className = 'phraseText'
-  const phrase = spoilerLine.textContent.trim() || '— Ой, извини, у меня пиво упало.'
-  txt.textContent = phrase
-  bubble.appendChild(txt)
-  document.body.appendChild(bubble)
-
-  // dim other UI (keeps memesScene present in DOM)
+  // show inline phrase in yellow/bold via CSS (no full-screen bubble)
+  spoiler.querySelector('.line').removeAttribute('aria-hidden')
+  // dim background while drop animation runs
   dimEverything()
-
-  // after short read time, drop the can and animate
-  setTimeout(()=> beerAnimationSequence(bubble), 620)
+  // run beer drop
+  setTimeout(()=> beerAnimationSequence(), 150)
 }
 
 /* click handler wiring */
